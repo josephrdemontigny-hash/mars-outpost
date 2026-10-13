@@ -16,13 +16,37 @@
 #info{position:fixed;bottom:70px;left:8px;font-size:12px;background:rgba(0,0,0,.55);padding:6px 9px;border-radius:6px;z-index:2;max-width:300px}
 #title{position:fixed;inset:0;background:rgba(60,20,8,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;text-align:center;padding:20px}
 #title h1{font-size:38px;margin:0 0 8px;color:#ffb37a}#title button{font-size:20px;padding:10px 26px;margin:6px;border-radius:10px;border:0;background:#e0702a;color:#fff;cursor:pointer}
+#tip{position:fixed;display:none;z-index:4;background:rgba(20,8,3,.92);border:1px solid #c86a2a;border-radius:8px;padding:7px 10px;font-size:12px;width:220px;pointer-events:none;line-height:1.45}
+#title{background:linear-gradient(90deg,rgba(40,10,4,.55),rgba(40,10,4,0) 60%)!important;align-items:flex-start!important;padding-left:5vw!important}@media(max-width:700px){#title{align-items:center!important;padding-left:20px!important;justify-content:flex-end!important}}
+.card{background:rgba(30,10,4,.72);backdrop-filter:blur(4px);border:1px solid rgba(255,160,100,.35);border-radius:16px;padding:20px 22px;width:min(420px,94vw);display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.5);max-height:94vh;overflow:auto}
+.card h1{font-size:40px!important;letter-spacing:4px;margin:0!important;color:#ffb37a;text-shadow:0 3px 0 #7a2a0a,0 0 24px rgba(255,120,40,.6);line-height:1}
+.card h1 span{display:block;font-size:22px;letter-spacing:12px;color:#ffe2c4}
+.card label{text-align:left;font-size:12px;color:#ffd9a0;display:flex;flex-direction:column;gap:4px}
+.row{display:flex;gap:6px;justify-content:center}.row>*{flex:1}
+#cname{font-size:16px;padding:8px;border-radius:8px;border:1px solid #8a4a2a;background:#2a0f05;color:#fff}
+.card button{font-size:14px!important;padding:8px!important;margin:0!important;border-radius:8px!important;border:1px solid #8a4a2a!important;background:#5a2a14!important;color:#fff;cursor:pointer}
+.card button small{display:block;font-size:10px;opacity:.75}.card button.on{background:#c86a2a!important;border-color:#ffd166!important}
+#reroll,#mute{flex:0 0 46px}.card button.big{font-size:19px!important;padding:12px!important;background:#e0702a!important;border-color:#ffb37a!important}
+.card button.alt{background:#3a5a7a!important;border-color:#8ab!important}.card button.alt small{font-size:12px}
+#how{display:none;text-align:left;font-size:12.5px;line-height:1.5;background:rgba(0,0,0,.3);padding:10px;border-radius:8px}
 </style>
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
-<div id="hud"></div><div id="menu"></div>
-<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="save">💾 Save</button><button id="newg">🆕 New</button></div>
-<div id="toasts"></div><div id="info"></div>
-<div id="title"><h1>🚀 Mars Outpost Tycoon</h1><p>Build habitats, grow food, mine ice, make fuel.<br>Ships bring colonists — keep them happy and the economy grows.</p>
-<p style="font-size:13px;opacity:.8">Drag / WASD = pan · Wheel / pinch = zoom · Q/E = rotate · Right-click or Esc = cancel</p>
-<div><button id="play">Play</button><button id="cont" style="display:none">Continue saved</button></div></div>
+<div id="ui" style="display:none"><div id="hud"></div><div id="menu"></div>
+<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾 Save</button><button id="newg">🏠 Menu</button></div>
+<div id="info"></div></div><div id="toasts"></div><div id="tip"></div>
+<div id="title"><div class="card">
+<h1>MARS OUTPOST<span>TYCOON</span></h1>
+<label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
+<label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢900 · light demand</small></button><button data-d="standard" class="on">Standard<small>¢600</small></button><button data-d="hard">Hard<small>¢400 · hungry crew</small></button></div></label>
+<button id="play" class="big">🚀 New colony</button>
+<button id="cont" class="big alt" style="display:none"></button>
+<div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
+<div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
+• Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
+• 🚀 Ships land on pads with new colonists — only if you have 🏠 housing.<br>
+• ⛽ Fuel plants make fuel; departing ships buy it for big credits.<br>
+• Bigger buildings unlock as your population grows.<br>
+<b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · tap a building in the bar then tap the map · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
+</div></div>
 <script type="module" src="game.js"></script></body></html>
