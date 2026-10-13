@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel="icon" href="data:,">
+<title>Mars Outpost Tycoon</title>
+<style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#c98a5e;font-family:system-ui,sans-serif;color:#fff;user-select:none;touch-action:none}
+#hud{position:fixed;top:0;left:0;right:0;display:flex;flex-wrap:wrap;gap:6px;padding:6px;background:rgba(40,15,5,.75);font-size:13px;z-index:2}
+.r{background:rgba(255,255,255,.1);padding:3px 8px;border-radius:6px;white-space:nowrap}.r.bad{background:#a22}
+#menu{position:fixed;bottom:0;left:0;right:0;display:flex;gap:5px;padding:6px;overflow-x:auto;background:rgba(40,15,5,.8);z-index:2}
+.b{flex:0 0 auto;background:#5a2a14;border:2px solid #8a4a2a;color:#fff;border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer;text-align:center;min-width:78px}
+.b.sel{border-color:#ffd166;background:#7a3a1c}.b.lock{opacity:.4}.b small{display:block;color:#ffd9a0}
+#ctl{position:fixed;top:44px;right:6px;display:flex;flex-direction:column;gap:4px;z-index:2}
+#ctl button{background:#5a2a14;color:#fff;border:1px solid #8a4a2a;border-radius:6px;padding:5px 9px;cursor:pointer}#ctl button.on{background:#c86a2a}
+#toasts{position:fixed;top:48px;left:8px;z-index:3;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.t{background:rgba(0,0,0,.7);padding:6px 10px;border-radius:6px;font-size:13px;animation:f 4s forwards}.t.w{background:rgba(170,30,20,.85)}
+@keyframes f{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
+#info{position:fixed;bottom:70px;left:8px;font-size:12px;background:rgba(0,0,0,.55);padding:6px 9px;border-radius:6px;z-index:2;max-width:300px}
+#title{position:fixed;inset:0;background:rgba(60,20,8,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;text-align:center;padding:20px}
+#title h1{font-size:38px;margin:0 0 8px;color:#ffb37a}#title button{font-size:20px;padding:10px 26px;margin:6px;border-radius:10px;border:0;background:#e0702a;color:#fff;cursor:pointer}
+</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+</head><body>
+<div id="hud"></div><div id="menu"></div>
+<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="save">💾 Save</button><button id="newg">🆕 New</button></div>
+<div id="toasts"></div><div id="info"></div>
+<div id="title"><h1>🚀 Mars Outpost Tycoon</h1><p>Build habitats, grow food, mine ice, make fuel.<br>Ships bring colonists — keep them happy and the economy grows.</p>
+<p style="font-size:13px;opacity:.8">Drag / WASD = pan · Wheel / pinch = zoom · Q/E = rotate · Right-click or Esc = cancel</p>
+<div><button id="play">Play</button><button id="cont" style="display:none">Continue saved</button></div></div>
+<script type="module" src="game.js"></script></body></html>
