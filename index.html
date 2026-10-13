@@ -29,12 +29,19 @@
 #reroll,#mute{flex:0 0 46px}.card button.big{font-size:19px!important;padding:12px!important;background:#e0702a!important;border-color:#ffb37a!important}
 .card button.alt{background:#3a5a7a!important;border-color:#8ab!important}.card button.alt small{font-size:12px}
 #how{display:none;text-align:left;font-size:12.5px;line-height:1.5;background:rgba(0,0,0,.3);padding:10px;border-radius:8px}
+.tab{flex:0 0 auto;align-self:stretch;display:flex;align-items:center;padding:0 10px;border-radius:8px;background:#3a1a0a;border:2px solid #5a2a14;font-size:13px;cursor:pointer}.tab.on{background:#c86a2a;border-color:#ffd166}
+#panel{display:none;position:fixed;right:8px;top:48px;width:min(300px,94vw);max-height:calc(100vh - 140px);overflow:auto;background:rgba(25,9,3,.92);border:1px solid #c86a2a;border-radius:12px;padding:10px 12px;z-index:3;font-size:13px;line-height:1.5}
+#panel .ph{display:flex;gap:6px;align-items:center;font-size:18px}#panel input{flex:1;min-width:0;font-size:15px;padding:5px 7px;border-radius:6px;border:1px solid #8a4a2a;background:#2a0f05;color:#fff}
+#panel button{background:#5a2a14;color:#fff;border:1px solid #8a4a2a;border-radius:7px;padding:6px 9px;cursor:pointer;font-size:13px}#panel button:disabled{opacity:.45}
+#panel .sub{opacity:.85;font-size:12px;margin:4px 0}#panel .stats{background:rgba(255,255,255,.07);padding:5px 8px;border-radius:6px;margin:5px 0}#panel .pbtn{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+#panel .hint{opacity:.6;font-size:11px;margin-top:6px}.cn{color:#ffd9a0;cursor:pointer;text-decoration:underline dotted}#pbody>div{margin:4px 0}.r.nm{background:#a8481e}
+#ctl{top:auto!important;bottom:76px}@media(max-width:700px){#panel{right:3vw;top:auto;bottom:70px;max-height:45vh}#ctl{flex-direction:row!important;bottom:72px;right:4px}#ctl button{padding:4px 7px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
 <div id="ui" style="display:none"><div id="hud"></div><div id="menu"></div>
 <div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾 Save</button><button id="newg">🏠 Menu</button></div>
-<div id="info"></div></div><div id="toasts"></div><div id="tip"></div>
+<div id="info"></div><div id="panel"></div></div><div id="toasts"></div><div id="tip"></div>
 <div id="title"><div class="card">
 <h1>MARS OUTPOST<span>TYCOON</span></h1>
 <label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
@@ -46,7 +53,9 @@
 • Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
 • 🚀 Ships land on pads with new colonists — only if you have 🏠 housing.<br>
 • ⛽ Fuel plants make fuel; departing ships buy it for big credits.<br>
-• Bigger buildings unlock as your population grows.<br>
-<b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · tap a building in the bar then tap the map · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
+• Buildings need a 🚶 path or 🛣️ road beside them (⚠️ = not connected). Colonists walk to work; 🚙 Cybertrucks drive roads.<br>
+• Tap a building to rename / upgrade it, tap an astronaut to meet them.<br>• 🌷 Decorations near paths make colonists happier. Lights glow at night.<br>
+• Bigger buildings (Waste, Medical, Entertainment, Security…) unlock as your population grows.<br>
+<b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
 </div></div>
 <script type="module" src="game.js"></script></body></html>
