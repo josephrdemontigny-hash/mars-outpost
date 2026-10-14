@@ -104,6 +104,9 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
  #title .card h1 span{font-size:11px;letter-spacing:3px;margin-top:8px}
 }
 .tf{display:inline-flex;align-items:center;gap:4px}.tf b{font-weight:600}.tf .bar{width:48px;height:6px;background:#333;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}.tf .bar i{display:block;height:100%;background:linear-gradient(90deg,#3ff3ff,#66ff99)}
+body.intro #toasts{opacity:0}body.intro #ui{opacity:0;pointer-events:none;transition:opacity .4s}#ui{transition:opacity .6s}
+#skipintro{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:60;padding:10px 16px;border-radius:10px;border:2px solid #ffb347;background:rgba(40,20,12,.8);color:#fff;font:600 15px system-ui;cursor:pointer}
+body.intro::after{content:'Tap anywhere to skip';position:fixed;left:0;right:0;top:calc(14px + env(safe-area-inset-top));text-align:center;color:#fff;font:600 13px system-ui;opacity:.75;text-shadow:0 1px 3px #000;pointer-events:none;z-index:59}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
