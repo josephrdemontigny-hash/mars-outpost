@@ -36,25 +36,62 @@
 #panel .sub{opacity:.85;font-size:12px;margin:4px 0}#panel .stats{background:rgba(255,255,255,.07);padding:5px 8px;border-radius:6px;margin:5px 0}#panel .pbtn{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 #panel .hint{opacity:.6;font-size:11px;margin-top:6px}.cn{color:#ffd9a0;cursor:pointer;text-decoration:underline dotted}#pbody>div{margin:4px 0}.r.nm{background:#a8481e}
 #ctl{top:auto!important;bottom:76px}@media(max-width:700px){#panel{right:3vw;top:auto;bottom:70px;max-height:45vh}#ctl{flex-direction:row!important;bottom:72px;right:4px}#ctl button{padding:4px 7px}}
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+#title{background:radial-gradient(ellipse at 50% 120%,rgba(255,60,140,.35),rgba(20,4,30,.82) 60%)!important;align-items:center!important;padding-left:20px!important}
+#title:after,#loading:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px);animation:flk 4s infinite}
+@keyframes flk{0%,100%{opacity:.9}50%{opacity:.75}}
+#title .card{position:relative;z-index:1;background:rgba(12,2,24,.82);backdrop-filter:none;border:3px solid #ff3fa4;border-radius:0;box-shadow:0 0 0 3px #12021c,0 0 0 6px #3ff3ff,0 0 40px rgba(255,63,164,.6);font-family:'VT323',monospace;font-size:20px}
+#title .card h1{font-family:'Press Start 2P',monospace;font-size:30px!important;letter-spacing:2px;color:#ffe14a;text-shadow:3px 3px 0 #ff3fa4,6px 6px 0 #3a0a5a,0 0 18px #ff9a3f;line-height:1.25}
+#title .card h1 span{font-size:15px;letter-spacing:9px;color:#3ff3ff;text-shadow:2px 2px 0 #7a0a5a;margin-top:10px}
+#title .card label{font-family:'Press Start 2P',monospace;font-size:9px;color:#3ff3ff;letter-spacing:1px}
+#title .card button{font-family:'VT323',monospace;font-size:21px!important;border-radius:0!important;border:2px solid #ff3fa4!important;background:#2a0640!important;box-shadow:4px 4px 0 #000;text-transform:uppercase}
+#title .card button:hover{background:#4a0a6a!important;color:#ffe14a}
+#title .card button.on{background:#ff3fa4!important;border-color:#ffe14a!important;color:#12021c}
+#title .card button.big{font-family:'Press Start 2P',monospace;font-size:14px!important;padding:14px!important;background:#ff3fa4!important;color:#12021c;border-color:#ffe14a!important}
+#title .card button.big:before{content:'▶ ';animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+#title .card button.alt{background:#073a4a!important;border-color:#3ff3ff!important;color:#fff}
+#title .card button small{font-size:15px}#cname{font-family:'VT323',monospace;font-size:22px;border-radius:0;border:2px solid #3ff3ff;background:#0a0018}
+#title .chk{flex-direction:row!important;align-items:center;gap:8px;font-family:'VT323',monospace!important;font-size:19px!important;color:#ffe14a!important;cursor:pointer}
+#title .chk input{width:18px;height:18px;accent-color:#ff3fa4}#how{font-family:system-ui;font-size:12.5px}
+.ins{font-family:'Press Start 2P',monospace;font-size:8px;color:#ff9a3f;opacity:.8;animation:bl 1.4s steps(1) infinite}
+#loading{position:fixed;inset:0;z-index:9;background:#12021c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:'Press Start 2P',monospace;color:#ffe14a;transition:opacity .6s}
+#loading .lt{font-size:22px;text-shadow:3px 3px 0 #ff3fa4;text-align:center;line-height:1.5}#loading .bar{width:min(360px,80vw);height:22px;border:3px solid #3ff3ff;padding:3px}
+#loading .bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#ff3fa4 0 12px,#12021c 12px 16px);transition:width .3s}
+#loading .lm{font-size:9px;color:#3ff3ff}
+#tut{display:none;position:fixed;left:8px;top:48px;width:min(330px,92vw);z-index:3;background:rgba(12,2,24,.9);border:2px solid #ff3fa4;box-shadow:0 0 18px rgba(255,63,164,.5);padding:10px 12px;font-size:13px;line-height:1.45}
+#tut .tt{font-family:'Press Start 2P',monospace;font-size:9px;color:#3ff3ff;margin-bottom:5px}#tut b{color:#ffe14a;font-size:15px}#tut p{margin:5px 0}#tut .tl{font-size:12px;margin:4px 0}
+#tut button{background:transparent;border:1px solid #888;color:#bbb;font-size:11px;padding:2px 7px;cursor:pointer;margin-top:4px}
+.b.hl{border-color:#ff3fa4!important;animation:pul 1s infinite;position:relative}.b.hl:after{content:'▼';position:absolute;top:-16px;left:50%;transform:translateX(-50%);color:#ff3fa4;font-size:14px}
+@keyframes pul{50%{box-shadow:0 0 14px #ff3fa4}}
+.ft{position:fixed;left:50%;top:30%;transform:translateX(-50%);font-size:26px;font-weight:800;color:#ffe14a;text-shadow:0 2px 0 #000,0 0 14px #ff9a3f;z-index:6;pointer-events:none;animation:ftu 2.2s forwards}
+@keyframes ftu{0%{opacity:0;margin-top:20px}15%{opacity:1;margin-top:0}80%{opacity:1}100%{opacity:0;margin-top:-40px}}
+.cargo{background:rgba(255,255,255,.07);padding:6px 8px;border-radius:6px;margin:6px 0}.crow{display:flex;align-items:center;gap:5px;margin:3px 0}.crow span{flex:1}.crow button{padding:2px 8px!important}
+#panel button.go{background:#c86a2a;border-color:#ffd166;font-weight:700;width:100%;margin-top:4px}#tut{top:48px}@media(max-width:700px){#tut{top:auto;bottom:130px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
 <div id="ui" style="display:none"><div id="hud"></div><div id="menu"></div>
-<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾 Save</button><button id="newg">🏠 Menu</button></div>
-<div id="info"></div><div id="panel"></div></div><div id="toasts"></div><div id="tip"></div>
+<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾 Save</button><button id="mktb">🌍 Market</button><button id="newg">🏠 Menu</button></div>
+<div id="info"></div><div id="panel"></div><div id="tut"></div></div><div id="toasts"></div><div id="tip"></div>
+<div id="loading"><div class="lt">MARS OUTPOST<br>TYCOON</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
 <div id="title"><div class="card">
-<h1>MARS OUTPOST<span>TYCOON</span></h1>
+<h1>MARS<br>OUTPOST<span>TYCOON</span></h1>
 <label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
-<label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢900 · light demand</small></button><button data-d="standard" class="on">Standard<small>¢600</small></button><button data-d="hard">Hard<small>¢400 · hungry crew</small></button></div></label>
-<button id="play" class="big">🚀 New colony</button>
+<label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>¢1500 · 320🧱</small></button><button data-d="hard">Hard<small>¢1100 · 280🧱</small></button></div></label>
+<label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
+<button id="play" class="big">New colony</button>
 <button id="cont" class="big alt" style="display:none"></button>
+<div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
 <div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
 • Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
 • 🚀 Ships land on pads with new colonists — only if you have 🏠 housing.<br>
-• ⛽ Fuel plants make fuel; departing ships buy it for big credits.<br>
-• Buildings need a 🚶 path or 🛣️ road beside them (⚠️ = not connected). Colonists walk to work; 🚙 Cybertrucks drive roads.<br>
-• Tap a building to rename / upgrade it, tap an astronaut to meet them.<br>• 🌷 Decorations near paths make colonists happier. Lights glow at night.<br>
+• Every building costs ¢ credits + 🧱 materials. ⛏️ Mines dig ore, 🏗️ Processors turn it into materials; 🚙 Cybertrucks haul ore and deliver to construction sites, driving freely over the terrain.<br>
+• Supply ships land on 🛬 pads every ~1.5 Sols with crew + materials. Order extra materials in the 🌍 Market.<br>
+• ⛽ Fuel plants turn water + power into fuel. Tap a landed Starship, refuel it, load surplus cargo and launch a return flight to sell on Earth.<br>
+• Buildings need a 🚶 path within 2 tiles (⚠️ = not connected). Paths are free.<br>
+• Tap a building to rename / upgrade it, tap an astronaut to meet them.<br>• 🌷 Decorations near paths make colonists happier. Buildings light up at night.<br>
 • Bigger buildings (Waste, Medical, Entertainment, Security…) unlock as your population grows.<br>
 <b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
 </div></div>
