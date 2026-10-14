@@ -1,6 +1,6 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="icon" href="data:,">
-<title>Mars Outpost Tycoon</title>
+<title>MARS — A Terraforming Game</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#c98a5e;font-family:system-ui,sans-serif;color:#fff;user-select:none;touch-action:none}
 #hud{position:fixed;top:0;left:0;right:0;display:flex;flex-wrap:wrap;gap:6px;padding:6px;background:rgba(40,15,5,.75);font-size:13px;z-index:2}
@@ -35,7 +35,7 @@
 #panel button{background:#5a2a14;color:#fff;border:1px solid #8a4a2a;border-radius:7px;padding:6px 9px;cursor:pointer;font-size:13px}#panel button:disabled{opacity:.45}
 #panel .sub{opacity:.85;font-size:12px;margin:4px 0}#panel .stats{background:rgba(255,255,255,.07);padding:5px 8px;border-radius:6px;margin:5px 0}#panel .pbtn{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 #panel .hint{opacity:.6;font-size:11px;margin-top:6px}.cn{color:#ffd9a0;cursor:pointer;text-decoration:underline dotted}#pbody>div{margin:4px 0}.r.nm{background:#a8481e}
-#ctl{top:auto!important;bottom:76px}@media(max-width:700px){#panel{right:3vw;top:auto;bottom:70px;max-height:45vh}#ctl{flex-direction:row!important;bottom:72px;right:4px}#ctl button{padding:4px 7px}}
+
 
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 #title{background:radial-gradient(ellipse at 50% 120%,rgba(255,60,140,.35),rgba(20,4,30,.82) 60%)!important;align-items:center!important;padding-left:20px!important}
@@ -69,15 +69,51 @@
 .cargo{background:rgba(255,255,255,.07);padding:6px 8px;border-radius:6px;margin:6px 0}.crow{display:flex;align-items:center;gap:5px;margin:3px 0}.crow span{flex:1}.crow button{padding:2px 8px!important}
 #panel button.go{background:#c86a2a;border-color:#ffd166;font-weight:700;width:100%;margin-top:4px}#tut{top:48px}@media(max-width:700px){#tut{top:auto;bottom:130px}}
 @media(max-width:700px){#hud{gap:3px;padding:4px;font-size:11px}.r{padding:2px 5px}body.pan #tut{display:none!important}#tut{font-size:12px;padding:7px 9px}#tut p{margin:3px 0}}
+
+html,body{height:100%;height:100dvh}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#hud{top:env(safe-area-inset-top);padding:4px 6px;gap:4px;font-size:12px;line-height:1.2;max-height:none}
+.r{padding:2px 6px;font-size:12px}
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:4;padding:0 4px calc(6px + env(safe-area-inset-bottom));pointer-events:none;display:flex;flex-direction:column;gap:4px}
+#ctl{position:static!important;top:auto!important;bottom:auto!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap;gap:4px;justify-content:center;pointer-events:auto;background:rgba(25,9,3,.88);border:1px solid #8a4a2a;border-radius:12px;padding:5px;margin:0 auto;max-width:min(520px,96vw)}
+#ctl button{padding:7px 9px;font-size:14px;min-width:36px;touch-action:manipulation}
+#ctl button.pri{background:#c86a2a;border-color:#ffd166;font-weight:700}
+#ctl button.pri.on{background:#e0702a}
+#menu{position:static!important;background:rgba(25,9,3,.94);border:1px solid #c86a2a;border-radius:12px;padding:6px 6px 6px 6px;overflow-x:auto;pointer-events:auto;display:flex;gap:5px;align-items:stretch;max-width:100%}
+#menu.closed{display:none!important}
+#mtools{display:flex;gap:5px;overflow-x:auto;flex:1;padding-bottom:2px}
+#mclose{flex:0 0 36px;align-self:stretch;background:#5a2a14;border:1px solid #8a4a2a;color:#fff;border-radius:8px;font-size:16px;cursor:pointer}
+#info{position:fixed;top:auto;left:8px;right:auto;max-width:min(420px,92vw);z-index:3;pointer-events:none;bottom:calc(var(--dockH,60px) + 6px)}
+#tip{z-index:5}
+#toasts{top:calc(env(safe-area-inset-top) + 42px);left:8px;right:8px;max-width:min(360px,92vw)}
+#panel{z-index:5}
+#tut{z-index:3}
+@media(max-width:700px){
+ #hud{font-size:10.5px;gap:3px;padding:3px 4px}.r{padding:1px 5px;font-size:10.5px}
+ #ctl{width:100%;max-width:none;border-radius:10px 10px 0 0}
+ #ctl button{padding:8px 8px;font-size:13px}
+ #menu{border-radius:10px 10px 0 0;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
+ #dock{padding-bottom:0}
+ #info{bottom:calc(var(--dockH,60px) + 4px);font-size:11px}
+ #panel{right:3vw;left:3vw;width:auto;top:auto;bottom:calc(var(--dockH,60px) + 6px);max-height:46dvh}
+ body.menuopen #panel,body.pan #tut{display:none!important}
+ #tut{top:auto;bottom:calc(var(--dockH,60px) + 30px);max-height:28dvh;overflow:auto}
+ body.menuopen #tut{display:none!important}
+ #title .card{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);width:min(400px,94vw)}
+ #title .card h1{font-size:36px!important}
+ #title .card h1 span{font-size:11px;letter-spacing:3px;margin-top:8px}
+}
+.tf{display:inline-flex;align-items:center;gap:4px}.tf b{font-weight:600}.tf .bar{width:48px;height:6px;background:#333;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}.tf .bar i{display:block;height:100%;background:linear-gradient(90deg,#3ff3ff,#66ff99)}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
-<div id="ui" style="display:none"><div id="hud"></div><div id="menu"></div>
-<div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾 Save</button><button id="mktb">🌍 Market</button><button id="newg">🏠 Menu</button></div>
+<div id="ui" style="display:none"><div id="hud"></div>
+<div id="dock"><div id="ctl"><button data-s="0">⏸</button><button data-s="1" class="on">1x</button><button data-s="3">3x</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
+<div id="menu" class="closed"><button id="mclose" type="button" aria-label="Close">✕</button><div id="mtools"></div></div></div>
 <div id="info"></div><div id="panel"></div><div id="tut"></div></div><div id="toasts"></div><div id="tip"></div>
-<div id="loading"><div class="lt">MARS OUTPOST<br>TYCOON</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
+<div id="loading"><div class="lt">MARS</div><div class="lm" style="margin-top:-6px;opacity:.85">A TERRAFORMING GAME</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
 <div id="title"><div class="card">
-<h1>MARS<br>OUTPOST<span>TYCOON</span></h1>
+<h1>MARS<span>A TERRAFORMING GAME</span></h1>
 <label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
 <label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>¢1500 · 320🧱</small></button><button data-d="hard">Hard<small>¢1100 · 280🧱</small></button></div></label>
 <label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
