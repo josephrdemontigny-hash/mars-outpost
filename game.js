@@ -17,7 +17,8 @@ const TUNE={CONS_WAIT:15,
  ORDER_QTY:100,ORDER_PRICE:3, // material shipment you can order: qty, ¢ per unit
  TRUCK_LOAD:20,        // ore per Cybertruck trip
  DAY_SPLIT:.75,        // fraction of each Sol that is daylight
- START_CREW:6,START_SHIPS:2
+ START_CREW:6,LAND_GAP:75,  // min seconds between any two Starship landings (ships never arrive together)
+ START_SHIPS:1
 };
 const PRICE={mat:6,ore:2,rare:30}; // Earth base prices (¢ per unit), market multiplier drifts each Sol
 const B={
@@ -40,7 +41,7 @@ const B={
  refin:{n:'Fuel Refinery',c:900,m:240,s:2,ic:'🏭',cat:'b',fuel:4,pw:-8,wat:-2.5,jobs:8,unl:50,d:'Lots of fuel'},
  mega:{n:'Mega Habitat',c:1000,m:260,s:2,ic:'🏙️',cat:'b',house:40,pw:-4,unl:60,d:'Houses 40'},
  sec:{n:'Security Outpost',c:900,m:220,s:2,ic:'🛡️',cat:'b',sec:40,pw:-3,jobs:5,unl:60,d:'Safety for 40'},
- robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Assembles Optimus robots from shipped kits (they need power, not food)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:7.5,d:'Landed Starship'},
+ robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Assembles Optimus robots from shipped kits (they need power, not food)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:15,d:'Landed Starship'},
  path:{n:'Footpath',c:0,m:0,ic:'🚶',cat:'p',d:'Free — drag to paint'},
  bench:{n:'Bench',c:8,m:2,s:1,ic:'🪑',cat:'d',d:'Rest stop'},
  planter:{n:'Planter',c:12,m:3,s:1,ic:'🪴',cat:'d',d:'A bit of green'},
@@ -51,7 +52,7 @@ const B={
 for(const k in B){B[k].s=B[k].s||1;B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
-function fresh(diff='standard',name='Olympus Base'){return{v:6,botsLanded:0,truckIn:0,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
+function fresh(diff='standard',name='Olympus Base'){return{v:6,botsLanded:0,truckIn:0,ship2:'pending',ship2T:240,lastLandT:-999,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
  mkt:{mat:1,ore:1,rare:1},mktPrev:{mat:1,ore:1,rare:1},order:0,flights:[],tut:null,lastSol:0};}
 const FIRST=['Ava','Leo','Maya','Kai','Zara','Omar','Lena','Theo','Nia','Ravi','Iris','Jonas','Sofia','Mateo','Yuki','Amara','Felix','Priya','Hugo','Elena','Dev','Ingrid','Tariq','Lucia','Arjun','Freya','Malik','Chloe','Kenji','Noor','Elias','Hana','Diego','Mila','Sven','Aisha','Bruno','Tessa','Rohan','Juno'];
 const LAST=['Okafor','Nakamura','Silva','Novak','Haddad','Larsen','Chen','Reyes','Kowalski','Patel','Moreau','Ivanova','Mensah','Fischer','Tanaka','Duarte','Bjork','Rahman','Costa','Lindqvist','Abara','Kim','Volkov','Murphy','Santos','Oyelaran','Weiss','Quinn','Aldana','Petrov','Hart','Sato','Nkemelu','Ruiz','Varga','Steele','Ito','Mbeki','Laurent','Gale'];
@@ -511,7 +512,7 @@ function dayK(t){const p=dayPhase(t),D=TUNE.DAY_SPLIT,f=.07;if(p>=D)return 0;ret
 function eff(b){if(b.cons>0)return 0;const j=jobs(b);if(!j)return 1;return b.door?.35+.65*Math.min(1,(b.wk||0)/j):.3;}
 let decoBonus=0;
 function stats(dt=0){let pw=0,pu=0,house=0,food=0,wat=0,fuel=0,waste=0,med=0,ent=0,sec=0,wcap=120,bcap=0;
- S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(d.pw>0)pw+=d.pw*m*e*(b.t==='solar'?sunK:1);else if(d.pw&&on)pu-=d.pw*m;});pu+=(S.bots||[]).length*.4;S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(on){house+=cap(b);if(d.wcap)wcap+=d.wcap*m;if(d.bat)bcap+=d.bat*m;}});
+ S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(b.t==='ship'&&objs.get(b.id)?.userData.land)return;if(d.pw>0)pw+=d.pw*m*e*(b.t==='solar'?sunK:1);else if(d.pw&&on)pu-=d.pw*m;});pu+=(S.bots||[]).length*.4;S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(on){house+=cap(b);if(d.wcap)wcap+=d.wcap*m;if(d.bat)bcap+=d.bat*m;}});
  const raw=pw;let batUse=0;if(pw<pu&&S.bat>0){batUse=Math.min(pu-pw,dt?S.bat/dt:pu-pw);pw+=batUse;}
  if(dt){if(batUse)S.bat=Math.max(0,S.bat-batUse*dt);else S.bat=Math.min(bcap,S.bat+Math.max(0,pw-pu)*dt*.6);}S.bat=Math.max(0,Math.min(S.bat,bcap));
  const pe=pu?Math.min(1,pw/pu):1;
@@ -695,14 +696,14 @@ const keys={};addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')retur
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 $('rotL').onclick=()=>rotT-=Math.PI/2;$('rotR').onclick=()=>rotT+=Math.PI/2;
 document.querySelectorAll('#ctl [data-s]').forEach(b=>b.onclick=()=>{speed=+b.dataset.s;document.querySelectorAll('#ctl [data-s]').forEach(x=>x.classList.toggle('on',x===b));});
-function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','truckIn'].forEach(k=>d[k]=S[k]);
+function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','truckIn','ship2','ship2T','lastLandT'].forEach(k=>d[k]=S[k]);
  d.b=S.b.map(({id,t,x,z,lvl,name,timer,hold,stock})=>({id,t,x,z,lvl,name,timer,hold,stock}));d.pop=S.cols.length;localStorage.setItem('marsOutpost',JSON.stringify(d));}
 $('mktb').onclick=()=>openM();$('save').onclick=()=>{save();toast('💾 Saved');};$('newg').onclick=()=>{save();showTitle();};
 $('buildb').onclick=()=>setMenu(!menuOpen);$('mclose').onclick=()=>setMenu(false);
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);camUp();});
 // ---------- ships
 function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const base=by(b)+.09,cx=b.x+1,cz=b.z+1;
- if(!b.ship){b.timer-=dt;if(b.timer<=0){const m=rocket();m.position.set(cx,PADL.Y0,cz);m.rotation.order="YXZ";m.rotation.y=Math.PI/4+.85+rot+(Math.random()-.5)*.2;scene.add(m);b.ship={m,ph:'land',t:0};if(!S.demo)rumble(6,.2);}return;}
+ if(!b.ship){b.timer-=dt;if(b.timer<=0&&!S.demo&&S.t-(S.lastLandT??-999)<TUNE.LAND_GAP){b.timer=TUNE.LAND_GAP-(S.t-S.lastLandT)+5+Math.random()*10;}if(b.timer<=0){S.lastLandT=S.t;const m=rocket();m.position.set(cx,PADL.Y0,cz);m.rotation.order="YXZ";m.rotation.y=Math.PI/4+.85+rot+(Math.random()-.5)*.2;scene.add(m);b.ship={m,ph:'land',t:0};if(!S.demo)rumble(6,.2);}return;}
  const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;m.position.x=cx;m.position.z=cz;
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
   if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
@@ -715,16 +716,25 @@ function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const b
 const SHIP_SPOTS=[[44,44],[47,42],[50,44],[42,47],[52,47]];
 function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
  rk.visible=true;if(!L.r){L.r=1;if(!S.demo)rumble(6,.15);}const P=L.P||PADL;const r=landPose(rk,L.t,P);const b=byId(id);if(b&&r.ph===2&&r.y<6){L.dT=(L.dT||0)-dt;if(L.dT<=0){L.dT=.3;dust(b.x+1,b.z+1,0,r.y<1.5?12:6);if(!L.r2&&r.y<2){L.r2=1;if(!S.demo)rumble(4,.12);}}}
- if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;}});
- if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2||!S.truckIn)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
+ if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
+ if(!any&&!S.demo)ship2Tick();if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2||!S.truckIn)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
   ships.forEach((b,i)=>{const items=[];const n=Math.ceil(crew/(ships.length-i));crew-=n;for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(bq>0){items.push({k:'bot'});bq--;}if(i===0&&!S.truckIn)items.push({k:'truck'});
    if(i===ships.length-1)while(bq-->0)items.push({k:'bot'});if(items.length)startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items,onDone:()=>{if(!S.crewPending&&!unloads.some(u=>u.sid!==b.id&&!u.done)&&!S.tut)toast(`👩‍🚀 Your crew is on the surface. Welcome to Mars!`);}});});
   if(!S.tut)toast('🚪 Cargo lifts lowering — the crew is disembarking');}}
+
+// ---------- the second start ship arrives on its own, minutes after the first
+function freeShipSpot(){const s0=S.b.find(b=>b.t==='ship');const cx=s0?s0.x:44,cz=s0?s0.z:44;
+ for(let r=4;r<16;r++)for(let k=0;k<24;k++){const a=k/24*6.283+.4,x=Math.round(cx+Math.cos(a)*r),z=Math.round(cz+Math.sin(a)*r);let ok=free('ship',x,z);
+  if(ok)for(let i=-1;i<=2&&ok;i++)for(let j=-1;j<=2;j++){const o=occ[x+i]?.[z+j];if(o){ok=false;break;}}if(ok)return[x,z];}return null;}
+function ship2Tick(){if(S.demo||S.ship2!=='pending'||S.crewPending||(S.botsLanded||0)<2||!S.truckIn||unloads.length)return;
+ const due=S.t>=S.ship2T||(S.tut&&S.tut.step>=3&&S.t>=S.ship2T*.5);if(!due||S.t-(S.lastLandT??-999)<TUNE.LAND_GAP)return;const p=freeShipSpot();if(!p)return;
+ S.ship2='landing';S.lastLandT=S.t;const b=addB('ship',p[0],p[1],1);b.name='Serenity';const o=objs.get(b.id);o.userData.land={t:0,P:INTROL,second:1};o.getObjectByName('rk').visible=false;
+ toast('🚀 Second Starship "Serenity" is on final approach — watch the sky!',1);}
 // ---------- tutorial (the early game, told as a story)
 const has=k=>S.b.some(b=>b.t===k&&!(b.cons>0));
 const TUT=[
- {t:'Touchdown!',x:`${TUNE.START_SHIPS} Starships just landed on the Martian soil carrying your ${TUNE.START_CREW} crew plus the start kit: your money and 🧱 materials. Their onboard power systems run the camp for now. Watch the cargo lifts bring everyone down.`,done:()=>!S.crewPending&&S.tut.t>3},
- {t:'Home sweet dome',x:'Your crew is living in cramped ships. Place your first 🏠 Habitat near them (Build tab) and they\'ll move in.',k:'hab',done:()=>has('hab')},
+ {t:'Touchdown!',x:`Your first Starship just landed on untouched Martian soil with ${TUNE.START_CREW} crew, 2 Optimus robots, a Cybertruck and the start kit. A second ship is a few minutes behind. Its onboard power runs the camp for now. Watch the cargo lift bring everyone down.`,done:()=>!S.crewPending&&S.tut.t>3},
+ {t:'Home sweet dome',x:'Your crew is living in the cramped ship. Place your first 🏠 Habitat near them (Build tab) and they\'ll move in.',k:'hab',done:()=>has('hab')},
  {t:'Paths are free',x:'Open the 🚶 Paths tab and drag a path from the ships to the habitat. Anything within 2 tiles of a path counts as connected.',k:'path',tab:'p',done:()=>S.b.some(b=>b.t==='hab'&&b.door)&&S.b.some(b=>b.t==='ship'&&b.door)},
  {t:'Hungry crew',x:'The ration packs won\'t last forever. Build a 🌱 Farm Dome next to your path.',k:'farm',done:()=>has('farm')},
  {t:'Thirsty plants',x:'Farms (and people) drink a lot. Dig an 🧊 Ice Extractor to melt subsurface ice into water.',k:'ice',done:()=>has('ice')},
@@ -818,14 +828,14 @@ function migrate4(d){if(d.v>=5)return d;const t={};for(const k in d.tiles||{})t[
  d.b=(d.b||[]).filter(b=>B[b.t]&&b.t!=='lamp');d.mat=(d.mat||0)+300+d.b.length*6;d.ore=d.ore||0;d.rare=d.rare||0;d.bat=0;d.mkt={mat:1,ore:1,rare:1};d.mktPrev={...d.mkt};d.order=0;d.flights=[];d.tut=null;
  d.lastSol=Math.floor((d.t||0)/DAY);d.v=5;d.up4={lamps,roads:Object.keys(t).length};return d;}
 function start(load,skipTut){clearAll();uid=1;cid=1;const sv=load&&localStorage.getItem('marsOutpost');
- if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;if(d.truckIn===undefined)S.truckIn=1;S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
+ if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;if(d.truckIn===undefined)S.truckIn=1;if(d.ship2===undefined)S.ship2='done';if(S.ship2==='landing')S.ship2='pending';S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
   d.b.forEach(b=>{rebuildOcc();addB(b.t,b.x,b.z,1,b);});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
  else{S=fresh(selDiff,($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
   SHIP_SPOTS.slice(0,TUNE.START_SHIPS).forEach(([x,z],i)=>{const b=addB('ship',x,z,1);b.name=['Heart of Gold','Serenity','Red Dawn','Endurance','Tranquility'][i]||('Starship '+(i+1));objs.get(b.id).userData.land={t:-i*2.6,P:INTROL};});if(!S.demo)startIntro();
   S.crewPending=TUNE.START_CREW;if(skipTut){S.mat+=150;S.cr+=300;toast('Tutorial skipped — good luck, Commander!');}else{S.tut={step:0,t:0};}
-  toast(`🚀 ${TUNE.START_SHIPS} Starships inbound to ${S.name}…`);}
+  toast(`🚀 Starship inbound to ${S.name}…`);}
  refreshDoors();assign();syncTrucks();lastLock='';sel=null;tab='b';menu();$('title').style.display='none';$('ui').style.display='';rot=rotT=0;{const p=S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship')||{x:N/2,z:N/2};tgt.set(p.x+2,0,p.z+2);}zoom=(load?9:7)*(innerWidth<innerHeight?1.7:1);camUp();renderTut();beep(600,.1,'triangle',.07);}
 const NAMES=['Olympus Base','Red Rock Station','Valles Hub','Dusty Acres','Phobos View','Jezero Junction','Rusty Ridge','Crater Cove','Tharsis Town','Ares Landing','Hellas Haven','Elon Gulch'];
 let selDiff='standard';
