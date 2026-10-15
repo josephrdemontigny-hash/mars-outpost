@@ -40,7 +40,7 @@ const B={
  refin:{n:'Fuel Refinery',c:900,m:240,s:2,ic:'🏭',cat:'b',fuel:4,pw:-8,wat:-2.5,jobs:8,unl:50,d:'Lots of fuel'},
  mega:{n:'Mega Habitat',c:1000,m:260,s:2,ic:'🏙️',cat:'b',house:40,pw:-4,unl:60,d:'Houses 40'},
  sec:{n:'Security Outpost',c:900,m:220,s:2,ic:'🛡️',cat:'b',sec:40,pw:-3,jobs:5,unl:60,d:'Safety for 40'},
- robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Builds Optimus robots (power only, no food)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:7.5,d:'Landed Starship'},
+ robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Assembles Optimus robots from shipped kits (they need power, not food)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:7.5,d:'Landed Starship'},
  path:{n:'Footpath',c:0,m:0,ic:'🚶',cat:'p',d:'Free — drag to paint'},
  bench:{n:'Bench',c:8,m:2,s:1,ic:'🪑',cat:'d',d:'Rest stop'},
  planter:{n:'Planter',c:12,m:3,s:1,ic:'🪴',cat:'d',d:'A bit of green'},
@@ -51,7 +51,7 @@ const B={
 for(const k in B){B[k].s=B[k].s||1;B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
-function fresh(diff='standard',name='Olympus Base'){return{v:6,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
+function fresh(diff='standard',name='Olympus Base'){return{v:6,botsLanded:0,truckIn:0,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
  mkt:{mat:1,ore:1,rare:1},mktPrev:{mat:1,ore:1,rare:1},order:0,flights:[],tut:null,lastSol:0};}
 const FIRST=['Ava','Leo','Maya','Kai','Zara','Omar','Lena','Theo','Nia','Ravi','Iris','Jonas','Sofia','Mateo','Yuki','Amara','Felix','Priya','Hugo','Elena','Dev','Ingrid','Tariq','Lucia','Arjun','Freya','Malik','Chloe','Kenji','Noor','Elias','Hana','Diego','Mila','Sven','Aisha','Bruno','Tessa','Rohan','Juno'];
 const LAST=['Okafor','Nakamura','Silva','Novak','Haddad','Larsen','Chen','Reyes','Kowalski','Patel','Moreau','Ivanova','Mensah','Fischer','Tanaka','Duarte','Bjork','Rahman','Costa','Lindqvist','Abara','Kim','Volkov','Murphy','Santos','Oyelaran','Weiss','Quinn','Aldana','Petrov','Hart','Sato','Nkemelu','Ruiz','Varga','Steele','Ito','Mbeki','Laurent','Gale'];
@@ -86,7 +86,7 @@ const skyTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=2
 let zoom=9,rot=0,rotT=0;const tgt=new THREE.Vector3(N/2,0,N/2);
 const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,400);
 function camUp(){const a=innerWidth/innerHeight;cam.left=-zoom*a;cam.right=zoom*a;cam.top=zoom;cam.bottom=-zoom;cam.updateProjectionMatrix();
- const ang=Math.PI/4+rot;cam.position.set(tgt.x+Math.sin(ang)*80,64,tgt.z+Math.cos(ang)*80);cam.lookAt(tgt);}
+ const ang=Math.PI/4+rot;cam.position.set(tgt.x+Math.sin(ang)*80,tgt.y+64,tgt.z+Math.cos(ang)*80);cam.lookAt(tgt);}
 const hemi=new THREE.HemisphereLight(0xffe6cc,0x7a3a22,1.0);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1e0,2.6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;sun.shadow.radius=3;scene.add(sun,sun.target);
 // ---------- terrain
@@ -267,7 +267,9 @@ function dust(x,z,y0=0,n=14){for(let i=0;i<n;i++){const m=new THREE.Mesh(puffG,n
 function tickPuffs(dt){puffs=puffs.filter(m=>{m.userData.life-=dt;m.position.addScaledVector(m.userData.v,dt);m.userData.v.multiplyScalar(1-dt*1.5);m.scale.setScalar(1+(1.6-m.userData.life)*1.5);
  m.material.opacity=Math.max(0,m.userData.life/1.6*.7);if(m.userData.life<=0){scene.remove(m);m.material.dispose();return false;}return true;});}
 // ship pose: y = bottom height, tilt 0 upright .. PI/2 horizontal
-function pose(m,y,tilt){const g=m.userData.g;m.rotation.x=tilt;g.position.y=0;m.position.y=y+(SH_H/2+SH_SK)*Math.cos(tilt)+(SH_R+.05)*Math.sin(tilt);}
+const _tv=new THREE.Vector3();
+function tileSign(m){if(m.userData.ts)return m.userData.ts;const g=m.userData.g,o=m.rotation.x;m.rotation.x=Math.PI/2;m.updateMatrixWorld(true);_tv.set(0,0,-1).transformDirection(g.matrixWorld);m.rotation.x=o;m.userData.ts=_tv.y<0?1:-1;return m.userData.ts;}
+function pose(m,y,tilt){const g=m.userData.g;m.rotation.x=tilt*(tilt?tileSign(m):1);g.position.y=0;m.position.y=y+(SH_H/2+SH_SK)*Math.cos(tilt)+(SH_R+.05)*Math.sin(tilt);}
 // Starship landing profile (like the real thing): belly-flop falling horizontal (tiles down) with flap corrections,
 // high-altitude relight + flip through vertical with a small overshoot, then a slow powered vertical descent.
 const PADL={T:11,Y0:72,YF:30},INTROL={T:17,Y0:150,YF:54};
@@ -393,7 +395,7 @@ function optimus(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const 
  b.add(mesh(rbox(.06,.035,.005,.004),OPT.k,0,.32,.036,false));b.add(mesh(cyl(.015,.018,.02,8),OPT.k,0,.36,0,false));
  const h=mesh(new THREE.SphereGeometry(.033,14,10),OPT.w,0,.395,0);h.scale.set(1,1.1,1.05);b.add(h);const v=mesh(new THREE.SphereGeometry(.031,14,10,-.9,1.8,.7,1.3),OPT.v,0,.395,.006,false);v.rotation.y=0;v.scale.set(1,1.1,1.1);b.add(v);
  const cr=mesh(rbox(.09,.06,.07,.01),M(0x9a6a3a,.8),0,.33,.06,false);cr.name='crate';cr.visible=false;b.add(cr);g.scale.setScalar(1.15);return g;}
-function botsWant(){if(!S||S.demo)return 0;let n=S.v>=6||S.bots.length?2:0;S.b.forEach(b=>{if(b.t==='robot'&&!(b.cons>0))n+=Math.round(B.robot.bots*LV[b.lvl-1]);});return Math.min(40,n);}
+function botsWant(){if(!S||S.demo)return 0;let n=S.botsLanded===undefined?2:Math.min(2,S.botsLanded);S.b.forEach(b=>{if(b.t==='robot'&&!(b.cons>0))n+=Math.round(B.robot.bots*LV[b.lvl-1]);});return Math.min(40,n);}
 function botsAt(id,kind){let n=0;for(const t of bots)if(t.st==='work'&&t.job&&t.job.id===id&&t.kind===kind)n++;return n;}
 function syncBots(){const want=botsWant();if(!S.bots)S.bots=[];while(S.bots.length<want){S.bots.push(1);if(bots.length>=2&&!S.demo)toast('🤖 A new Optimus robot rolled out of the bay');}while(S.bots.length>want)S.bots.pop();
  while(bots.length>S.bots.length)scene.remove(bots.pop().m);
@@ -416,6 +418,34 @@ function tickBots(dt){bots.forEach(t=>{const g=t.m.children[0],A=n=>g.getObjectB
  const sL=walk?Math.sin(t.ph)*.6:0;A('legL').rotation.x=sL;A('legR').rotation.x=-sL;
  A('armL').rotation.x=walk?(cr.visible?-1.1:-sL*.8):swing?-1.2+Math.sin(t.ph*1.3)*.5:0;A('armR').rotation.x=walk?(cr.visible?-1.1:sL*.8):swing?-1.2-Math.sin(t.ph*1.3)*.5:0;
  g.position.y=walk?Math.abs(Math.sin(t.ph))*.012:0;g.rotation.x=swing?.25:0;});}
+
+// ---------- Starship cargo/crew elevator: everything on the surface came down this lift
+let unloads=[];
+function startUnload(o){// o:{sid,cx,cz,gy,items:[{k:'crew',n}|{k:'bot'}|{k:'truck'}|{k:'cargo',mat}],onCrew,pad}
+ const ang=Math.PI/4+rot,dx=Math.sin(ang),dz=Math.cos(ang),R0=SH_R+.36,HY=2.35;const g=new THREE.Group();g.position.set(o.cx,o.gy,o.cz);g.rotation.y=Math.atan2(dx,dz);scene.add(g);
+ const hatch=mesh(rbox(.5,.42,.05,.02),M(0x14161a,.4,.5),0,HY+.12,SH_R-.005,false);hatch.scale.y=.05;g.add(hatch);const lit=mesh(new THREE.BoxGeometry(.44,.36,.01),M(0xffe7b0,.5,0,{emissive:0xffd890,emissiveIntensity:1.1}),0,HY+.12,SH_R-.02,false);lit.visible=false;g.add(lit);
+ g.add(mesh(rbox(.9,.04,.06,.01),MAT.steel,0,HY+.36,R0-.05,false));const plat=new THREE.Group();g.add(plat);plat.position.set(0,HY,R0);
+ plat.add(mesh(rbox(1.25,.04,.62,.015),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(1.25,.12,.012),MAT.yellow,0,.06,.31,false));
+ const cab=[];for(const sx of[-.58,.58]){const c=mesh(cyl(.006,.006,1,4),MAT.dark,sx,0,R0-.05,false);g.add(c);cab.push(c);}
+ unloads.push({...o,g,plat,hatch,lit,cab,HY,R0,dx,dz,ph:'open',t:0,pay:null,i:0});}
+function unloadPayload(u,it){const p=new THREE.Group();u.plat.add(p);if(it.k==='crew'){for(let i=0;i<it.n;i++){const a=astro(cid+i);a.scale.setScalar(1.25);a.position.set((i-(it.n-1)/2)*.32,.02,0);a.rotation.y=0;p.add(a);}}
+ else if(it.k==='bot'){const b=optimus();b.position.y=.02;p.add(b);}else if(it.k==='truck'){const t=truckModel();t.rotation.y=Math.PI/2;t.position.y=.02;p.add(t);}
+ else{for(let i=0;i<3;i++)p.add(mesh(rbox(.26,.2,.26,.02),M(0x9a6a3a,.8),(i-1)*.3,.12,0));}return p;}
+function landItem(u,it){const ox=u.cx+u.dx*u.R0,oz=u.cz+u.dz*u.R0,gx=u.cx+u.dx*(u.R0+.9),gz=u.cz+u.dz*(u.R0+.9);const tx=-u.dz,tz=u.dx;
+ if(it.k==='crew'){for(let i=0;i<it.n;i++){const c=newCol();c.spawn=u.sid;if(S.crewPending)S.crewPending--;syncAgents();const a=agents.get(c.id);if(a){const off=(i-(it.n-1)/2)*.32;a.m.position.set(ox+tx*off,u.gy+.02,oz+tz*off);a.m.visible=true;a.st='out';a.at=u.sid;a.gp=new THREE.Vector3(gx+tx*off*1.6+(Math.random()-.5)*.3,0,gz+tz*off*1.6+(Math.random()-.5)*.3);}}assign();}
+ else if(it.k==='bot'){S.botsLanded=(S.botsLanded||0)+1;syncBots();const t=bots[bots.length-1];if(t){t.m.position.set(ox,u.gy,oz);t.m.rotation.y=Math.atan2(u.dx,u.dz);t.st='idle';t.wait=1.5;}if(!S.demo)toast('🤖 An Optimus robot stepped off the cargo lift');}
+ else if(it.k==='truck'){S.truckIn=1;syncTrucks();const t=trucks[trucks.length-1];if(t){t.m.position.set(ox,u.gy,oz);t.m.rotation.y=Math.atan2(u.dx,u.dz);t.wait=2;}if(!S.demo)toast('🛻 The Cybertruck was lowered from the cargo bay');}
+ else{S.mat+=it.mat;if(!S.demo)floatText(`+${it.mat} 🧱`);}}
+function finishUnload(u){for(;u.i<u.items.length;u.i++)landItem(u,u.items[u.i]);u.done=1;}
+function tickUnloads(dt){unloads=unloads.filter(u=>{if(u.done||!S.b.some(b=>b.id===u.sid)){if(!u.done)finishUnload(u);scene.remove(u.g);return false;}u.t+=dt;const p=u.plat;
+ const setCab=()=>u.cab.forEach(c=>{const L=Math.max(.01,u.HY+.36-p.position.y);c.scale.y=L;c.position.y=p.position.y+L/2;});
+ if(u.ph==='open'){const k=Math.min(1,u.t/.7);u.hatch.scale.y=1-k*.95;u.hatch.position.y=u.HY+.12+k*.2;u.lit.visible=k>.3;if(k>=1){u.ph='load';u.t=0;}}
+ else if(u.ph==='load'){if(u.i>=u.items.length){u.ph='close';u.t=0;}else{u.pay=unloadPayload(u,u.items[u.i]);u.ph='down';u.t=0;}}
+ else if(u.ph==='down'){p.position.y=Math.max(0,p.position.y-dt*1.3);if(p.position.y<=0){u.ph='off';u.t=0;}}
+ else if(u.ph==='off'){if(u.t>.35){p.remove(u.pay);u.pay=null;landItem(u,u.items[u.i]);u.i++;u.ph='up';u.t=0;}}
+ else if(u.ph==='up'){p.position.y=Math.min(u.HY,p.position.y+dt*1.6);if(p.position.y>=u.HY){u.ph='load';u.t=0;}}
+ else if(u.ph==='close'){const k=Math.min(1,u.t/.7);u.hatch.scale.y=.05+k*.95;u.hatch.position.y=u.HY+.32-k*.2;u.lit.visible=k<.7;if(k>=1){if(u.onDone)u.onDone();scene.remove(u.g);return false;}}
+ setCab();return true;});}
 // ---------- astronaut agents
 let agents=new Map();const MAXA=90;
 function syncAgents(){const want=new Set(S.cols.slice(0,MAXA).map(c=>c.id));agents.forEach((a,id)=>{if(!want.has(id)){scene.remove(a.m);agents.delete(id);}});
@@ -425,10 +455,11 @@ function edgeTo(b,o){const c=bc(b),dx=o.x-c.x,dz=o.z-c.z,l=Math.hypot(dx,dz)||1,
 function edgePos(b,door){const c=bc(b);return new THREE.Vector3((c.x+door.x+.5)/2,0,(c.z+door.z+.5)/2);}
 function leisure(){const l=S.b.filter(b=>b.door&&(b.t==='ent'||b.t==='farm'||b.t==='bigfarm'||b.t==='med'||b.t==='pad'));return l.length?l[Math.random()*l.length|0]:null;}
 function tickAgents(dt){agents.forEach(a=>{const u=a.m.userData,c=a.c;
- if(a.st==='in'){a.m.visible=false;a.wait-=dt;if(a.wait>0)return;const at=a.at&&byId(a.at);const home=c.home&&byId(c.home);if(!at){a.at=c.home;a.wait=3;return;}
+ if(a.st==='out'){const p=a.m.position,vx=a.gp.x-p.x,vz=a.gp.z-p.z,d=Math.hypot(vx,vz),sp=.6*dt;if(d<=sp){a.st='in';a.wait=1.5+Math.random()*2.5;limbs(u,0);}else{p.x+=vx/d*sp;p.z+=vz/d*sp;a.m.rotation.y=Math.atan2(vx,vz);u.ph+=dt*9;limbs(u,1);p.y=hgt(p.x,p.z)+.02;}return;}
+ if(a.st==='in'){a.m.visible=!!a.gp;a.wait-=dt;if(a.wait>0)return;const at=a.at&&byId(a.at);const home=c.home&&byId(c.home);if(!at){a.at=c.home;a.wait=3;return;}
   let dest=at.id!==c.home?home:(c.work&&c.work!==c.home&&Math.random()<.8?byId(c.work):leisure());if(!dest||dest===at||(dest.cons>0)){a.wait=4+Math.random()*4;return;}
   const p=at.door&&dest.door?astar(at.door,dest.door,walk):null;const ca=bc(at),cd=bc(dest);if(!p&&Math.hypot(ca.x-cd.x,ca.z-cd.z)>30){a.wait=6;return;}
-  a.path=p||[];a.pi=0;a.dest=dest.id;a.st='walk';const e=p?edgePos(at,at.door):edgeTo(at,cd);a.m.position.set(e.x,hgt(e.x,e.z),e.z);a.m.visible=true;a.endp=p?edgePos(dest,dest.door):edgeTo(dest,ca);return;}
+  a.path=p||[];a.pi=0;a.dest=dest.id;a.st='walk';let e=p?edgePos(at,at.door):edgeTo(at,cd);if(a.gp){if(!p)e=a.gp;delete a.gp;}a.m.position.set(e.x,hgt(e.x,e.z),e.z);a.m.visible=true;a.endp=p?edgePos(dest,dest.door):edgeTo(dest,ca);return;}
  const last=a.pi>=a.path.length;let tx,tz;if(last){tx=a.endp.x;tz=a.endp.z;}else{const n=a.path[a.pi];if(!walk(n.x,n.z)){a.path=[];a.pi=0;return;}
   const prv=a.pi>0?a.path[a.pi-1]:n,nx=a.path[a.pi+1]||n;let dx=nx.x-prv.x,dz=nx.z-prv.z;const l=Math.hypot(dx,dz)||1;tx=n.x+.5-dz/l*a.off;tz=n.z+.5+dx/l*a.off;}
  const p=a.m.position,vx=tx-p.x,vz=tz-p.z,d=Math.hypot(vx,vz),sp=.75*dt;
@@ -443,12 +474,12 @@ function truckModel(){const g=new THREE.Group();const sh=new THREE.Shape();sh.mo
  const wg=cyl(.075,.075,.06,12);wg.rotateZ(Math.PI/2);[[.17,.3],[-.17,.3],[.17,-.29],[-.17,-.29]].forEach(([x,z])=>g.add(mesh(wg,MAT.dark,x,.075,z,false)));
  g.add(mesh(new THREE.BoxGeometry(.34,.012,.012),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:2}),0,.17,.475,false));
  g.add(mesh(new THREE.BoxGeometry(.34,.012,.012),new THREE.MeshStandardMaterial({color:0xff2020,emissive:0xff2020,emissiveIntensity:1.5}),0,.2,-.465,false));
- const cr=mesh(rbox(.26,.1,.3,.02),M(0x9a6a3a,.8),0,.27,-.22,false);cr.name='crate';cr.visible=false;g.add(cr);g.scale.setScalar(.85);return g;}
+ const cr=mesh(rbox(.26,.1,.3,.02),M(0x9a6a3a,.8),0,.27,-.22,false);cr.name='crate';cr.visible=false;g.add(cr);g.scale.setScalar(1.35);return g;}
 // Cybertrucks drive freely over the terrain (no roads), steering around buildings.
 const TRUCKSRC=['proc','pad','ship'];
 function nearestB(list,p){let best=null,bd=1e9;list.forEach(b=>{const c=bc(b),d=Math.hypot(c.x-p.x,c.z-p.z);if(d<bd){bd=d;best=b;}});return best;}
 function syncTrucks(){const procs=S.b.filter(b=>b.t==='proc').length,pads=S.b.filter(b=>b.t==='pad').length,ships=S.b.some(b=>b.t==='ship');
- const want=Math.min(8,(ships||pads?1:0)+procs*2+pads);while(trucks.length>want)scene.remove(trucks.pop().m);
+ const want=Math.min(8,((ships||pads)&&S.truckIn!==0?1:0)+procs*2+pads);while(trucks.length>want)scene.remove(trucks.pop().m);
  while(trucks.length<want){const home=S.b.find(b=>b.t==='proc')||S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship');if(!home)break;const c=bc(home);const m=truckModel();
   const a=Math.random()*6.28,r=B[home.t].s*.5+.7;m.position.set(c.x+Math.cos(a)*r,0,c.z+Math.sin(a)*r);m.rotation.y=a;scene.add(m);trucks.push({m,st:'idle',wait:Math.random()*2,load:0});}}
 function clearAt(x,z,t){if(x<0||z<0||x>=N||z>=N)return false;const o=occ[x|0]?.[z|0];return!o||o===t.src||o===t.dst||isDeco(o.t);}
@@ -664,7 +695,7 @@ const keys={};addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')retur
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 $('rotL').onclick=()=>rotT-=Math.PI/2;$('rotR').onclick=()=>rotT+=Math.PI/2;
 document.querySelectorAll('#ctl [data-s]').forEach(b=>b.onclick=()=>{speed=+b.dataset.s;document.querySelectorAll('#ctl [data-s]').forEach(x=>x.classList.toggle('on',x===b));});
-function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending'].forEach(k=>d[k]=S[k]);
+function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','truckIn'].forEach(k=>d[k]=S[k]);
  d.b=S.b.map(({id,t,x,z,lvl,name,timer,hold,stock})=>({id,t,x,z,lvl,name,timer,hold,stock}));d.pop=S.cols.length;localStorage.setItem('marsOutpost',JSON.stringify(d));}
 $('mktb').onclick=()=>openM();$('save').onclick=()=>{save();toast('💾 Saved');};$('newg').onclick=()=>{save();showTitle();};
 $('buildb').onclick=()=>setMenu(!menuOpen);$('mclose').onclick=()=>setMenu(false);
@@ -676,20 +707,23 @@ function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const b
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
   if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
    const room=st.house-S.cols.length;const want=Math.round((TUNE.SHIP_CREW[0]+Math.random()*(TUNE.SHIP_CREW[1]-TUNE.SHIP_CREW[0]))*(S.hap/100+.3)*(1+S.cols.length/60));const n=Math.max(0,Math.min(room,want));
-   for(let i=0;i<n;i++){const c=newCol();c.spawn=b.id;}assign();const mats=TUNE.SHIP_MAT+S.order;S.mat+=mats;const ord=S.order;S.order=0;
-   if(!S.demo){toast(`🚀 Supply ship landed at ${b.name}: ${n?n+' crew':'no crew (need housing!)'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
- else if(sh.ph==='ground'){sh.stay-=dt;if(sh.stay<=0){const h=sh.hold;S.fuel+=h.fuel;S.mat+=h.mat;S.ore+=h.ore;S.rare+=h.rare;sh.ph='up';sh.t=0;if(!S.demo)toast(`🛫 Supply ship left ${b.name} empty — refuel ships for return-flight income`);if(panel&&panel.b===b)renderPanel(true);}}
+   const mats=TUNE.SHIP_MAT+S.order;const ord=S.order;S.order=0;{const items=[];for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});items.push({k:'cargo',mat:mats});startUnload({sid:b.id,cx,cz,gy:base,items,pad:1});sh.unl=unloads[unloads.length-1];}
+   if(!S.demo){toast(`🚀 Supply ship landed at ${b.name} — unloading ${n?n+' crew':'no crew (need housing!)'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
+ else if(sh.ph==='ground'){sh.stay-=dt;if(sh.stay<=0){if(sh.unl&&!sh.unl.done)finishUnload(sh.unl);const h=sh.hold;S.fuel+=h.fuel;S.mat+=h.mat;S.ore+=h.ore;S.rare+=h.rare;sh.ph='up';sh.t=0;if(!S.demo)toast(`🛫 Supply ship left ${b.name} empty — refuel ships for return-flight income`);if(panel&&panel.b===b)renderPanel(true);}}
  else{if(!sh.lift){sh.lift=1;dust(cx,cz,base,10);if(!S.demo)rumble(3,.25);}pose(m,Math.pow(sh.t,2)*1.6,0);m.position.y+=base;setFire(m,true);fl.scale.y=1.5+Math.random();if(sh.t>4.5){scene.remove(m);b.ship=null;b.timer=shipInterval(b);}}}
 // ---------- opening: Starships land on the soil
 const SHIP_SPOTS=[[44,44],[47,42],[50,44],[42,47],[52,47]];
 function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
  rk.visible=true;if(!L.r){L.r=1;if(!S.demo)rumble(6,.15);}const P=L.P||PADL;const r=landPose(rk,L.t,P);const b=byId(id);if(b&&r.ph===2&&r.y<6){L.dT=(L.dT||0)-dt;if(L.dT<=0){L.dT=.3;dust(b.x+1,b.z+1,0,r.y<1.5?12:6);if(!L.r2&&r.y<2){L.r2=1;if(!S.demo)rumble(4,.12);}}}
  if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;}});
- if(!any&&S.crewPending){const ships=S.b.filter(b=>b.t==='ship');for(let i=0;i<S.crewPending;i++){const c=newCol();c.spawn=ships[i%ships.length]?.id;}S.crewPending=0;assign();if(!S.tut)toast(`👩‍🚀 ${TUNE.START_CREW} crew stepped onto Mars!`);}}
+ if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2||!S.truckIn)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
+  ships.forEach((b,i)=>{const items=[];const n=Math.ceil(crew/(ships.length-i));crew-=n;for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(bq>0){items.push({k:'bot'});bq--;}if(i===0&&!S.truckIn)items.push({k:'truck'});
+   if(i===ships.length-1)while(bq-->0)items.push({k:'bot'});if(items.length)startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items,onDone:()=>{if(!S.crewPending&&!unloads.some(u=>u.sid!==b.id&&!u.done)&&!S.tut)toast(`👩‍🚀 Your crew is on the surface. Welcome to Mars!`);}});});
+  if(!S.tut)toast('🚪 Cargo lifts lowering — the crew is disembarking');}}
 // ---------- tutorial (the early game, told as a story)
 const has=k=>S.b.some(b=>b.t===k&&!(b.cons>0));
 const TUT=[
- {t:'Touchdown!',x:`${TUNE.START_SHIPS} Starships just landed on the Martian soil carrying your ${TUNE.START_CREW} crew plus the start kit: your money and 🧱 materials. Their reactors power the camp for now.`,done:()=>!S.crewPending&&S.tut.t>3},
+ {t:'Touchdown!',x:`${TUNE.START_SHIPS} Starships just landed on the Martian soil carrying your ${TUNE.START_CREW} crew plus the start kit: your money and 🧱 materials. Their onboard power systems run the camp for now. Watch the cargo lifts bring everyone down.`,done:()=>!S.crewPending&&S.tut.t>3},
  {t:'Home sweet dome',x:'Your crew is living in cramped ships. Place your first 🏠 Habitat near them (Build tab) and they\'ll move in.',k:'hab',done:()=>has('hab')},
  {t:'Paths are free',x:'Open the 🚶 Paths tab and drag a path from the ships to the habitat. Anything within 2 tiles of a path counts as connected.',k:'path',tab:'p',done:()=>S.b.some(b=>b.t==='hab'&&b.door)&&S.b.some(b=>b.t==='ship'&&b.door)},
  {t:'Hungry crew',x:'The ration packs won\'t last forever. Build a 🌱 Farm Dome next to your path.',k:'farm',done:()=>has('farm')},
@@ -758,20 +792,20 @@ function loop(now){const rdt=Math.min(.1,(now-last)/1000);last=now;
  const kp=8*zoom/14*rdt*40;if(!S||S.demo)keys.w=keys.a=keys.s=keys.d=0;if(keys.w||keys.arrowup)pan(0,-kp);if(keys.s||keys.arrowdown)pan(0,kp);if(keys.a||keys.arrowleft)pan(-kp,0);if(keys.d||keys.arrowright)pan(kp,0);
  if(S&&S.demo){rot+=rdt*.06;rotT=rot;camUp();}
  if(S){if(intro)tickIntro(rdt);const dt=rdt*(S.demo?1:(intro?1:speed));tickPuffs(dt);let st=dt?sim(dt):stats();if(S.demo){S.food=S.wat=50;S.hap=90;}
-  acc+=rdt;if(acc>.5){hud(st);syncAgents();renderPanel();renderTut();acc=0;}if(pathsDirty)rebuildPaths();if(dt){tickAgents(dt);tickTrucks(dt);tickBots(dt);tickFlyers(dt);tickLandings(dt);}if(tutArrow.visible)tutArrow.position.y=1.6+Math.abs(Math.sin(performance.now()/300))*.35;
+  acc+=rdt;if(acc>.5){hud(st);syncAgents();renderPanel();renderTut();acc=0;}if(pathsDirty)rebuildPaths();if(dt){tickAgents(dt);tickTrucks(dt);tickBots(dt);tickUnloads(dt);tickFlyers(dt);tickLandings(dt);}if(tutArrow.visible)tutArrow.position.y=1.6+Math.abs(Math.sin(performance.now()/300))*.35;
   if(follow){if(!follow.m.visible&&follow.st!=='walk'){}else{tgt.lerp(new THREE.Vector3(follow.m.position.x,0,follow.m.position.z),Math.min(1,rdt*4));camUp();}}
   const T=performance.now()/1000;objs.forEach(o=>{if(o.userData.grow!==undefined){o.userData.grow+=rdt*3;o.scale.y=Math.min(1,o.userData.grow);if(o.userData.grow>=1){o.scale.y=1;delete o.userData.grow;}}
    if(!speed&&!S.demo)return;let A=o.userData.anim;if(!A||A.n!==o.children.length){A=o.userData.anim={n:o.children.length,sp:o.getObjectByName('spin'),cl:o.getObjectByName('cloth'),stm:o.getObjectByName('steam'),fl:o.getObjectByName('flare')};}
    if(A.sp)A.sp.rotation.y+=rdt*2;if(A.cl)A.cl.rotation.y=Math.sin(T*3+o.id)*.25;if(A.stm)A.stm.scale.setScalar(1+.3*Math.sin(T*2));if(A.fl)A.fl.scale.y=.8+Math.random()*.5;});
   dayNight();saveT+=rdt;if(saveT>20&&!S.demo){save();saveT=0;}}
- R.render(scene,cam);perfTick(rdt);requestAnimationFrame(loop);}
+ R.render(scene,window.__camOverride||cam);perfTick(rdt);requestAnimationFrame(loop);}
 let pfT=0,pfN=0,pfLow=0;function perfTick(dt){pfT+=dt;pfN++;if(pfT>4){const f=pfN/pfT;pfT=pfN=0;if(f<28&&pfLow<2){pfLow++;if(pfLow===1)R.setPixelRatio(1);else{sun.shadow.mapSize.set(1024,1024);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}}}
 // ---------- setup / title
-function clearAll(){if(typeof intro!=='undefined'&&intro){intro=null;document.body.classList.remove('intro');const k=document.getElementById('skipintro');if(k)k.style.display='none';}objs.forEach(o=>scene.remove(o));objs.clear();S&&S.b.forEach(b=>b.ship&&scene.remove(b.ship.m));agents.forEach(a=>scene.remove(a.m));agents.clear();trucks.forEach(t=>scene.remove(t.m));trucks=[];bots.forEach(t=>scene.remove(t.m));bots=[];
+function clearAll(){if(typeof intro!=='undefined'&&intro){intro=null;document.body.classList.remove('intro');const k=document.getElementById('skipintro');if(k)k.style.display='none';}objs.forEach(o=>scene.remove(o));objs.clear();S&&S.b.forEach(b=>b.ship&&scene.remove(b.ship.m));agents.forEach(a=>scene.remove(a.m));agents.clear();trucks.forEach(t=>scene.remove(t.m));trucks=[];bots.forEach(t=>scene.remove(t.m));bots=[];unloads.forEach(u=>scene.remove(u.g));unloads=[];
  puffs.forEach(p=>scene.remove(p));puffs=[];if(pathMesh){scene.remove(pathMesh);pathMesh=null;}closePanel();}
 function roadsLine(x0,z0,x1,z1,t){x0+=OFF;z0+=OFF;x1+=OFF;z1+=OFF;line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>{S.tiles[TK(x,z)]=t;});}
 function seedCols(n){for(let i=0;i<n;i++)newCol();assign();}
-function demo(){clearAll();S=fresh();S.demo=1;uid=1;cid=1;rebuildOcc();
+function demo(){clearAll();S=fresh();S.demo=1;S.truckIn=1;S.botsLanded=2;uid=1;cid=1;rebuildOcc();
  roadsLine(14,24,34,24,1);roadsLine(24,15,24,33,1);roadsLine(21,25,21,28,1);roadsLine(18,28,23,28,1);roadsLine(27,26,27,30,1);
  [['pad',20,22],['pad',28,25],['hab',22,23],['hab',22,25],['hab',25,23],['mega',30,22],['solar',16,23],['solar',17,23],['solar',16,25],['solar',17,25],['farm',19,25],['farm',20,25],['bigfarm',25,20],
   ['ice',23,27],['ice',25,27],['fuel',23,29],['refin',25,29],['ent',25,17],['reactor',21,19],['med',22,26],['mine',27,19],['mine',28,21],['proc',29,17],['wtank',23,19],['battery',18,23],['solar',16,21],['ship',30,26],['bench',20,27],['planter',22,27],['flag',23,22],['sign',26,25],['planter',19,23],['waste',26,31]
@@ -784,8 +818,8 @@ function migrate4(d){if(d.v>=5)return d;const t={};for(const k in d.tiles||{})t[
  d.b=(d.b||[]).filter(b=>B[b.t]&&b.t!=='lamp');d.mat=(d.mat||0)+300+d.b.length*6;d.ore=d.ore||0;d.rare=d.rare||0;d.bat=0;d.mkt={mat:1,ore:1,rare:1};d.mktPrev={...d.mkt};d.order=0;d.flights=[];d.tut=null;
  d.lastSol=Math.floor((d.t||0)/DAY);d.v=5;d.up4={lamps,roads:Object.keys(t).length};return d;}
 function start(load,skipTut){clearAll();uid=1;cid=1;const sv=load&&localStorage.getItem('marsOutpost');
- if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
-  d.b.forEach(b=>{rebuildOcc();addB(b.t,b.x,b.z,1,b);});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🛣️ paths & roads',1);S.cr+=0;}
+ if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;if(d.truckIn===undefined)S.truckIn=1;S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
+  d.b.forEach(b=>{rebuildOcc();addB(b.t,b.x,b.z,1,b);});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
  else{S=fresh(selDiff,($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
@@ -819,3 +853,5 @@ window.__B=B;
 function dockSync(){const d=$('dock');if(!d)return;document.documentElement.style.setProperty('--dockH',d.offsetHeight+'px');}
 addEventListener('resize',dockSync);setInterval(dockSync,500);
 Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;
+
+window.__R=R;Object.defineProperty(window,'__unloads',{get:()=>unloads});
