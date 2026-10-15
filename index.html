@@ -107,6 +107,36 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 body.intro #toasts{opacity:0}body.intro #ui{opacity:0;pointer-events:none;transition:opacity .4s}#ui{transition:opacity .6s}
 #skipintro{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:60;padding:10px 16px;border-radius:10px;border:2px solid #ffb347;background:rgba(40,20,12,.8);color:#fff;font:600 15px system-ui;cursor:pointer}
 body.intro::after{content:'Tap anywhere to skip';position:fixed;left:0;right:0;top:calc(14px + env(safe-area-inset-top));text-align:center;color:#fff;font:600 13px system-ui;opacity:.75;text-shadow:0 1px 3px #000;pointer-events:none;z-index:59}
+/* v12 colony levels */
+#toasts{top:var(--lvB,48px)!important}
+.r.lv{background:linear-gradient(180deg,#5a1f08,#2a0c03);border:1px solid #ffd166;color:#ffe14a;font-weight:700;cursor:pointer;pointer-events:auto}
+.r.lv .lvpb{display:inline-block;width:44px;height:6px;background:#2a1208;border:1px solid #7a3a1a;margin-left:5px;vertical-align:middle}
+.r.lv .lvpb i{display:block;height:100%;background:linear-gradient(90deg,#e77d11,#ffd166)}
+#lvl{position:fixed;left:8px;top:48px;width:270px;z-index:3;background:rgba(30,8,2,.92);border:2px solid #e77d11;box-shadow:0 0 0 2px #2a0c03,0 0 16px rgba(231,125,17,.45);font-size:12.5px;line-height:1.35;color:#f6e3c5;image-rendering:pixelated}
+#lvl .lvh{display:flex;align-items:center;gap:7px;padding:6px 8px;cursor:pointer;user-select:none}
+#lvl .lvn{font-family:'Press Start 2P',monospace;font-size:9px;color:#2a0c03;background:#ffd166;padding:3px 5px;box-shadow:2px 2px 0 #c1440e}
+#lvl .lvt{font-family:'Press Start 2P',monospace;font-size:8.5px;color:#ffd166;flex:1;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lvl .lvc{font-size:11px;color:#f6c;color:#fda600}
+#lvl .lvbar{height:6px;margin:0 8px 6px;background:#1a0602;border:1px solid #7a3a1a}
+#lvl .lvbar i{display:block;height:100%;background:repeating-linear-gradient(90deg,#e77d11 0 6px,#fda600 6px 12px);transition:width .4s}
+#lvl .lvb{padding:0 8px 7px}
+#lvl .g{display:flex;gap:6px;padding:2px 0;align-items:baseline}#lvl .g .gt{flex:1}#lvl .g .gv{color:#fda600;font-variant-numeric:tabular-nums}
+#lvl .g.ok .gt{opacity:.6;text-decoration:line-through}
+#lvl .lvf{margin-top:5px;padding-top:5px;border-top:1px dashed #7a3a1a;font-size:11px;opacity:.85}
+#lvl:not(.open){width:auto}
+@media(max-width:700px){#lvl{left:auto;right:6px;width:min(64vw,250px);font-size:11px;max-height:34dvh;overflow:auto}#lvl:not(.open){width:auto;max-width:56vw}#lvl .lvh{padding:4px 6px}
+ body.menuopen #lvl.open .lvb,body.pan #lvl.open .lvb{display:none}}
+#lvup{display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(40,10,0,.35),rgba(0,0,0,.55))}
+#lvup canvas{position:absolute;inset:0;pointer-events:none}
+#lvup .card{position:relative;pointer-events:auto;text-align:center;background:linear-gradient(180deg,#3a1206,#1a0602);border:3px solid #ffd166;box-shadow:0 0 0 4px #c1440e,0 0 40px rgba(253,166,0,.6);padding:18px 22px;min-width:min(320px,86vw);max-width:90vw;animation:lvpop .5s cubic-bezier(.2,1.6,.4,1)}
+#lvup .k1{font-family:'Press Start 2P',monospace;font-size:20px;color:#ffe14a;text-shadow:3px 3px 0 #c1440e,6px 6px 0 #3a0a0a;letter-spacing:2px;animation:lvblink .6s steps(2) 4}
+#lvup .big{font-family:'Press Start 2P',monospace;font-size:28px;color:#fff;margin:12px 0 6px;text-shadow:3px 3px 0 #e77d11}
+#lvup .nm{font-family:'Press Start 2P',monospace;font-size:11px;color:#fda600;letter-spacing:1px}
+#lvup .un{margin:14px auto 4px;padding:8px 10px;background:rgba(0,0,0,.35);border:1px dashed #e77d11;font-size:14px;line-height:1.6;max-width:300px}
+#lvup .un .h{font-family:'Press Start 2P',monospace;font-size:8px;color:#3ff3ff;margin-bottom:4px}
+#lvup .nx{margin-top:10px;font-size:13px;color:#f6e3c5}
+#lvup button{margin-top:14px;font-family:'Press Start 2P',monospace;font-size:11px;background:#c1440e;color:#ffe14a;border:2px solid #ffd166;padding:9px 16px;cursor:pointer;box-shadow:3px 3px 0 #2a0c03}
+@keyframes lvpop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes lvblink{50%{opacity:.35}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>

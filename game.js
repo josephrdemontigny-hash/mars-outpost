@@ -52,7 +52,7 @@ const B={
 for(const k in B){B[k].s=B[k].s||1;B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
-function fresh(diff='standard',name='Olympus Base'){return{v:6,botsLanded:0,ship2:'pending',ship2T:240,lastLandT:-999,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
+function fresh(diff='standard',name='Olympus Base'){return{v:6,lvl:1,lvBase:{},botsLanded:0,ship2:'done',ship2T:240,lastLandT:-999,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],tf:0,
  mkt:{mat:1,ore:1,rare:1},mktPrev:{mat:1,ore:1,rare:1},order:0,flights:[],tut:null,lastSol:0};}
 const FIRST=['Ava','Leo','Maya','Kai','Zara','Omar','Lena','Theo','Nia','Ravi','Iris','Jonas','Sofia','Mateo','Yuki','Amara','Felix','Priya','Hugo','Elena','Dev','Ingrid','Tariq','Lucia','Arjun','Freya','Malik','Chloe','Kenji','Noor','Elias','Hana','Diego','Mila','Sven','Aisha','Bruno','Tessa','Rohan','Juno'];
 const LAST=['Okafor','Nakamura','Silva','Novak','Haddad','Larsen','Chen','Reyes','Kowalski','Patel','Moreau','Ivanova','Mensah','Fischer','Tanaka','Duarte','Bjork','Rahman','Costa','Lindqvist','Abara','Kim','Volkov','Murphy','Santos','Oyelaran','Weiss','Quinn','Aldana','Petrov','Hart','Sato','Nkemelu','Ruiz','Varga','Steele','Ito','Mbeki','Laurent','Gale'];
@@ -133,19 +133,32 @@ function habDome(g,x,z,r){g.add(mesh(dome(r),MAT.white,x,0,z));g.add(mesh(torus(
 function modelNew(t,lvl=1){const g=new THREE.Group(),s=B[t].s,h=s/2,L=lvl;
  if(t==='pad'){g.add(mesh(cyl(.95,1,.1,32),MAT.concrete,1,.03,1));g.add(mesh(torus(.62,.03,32),MAT.yellow,1,.09,1,false));g.add(mesh(cyl(.5,.5,.005,32),M(0x6a6560,.95),1,.085,1,false));
   for(let i=0;i<6;i++){const a=i/6*6.28;g.add(mesh(new THREE.SphereGeometry(.035,8,6),lampMat,1+Math.cos(a)*.88,.1,1+Math.sin(a)*.88,false));}}
- else if(t==='hab'){habDome(g,.5,.5,.33);if(L>=2){habDome(g,.22,.2,.2);g.add(mesh(new THREE.CylinderGeometry(.05,.05,.3,10).rotateZ(Math.PI/2).rotateY(-.8),MAT.white,.36,.06,.34));}
-  if(L>=3){habDome(g,.78,.22,.18);g.add(mesh(cyl(.01,.01,.35,6),MAT.dark,.5,.45,.5,false));g.add(mesh(new THREE.SphereGeometry(.03,8,6),MAT.red,.5,.63,.5,false));}}
+ else if(t==='hab'&&L<=1){const ax=.6,ca=Math.cos(ax),sa=Math.sin(ax);g.add(mesh(new THREE.CapsuleGeometry(.17,.36,6,16).rotateZ(Math.PI/2).rotateY(ax),MAT.white,.5,.19,.5));
+  for(let i=-1;i<=1;i++){const r=mesh(new THREE.TorusGeometry(.174,.013,8,20),MAT.dark,.5+ca*i*.14,.19,.5-sa*i*.14,false);r.rotation.y=ax+Math.PI/2;g.add(r);}
+  g.add(mesh(cyl(.075,.075,.12,12).rotateZ(Math.PI/2).rotateY(ax),MAT.steel,.5+ca*.4,.12,.5-sa*.4));[-.07,.07].forEach(d=>{const w=mesh(new THREE.BoxGeometry(.07,.05,.02),winMat,.5+ca*d+sa*.165,.24,.5-sa*d+ca*.165,false);w.rotation.y=ax;g.add(w);});
+  g.add(mesh(new THREE.SphereGeometry(.07,10,8),MAT.white,.2,.07,.78));g.add(mesh(cyl(.008,.008,.3,5),MAT.dark,.62,.48,.42,false));}
+ else if(t==='hab'&&L===2){g.add(mesh(cyl(.3,.32,.34,22),MAT.white,.5,.17,.5));g.add(mesh(torus(.312,.02,24),winMat,.5,.22,.5,false));g.add(mesh(torus(.31,.016,24),MAT.dark,.5,.345,.5,false));
+  g.add(mesh(cyl(.23,.25,.24,22),MAT.white,.5,.46,.5));g.add(mesh(torus(.242,.018,24),winMat,.5,.5,.5,false));g.add(mesh(dome(.23,20),MAT.white,.5,.58,.5));
+  g.add(mesh(new THREE.BoxGeometry(.03,.6,.05),MAT.steel,.83,.3,.5));g.add(mesh(cyl(.008,.008,.3,5),MAT.dark,.5,.9,.5,false));g.add(mesh(new THREE.SphereGeometry(.025,8,6),MAT.red,.5,1.05,.5,false));}
+ else if(t==='hab'){habDome(g,.5,.5,.37);if(L>=3){habDome(g,.2,.2,.2);g.add(mesh(new THREE.CylinderGeometry(.05,.05,.3,10).rotateZ(Math.PI/2).rotateY(-.8),MAT.white,.36,.06,.34));}
+  if(L>=3){habDome(g,.8,.22,.18);g.add(mesh(cyl(.01,.01,.35,6),MAT.dark,.5,.5,.5,false));g.add(mesh(new THREE.SphereGeometry(.03,8,6),MAT.red,.5,.68,.5,false));}
+  if(L>=4){habDome(g,.22,.8,.17);g.add(mesh(cyl(.13,.15,.08,18),MAT.white,.5,.36,.5));g.add(mesh(torus(.14,.012,18),winMat,.5,.38,.5,false));}if(L>=5)habDome(g,.8,.8,.15);}
  else if(t==='mega'){const tw=[[.55,.6],[1.4,.6],[1,1.4]];tw.forEach(([x,z],i)=>{const H=(1.1+i*.4)*(1+.3*(L-1));g.add(mesh(cyl(.3,.36,H,20),MAT.white,x,H/2,z));
    for(let k=1;k<H/.22;k++)g.add(mesh(torus(.305+.06*(1-k*.22/H),.012,20),winMat,x,k*.22,z,false));g.add(mesh(dome(.3),glass,x,H,z,false));});
   g.add(mesh(new THREE.CylinderGeometry(.05,.05,.9,8).rotateZ(Math.PI/2),glass,.97,.7,.6,false));g.add(mesh(torus(.95,.03,32),MAT.concrete,1,.01,1,false));}
- else if(t==='solar'){const rows=1+L;for(let i=0;i<rows;i++){const z=.5+(i-(rows-1)/2)*(.8/rows);const p=mesh(rbox(.8,.025,.8/rows*.85,.01),MAT.panel,.5,.32,z);p.rotation.x=-.45;g.add(p);
-  g.add(mesh(cyl(.018,.025,.3,8),MAT.steel,.5,.15,z));}}
- else if(t==='farm'||t==='bigfarm'){const r=(s===2?.88:.4)*(L>=2?1.06:1);g.add(mesh(cyl(r,r,.02,28),MAT.soil,h,.01,h,false));plants(g,h,h,r*.85,s===2?40+L*12:9+L*4,s===2?.22:.12);
+ else if(t==='solar'){const rows=1+L;for(let i=0;i<rows;i++){const z=.5+(i-(rows-1)/2)*(.8/rows);const p=mesh(rbox(L>=3?.96:.8,.025,.8/rows*.85,.01),MAT.panel,.5,L>=3?.4:.32,z);p.rotation.x=-.45;g.add(p);
+  g.add(mesh(cyl(.018,.025,L>=3?.4:.3,8),MAT.steel,.5,L>=3?.2:.15,z));}if(L>=3)g.add(mesh(rbox(.12,.12,.1,.01),MAT.white,.92,.06,.08));}
+ else if(t==='farm'&&L<=1){g.add(mesh(rbox(.8,.02,.5,.01),MAT.soil,.5,.01,.5,false));plants(g,.5,.5,.22,8,.1);
+  g.add(mesh(new THREE.CylinderGeometry(.25,.25,.72,18,1,true,0,Math.PI).rotateZ(Math.PI/2),glass,.5,.01,.5,false));
+  for(let i=0;i<4;i++){const r=mesh(new THREE.TorusGeometry(.25,.012,6,16,Math.PI),MAT.steel,.15+i*.233,.01,.5,false);r.rotation.y=Math.PI/2;g.add(r);}
+  g.add(mesh(new THREE.BoxGeometry(.08,.08,.08),MAT.white,.9,.04,.84));}
+ else if(t==='farm'||t==='bigfarm'){const r=(s===2?.88:L>=3?.47:.4)*(L>=2&&s===2?1.06:1);if(s===1&&L>=3){g.add(mesh(cyl(.06,.06,.5,10),glass,.9,.25,.1));g.add(mesh(dome(.06,10),MAT.white,.9,.5,.1,false));}g.add(mesh(cyl(r,r,.02,28),MAT.soil,h,.01,h,false));plants(g,h,h,r*.85,s===2?40+L*12:9+L*4,s===2?.22:.12);
   if(s===2){for(let i=0;i<4+L*2;i++){const a=Math.random()*6.28,d=Math.random()*r*.6,x=h+Math.cos(a)*d,z=h+Math.sin(a)*d;g.add(mesh(cyl(.02,.03,.3,6),MAT.trunk,x,.15,z));g.add(mesh(new THREE.IcosahedronGeometry(.13,0),MAT.leaf,x,.36,z));}}
   g.add(mesh(dome(r,28),glass,h,0,h,false));g.add(mesh(torus(r,.03,32),MAT.steel,h,.02,h,false));if(L>=3)g.add(mesh(torus(r*.72,.012,32),MAT.steel,h,r*.7,h,false));}
  else if(t==='ice'){g.add(mesh(cyl(.24,.27,.22,18),MAT.blue,.5,.11,.5));for(let i=0;i<3;i++){const a=i*2.09,l=mesh(cyl(.015,.015,.95,6),MAT.steel,.5+Math.cos(a)*.13,.5,.5+Math.sin(a)*.13);l.rotation.set(Math.sin(a)*.25,0,-Math.cos(a)*.25);g.add(l);}
   const d=mesh(cyl(.035,.035,.8+.2*L,8),MAT.dark,.5,.5,.5);d.name='spin';g.add(d);g.add(mesh(new THREE.SphereGeometry(.07,10,8),MAT.white,.5,.95+.1*L,.5));
-  for(let i=0;i<L;i++)g.add(mesh(new THREE.SphereGeometry(.11,14,10),MAT.white,.18+i*.0,.11,.18+i*.3));}
+  for(let i=0;i<L;i++)g.add(mesh(new THREE.SphereGeometry(.11,14,10),MAT.white,.18+i*.0,.11,.18+i*.3));
+  if(L>=3){g.add(mesh(cyl(.13,.13,.42,14),MAT.blue,.82,.21,.82));g.add(mesh(dome(.13,14),MAT.white,.82,.42,.82,false));g.add(mesh(cyl(.3,.3,.06,20),MAT.blue,.5,.03,.5,false));}}
  else if(t==='fuel'||t==='refin'){const k=s;const n=s===2?3+L:1+L;for(let i=0;i<n;i++){const x=(.25+(i%3)*.27)*k,z=(.28+Math.floor(i/3)*.42)*k;
    if(i%2===0)g.add(mesh(new THREE.SphereGeometry(.13*k,16,12),MAT.white,x,.13*k+.02,z));else{g.add(mesh(cyl(.11*k,.11*k,.45*k,16),MAT.orange,x,.225*k,z));g.add(mesh(dome(.11*k,16),MAT.orange,x,.45*k,z));}}
   g.add(mesh(cyl(.03*k,.035*k,(.7+.15*L)*k,8),MAT.dark,.82*k,(.35+.075*L)*k,.8*k));g.add(mesh(torus(.32*k,.015*k),MAT.steel,.5*k,.06,.5*k,false));
@@ -160,7 +173,7 @@ function modelNew(t,lvl=1){const g=new THREE.Group(),s=B[t].s,h=s/2,L=lvl;
   g.add(mesh(rbox(.9,.06,.14,.02),MAT.dark,.75,.12,1.6));for(let i=0;i<4;i++)g.add(mesh(new THREE.DodecahedronGeometry(.05,0),M(0x9a9aa0,.5,.4),.4+i*.22,.19,1.6));
   for(let i=0;i<5;i++)g.add(mesh(new THREE.BoxGeometry(.12,.06,.02),winMat,.45+i*.2,.35,1.31,false));}
  else if(t==='wtank'){const H=.5+.08*L;g.add(mesh(cyl(.3,.3,H,20),M(0x5a8fc8,.4,.3),.5,H/2+.06,.5));g.add(mesh(dome(.3,20),M(0x5a8fc8,.4,.3),.5,H+.06,.5));
-  g.add(mesh(torus(.305,.012,24),MAT.steel,.5,H*.5,.5,false));g.add(mesh(torus(.305,.012,24),MAT.steel,.5,H*.85,.5,false));g.add(mesh(new THREE.BoxGeometry(.03,H,.03),MAT.steel,.82,H/2+.06,.5));}
+  g.add(mesh(torus(.305,.012,24),MAT.steel,.5,H*.5,.5,false));g.add(mesh(torus(.305,.012,24),MAT.steel,.5,H*.85,.5,false));g.add(mesh(new THREE.BoxGeometry(.03,H,.03),MAT.steel,.82,H/2+.06,.5));if(L>=3){const h2=H*.7;g.add(mesh(cyl(.15,.15,h2,16),M(0x5a8fc8,.4,.3),.16,h2/2+.04,.84));g.add(mesh(dome(.15,16),M(0x5a8fc8,.4,.3),.16,h2+.04,.84));}}
  else if(t==='battery'){const n=2+Math.min(2,L-1);for(let i=0;i<n;i++)for(let j=0;j<2;j++){g.add(mesh(rbox(.16,.26,.3,.02),M(0xf0f0ec,.5),.2+i*.2*(3/n),.19,.3+j*.4));g.add(mesh(new THREE.BoxGeometry(.1,.02,.02),M(0x33ff77,.4,0,{emissive:0x33ff77,emissiveIntensity:1.2}),.2+i*.2*(3/n),.27,.46+j*.4-.0,false));}
   g.add(mesh(cyl(.012,.012,.5,6),MAT.dark,.88,.3,.12));}
  else if(t==='med'){const H=.3+.1*L;g.add(mesh(cyl(.32,.34,H,24),MAT.white,.5,H/2,.5));g.add(mesh(dome(.32,24),MAT.white,.5,H,.5));g.add(mesh(torus(.33,.02),winMat,.5,H*.6,.5,false));
@@ -335,7 +348,7 @@ function defName(t){let n=1;const used=new Set(S.b.filter(b=>b.t===t).map(b=>b.n
 function placeObj(b){const old=objs.get(b.id);if(old)scene.remove(old);const o=model(b.t,b.lvl);o.position.set(b.x,by(b),b.z);scene.add(o);objs.set(b.id,o);
  if(!isDeco(b.t)&&b.t!=='ship'){const w=new THREE.Sprite(warnMat);w.scale.set(.45,.45,.45);w.position.set(B[b.t].s/2,1.1+B[b.t].s*.3,B[b.t].s/2);w.renderOrder=9;w.name='warn';w.visible=false;o.add(w);}
  doorModel(b);return o;}
-function addB(t,x,z,silent,extra={}){const b={t,x,z,id:extra.id||uid++,lvl:extra.lvl||1,name:extra.name||null,ship:null,timer:extra.timer,hold:extra.hold,stock:extra.stock||0};uid=Math.max(uid,b.id+1);if(!b.name)b.name=defName(t);
+function addB(t,x,z,silent,extra={}){const b={t,x,z,id:extra.id||uid++,lvl:extra.lvl||1,name:extra.name||null,wave:extra.wave||0,ship:null,timer:extra.timer,hold:extra.hold,stock:extra.stock||0};uid=Math.max(uid,b.id+1);if(!b.name)b.name=defName(t);
  S.b.push(b);rebuildOcc();if(t==='pad'&&b.timer==null)b.timer=S.b.filter(q=>q.t==='pad').length>1?shipInterval(b):TUNE.FIRST_SHIP_AFTER;const o=placeObj(b);if(!silent){o.scale.set(1,.01,1);o.userData.grow=0;}refreshDoors();return b;}
 function delB(b){S.b=S.b.filter(x=>x!==b);const o=objs.get(b.id);scene.remove(o);objs.delete(b.id);if(b.ship)scene.remove(b.ship.m);
  S.cols.forEach(c=>{if(c.home===b.id)c.home=null;if(c.work===b.id)c.work=null;});agents.forEach(a=>{if(a.at===b.id||a.dest===b.id){a.st='in';a.at=null;a.m.visible=false;}});rebuildOcc();refreshDoors();}
@@ -539,7 +552,7 @@ function dayK(t){const p=dayPhase(t),D=TUNE.DAY_SPLIT,f=.07;if(p>=D)return 0;ret
 function eff(b){if(b.cons>0)return 0;const j=jobs(b);if(!j)return 1;return b.door?.35+.65*Math.min(1,(b.wk||0)/j):.3;}
 let decoBonus=0;
 function stats(dt=0){let pw=0,pu=0,house=0,food=0,wat=0,fuel=0,waste=0,med=0,ent=0,sec=0,wcap=120,bcap=0;
- S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(b.t==='ship'&&objs.get(b.id)?.userData.land)return;if(d.pw>0)pw+=d.pw*m*e*(b.t==='solar'?sunK:1);else if(d.pw&&on)pu-=d.pw*m;});pu+=(S.bots||[]).length*.4;S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(on){house+=cap(b);if(d.wcap)wcap+=d.wcap*m;if(d.bat)bcap+=d.bat*m;}});
+ S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(b.t==='ship'&&objs.get(b.id)?.userData.land)return;if(d.pw>0)pw+=(b.wave?3:d.pw)*m*e*(b.t==='solar'?sunK:1);else if(d.pw&&on)pu-=d.pw*m;});pu+=(S.bots||[]).length*.4;S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b),on=!(b.cons>0);if(on){house+=cap(b);if(d.wcap)wcap+=d.wcap*m;if(d.bat)bcap+=d.bat*m;}});
  const raw=pw;let batUse=0;if(pw<pu&&S.bat>0){batUse=Math.min(pu-pw,dt?S.bat/dt:pu-pw);pw+=batUse;}
  if(dt){if(batUse)S.bat=Math.max(0,S.bat-batUse*dt);else S.bat=Math.min(bcap,S.bat+Math.max(0,pw-pu)*dt*.6);}S.bat=Math.max(0,Math.min(S.bat,bcap));
  const pe=pu?Math.min(1,pw/pu):1;
@@ -561,16 +574,16 @@ const $=id=>document.getElementById(id);let sel=null,speed=1,tab='b';
 function toast(m,w){if(S&&S.demo)return;const d=document.createElement('div');d.className='t'+(w?' w':'');d.textContent=m;$('toasts').prepend(d);setTimeout(()=>d.remove(),4000);while($('toasts').children.length>5)$('toasts').lastChild.remove();}
 function tip(k,el){const d=B[k],t=$('tip'),f=(v,u)=>v?`<div>${v>0?'+':''}${v} ${u}</div>`:'';
  t.innerHTML=`<b>${d.ic} ${d.n}</b> — ${d.c||d.m?costTxt(d.c,d.m):'free'}${d.ore?`<div>⛏️ +${d.ore} ore/s</div>`:''}${d.conv?`<div>🧱 makes ${d.conv} materials/s from ore</div>`:''}${d.wcap?`<div>💧 +${d.wcap} water storage</div>`:''}${d.bat?`<div>🔋 stores ${d.bat} power</div>`:''}${f(d.pw,'⚡ power')}${f(d.food,'🍞 food/s')}${f(d.wat,'💧 water/s')}${f(d.fuel,'⛽ fuel/s')}${d.house?`<div>🏠 houses ${d.house}</div>`:''}${d.jobs?`<div>👷 ${d.jobs} jobs</div>`:''}${d.waste?`<div>♻️ cleans for ${d.waste}</div>`:''}${d.med?`<div>🩺 care for ${d.med}</div>`:''}${d.ent?`<div>🎭 fun for ${d.ent}</div>`:''}${d.sec?`<div>🛡️ safety for ${d.sec}</div>`:''}
- <div style="opacity:.8">${d.d}${d.cat==='b'?` · ${d.s}×${d.s}`:''}${d.up?' · upgradable to L5':''}${d.unl?` · unlocks at ${d.unl} pop`:''}</div><div style="opacity:.6;font-size:11px">${d.cat==='b'?'Needs a path next to it · hold a building to move it':d.cat==='d'?'Next to paths: boosts happiness':d.cat==='p'?'Drag across the ground to paint':''}</div>`;
+ <div style="opacity:.8">${d.d}${d.cat==='b'?` · ${d.s}×${d.s}`:''}${d.up?' · upgradable to L5':''}${lvOf(k)>1?` · unlocks at Lv ${lvOf(k)}`:''}</div><div style="opacity:.6;font-size:11px">${d.cat==='b'?'Needs a path next to it · hold a building to move it':d.cat==='d'?'Next to paths: boosts happiness':d.cat==='p'?'Drag across the ground to paint':''}</div>`;
  const r=el.getBoundingClientRect();t.style.display='block';t.style.left=Math.max(4,Math.min(innerWidth-224,r.left))+'px';t.style.bottom=(innerHeight-r.top+6)+'px';}
 let menuOpen=false;
 function setMenu(on){menuOpen=!!on;setTimeout(()=>typeof dockSync==='function'&&dockSync(),0);const m=$('menu');if(!m)return;m.classList.toggle('closed',!menuOpen);document.body.classList.toggle('menuopen',menuOpen);const bb=$('buildb');if(bb)bb.classList.toggle('on',menuOpen);if(!menuOpen){sel=null;$('tip').style.display='none';if(typeof updPrev==='function')updPrev();}menu();gridLines.visible=!!sel;}
 function menu(){const host=$('mtools')||$('menu');if(!host)return;host.innerHTML='';if(!menuOpen&&host.id==='mtools'){gridLines.visible=false;return;}const pop=S?S.cols.length:0;
  [['b','🏗️ Build'],['p','🚶 Paths'],['d','🌷 Decor']].forEach(([k,l])=>{const e=document.createElement('div');e.className='tab'+(tab===k?' on':'');e.textContent=l;e.onclick=()=>{tab=k;beep(650,.03);menu();};host.appendChild(e);});
- Object.entries(B).filter(([k,d])=>d.cat===tab||(d.cat==='x'&&tab!=='b')).forEach(([k,d])=>{const e=document.createElement('div');const lock=d.unl&&pop<d.unl;
-  const hl=tutWants(k);e.className='b'+(sel===k?' sel':'')+(lock?' lock':'')+(hl?' hl':'');e.dataset.k=k;e.innerHTML=`${d.ic} ${d.n}<small>${lock?'🔒 '+d.unl+' pop':(d.c||d.m?costTxt(d.c,d.m):'free')}</small>`;
+ Object.entries(B).filter(([k,d])=>d.cat===tab||(d.cat==='x'&&tab!=='b')).forEach(([k,d])=>{const e=document.createElement('div');const lock=lvLocked(k);
+  const hl=tutWants(k);e.className='b'+(sel===k?' sel':'')+(lock?' lock':'')+(hl?' hl':'');e.dataset.k=k;e.innerHTML=`${d.ic} ${d.n}<small>${lock?'🔒 Lv '+lvOf(k):(d.c||d.m?costTxt(d.c,d.m):'free')}</small>`;
   e.onpointerenter=()=>tip(k,e);e.onpointerleave=()=>$('tip').style.display='none';
-  e.onclick=()=>{beep(700,.04);tip(k,e);if(lock){toast(`Unlocks at ${d.unl} colonists`);return;}sel=sel===k?null:k;closePanel();menu();updPrev();};host.appendChild(e);});
+  e.onclick=()=>{beep(700,.04);tip(k,e);if(lock){toast(`🔒 Unlocks at colony Lv ${lvOf(k)} · ${LEVELS[lvOf(k)].n}`);return;}sel=sel===k?null:k;closePanel();menu();updPrev();};host.appendChild(e);});
  gridLines.visible=!!sel;}
 let lastLock='';
 function clock(){const p=dayPhase(S.t),D=TUNE.DAY_SPLIT;let h=p<D?6+p/D*14:20+(p-D)/(1-D)*10;h%=24;const hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10;return`${p<D?'☀️':'🌙'} ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;}
@@ -580,14 +593,14 @@ function hud(st){if(S.demo)return;const f=v=>(v>=0?'+':'')+v.toFixed(1);const po
  const items=nar?[['💰',k(S.cr)],['👩‍🚀',`${pop}/${st.house}`],['⚡',`${Math.round(st.pw)}/${Math.round(st.pu)}`,st.pw<st.pu],['🍞',k(S.food),S.food<5&&st.food<0],
  ['💧',k(S.wat),S.wat<5&&st.wat<0],['🧱',k(S.mat),S.mat<20],['⛽',k(S.fuel)],['😊',Math.round(S.hap)+'%',S.hap<40]]:[['🏴',S.name],['💰',Math.floor(S.cr)],['👩‍🚀',`${pop}/${st.house}`],['⚡',`${st.pw}/${st.pu}`,st.pw<st.pu],['🍞',`${Math.floor(S.food)} (${f(st.food)})`,S.food<5&&st.food<0],
  ['💧',`${Math.floor(S.wat)}/${st.wcap} (${f(st.wat)})`,S.wat<5&&st.wat<0],['🧱',Math.floor(S.mat),S.mat<20],['⛽',Math.floor(S.fuel)],['😊',Math.round(S.hap)+'%',S.hap<40]];
- if((S.bots||[]).length)items.push(['🤖',S.bots.length]);items.push(['🌍',`<span class="tf">${tf}%<span class="bar"><i style="width:${tf}%"></i></span></span>`]);
+ items.unshift(lvChip());if((S.bots||[]).length)items.push(['🤖',S.bots.length]);items.push(['🌍',`<span class="tf">${tf}%<span class="bar"><i style="width:${tf}%"></i></span></span>`]);
  if(st.bcap)items.splice(4,0,['🔋',Math.round(S.bat/st.bcap*100)+'%'+(st.batUse?' ⬇':''),S.bat<1&&st.batUse===0&&st.raw<st.pu]);if(S.ore>=1||S.b.some(b=>b.t==='mine'))items.push(['⛏️',Math.floor(S.ore)]);if(S.rare>0)items.push(['💎',Math.floor(S.rare)]);
  if(S.flights.length)items.push(['🛸',S.flights.length+' en route']);
  if(pop>=10&&(!nar||st.clean<.7))items.push(['♻️',Math.round(st.clean*100)+'%',st.clean<.7]);if(pop>=20&&(!nar||st.health<.7))items.push(['🩺',Math.round(st.health*100)+'%',st.health<.7]);
  if(pop>=25&&!nar)items.push(['🎭',Math.round(st.fun*100)+'%']);if(pop>=55&&(!nar||st.safe<.7))items.push(['🛡️',Math.round(st.safe*100)+'%',st.safe<.7]);
  if(hl)items.push(['🏚️',nar?hl:hl+' homeless',1]);if(un>2&&!nar)items.push(['💼',un+' jobless']);items.push(['📅',nar?`S${Math.floor(S.t/DAY+1)} ${clock()}`:`Sol ${Math.floor(S.t/DAY+1)} ${clock()}`]);
- $('hud').innerHTML=items.map(([i,v,b])=>`<span class="r${b?' bad':''}${i==='🏴'?' nm':''}">${i} ${v}</span>`).join('');
- const l=Object.keys(B).filter(k=>B[k].unl&&pop>=B[k].unl).join();if(l!==lastLock){if(lastLock!==''&&l.length>lastLock.length)toast('🔓 New building unlocked!');lastLock=l;menu();}}
+ $('hud').innerHTML=items.map(([i,v,b])=>`<span class="r${b?' bad':''}${i==='🏴'?' nm':''}${i==='⭐'?' lv':''}">${i} ${v}</span>`).join('');
+ const l=''+(S.lvl||1);if(l!==lastLock){lastLock=l;menu();}renderLv();}
 // ---------- info panels
 let panel=null,panelHover=false;$('panel').onpointerenter=()=>panelHover=true;$('panel').onpointerleave=()=>panelHover=false;const ring=new THREE.Mesh(new THREE.RingGeometry(.55,.62,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.9,depthTest:false}));ring.renderOrder=8;ring.visible=false;scene.add(ring);
 function closePanel(){document.body.classList.remove('pan');panel=null;panelHover=false;$('panel').style.display='none';ring.visible=false;follow=null;}
@@ -615,7 +628,7 @@ function renderPanel(force){if(!panel)return;if((panelHover||performance.now()-p
  if(b.t==='pad')L.push(`<div>${b.ship?(b.ship.ph==='ground'?`🚀 Ship waiting — leaves in ${Math.ceil(b.ship.stay)}s`:'🚀 Ship in flight'):S.tut?'Ships start after the tutorial':`Next supply ship in ~${Math.max(0,Math.ceil(b.timer))}s`}</div>`);
  const h=holdOf(b);if(h)L.push(cargoHTML(h));
  $('pbody').innerHTML=L.join('');$('pbody').querySelectorAll('.cn').forEach(el=>el.onclick=()=>{const a=agents.get(+el.dataset.c);openC(S.cols.find(c=>c.id===+el.dataset.c));});
- const u=$('pup');if(u){if(b.lvl>=5){u.textContent='⭐ Max level';u.disabled=true;}else if(upLock(b)){u.innerHTML=`🔒 L${b.lvl+1} needs ${upLock(b)} colonists<small style="display:block;opacity:.8">You have ${S.cols.length}</small>`;u.disabled=true;}else{const c=upCost(b),mm=upMat(b);u.innerHTML=`⬆️ Upgrade to L${b.lvl+1} — ${costTxt(c,mm)}<small style="display:block;opacity:.85">${upBoosts(b)}</small>`;u.disabled=S.cr<c||S.mat<mm||b.cons>0;}}}
+ const u=$('pup');if(u){if(b.lvl>=5){u.textContent='⭐ Max level';u.disabled=true;}else if(upLock(b)){u.innerHTML=`🔒 L${b.lvl+1} unlocks at colony Lv ${upLock(b)}<small style="display:block;opacity:.8">You are Lv ${S.lvl||1} — follow the ⭐ checklist</small>`;u.disabled=true;}else{const c=upCost(b),mm=upMat(b);u.innerHTML=`⬆️ Upgrade to L${b.lvl+1} — ${costTxt(c,mm)}<small style="display:block;opacity:.85">${upBoosts(b)}</small>`;u.disabled=S.cr<c||S.mat<mm||b.cons>0;}}}
  else if(panel.c){const c=panel.c;if(!S.cols.includes(c)){closePanel();return;}const h=c.home&&byId(c.home),w=c.work&&byId(c.work),st=lastSt||stats(),a=agents.get(c.id);
   $('pbody').innerHTML=`<div class="sub">Colonist #${c.id}</div><div>🏠 ${h?h.name+(h.door?'':' ⚠️ no path'):'<b style="color:#f66">Homeless</b>'}</div><div>💼 ${w?w.name:'<i>Unemployed</i>'}</div>
    <div>😊 Happiness ${colHap(c)}%</div><div class="stats">🍞 Food ${S.food>0?'✅':'❌'} · 💧 Water ${S.wat>0?'✅':'❌'} · ⚡ Power ${st.pw>=st.pu?'✅':'❌'}<br>♻️ Clean ${Math.round(st.clean*100)}% · 🩺 Health ${Math.round(st.health*100)}%</div>
@@ -623,13 +636,13 @@ function renderPanel(force){if(!panel)return;if((panelHover||performance.now()-p
 const GOOD={mat:'🧱 Materials',ore:'⛏️ Ore',rare:'💎 Rare ore'},STOCK={mat:'mat',ore:'ore',rare:'rare'};
 const price=k=>PRICE[k]*S.mkt[k];const cargoValue=h=>Math.round(h.mat*price('mat')+h.ore*price('ore')+h.rare*price('rare'));
 function holdOf(b){if(b.t==='ship')return b.hold||(b.hold={fuel:0,mat:0,ore:0,rare:0});if(b.t==='pad'&&b.ship&&b.ship.ph==='ground')return b.ship.hold;return null;}
-function cargoHTML(h){const v=cargoValue(h),tot=h.mat+h.ore+h.rare;
+function cargoHTML(h){const v=cargoValue(h),tot=h.mat+h.ore+h.rare;const lv=S.demo?99:(S.lvl||1);if(lv<9)return`<div class="cargo"><b>🚀 Return flight to Earth</b><div class="sub">🔒 Refuelling & cargo loading unlock at Lv 9 · return flights at Lv 10</div></div>`;
  return`<div class="cargo"><b>🚀 Return flight to Earth</b><div>⛽ Fuel ${Math.floor(h.fuel)}/${TUNE.RETURN_FUEL} <button data-a="fuel" ${S.fuel>=1&&h.fuel<TUNE.RETURN_FUEL?'':'disabled'}>Refuel (${Math.floor(S.fuel)} in stock)</button></div>
  <div class="sub">Cargo hold ${tot}/${TUNE.HOLD_MAX} — sells on Earth at market price</div>
  ${Object.keys(GOOD).map(k=>`<div class="crow"><span>${GOOD[k]} <b>${h[k]}</b></span><span class="pr">¢${price(k).toFixed(1)}</span><button data-a="u" data-k="${k}" ${h[k]?'':'disabled'}>−10</button><button data-a="l" data-k="${k}" data-n="10" ${S[STOCK[k]]>=1&&tot<TUNE.HOLD_MAX?'':'disabled'}>+10</button><button data-a="l" data-k="${k}" data-n="50" ${S[STOCK[k]]>=1&&tot<TUNE.HOLD_MAX?'':'disabled'}>+50</button></div>`).join('')}
  <div>Payout on arrival: <b>¢${v+TUNE.RETURN_PAY}</b> <span class="sub">(flight ¢${TUNE.RETURN_PAY} + cargo ¢${v})</span></div>
- <button data-a="launch" class="go" ${h.fuel>=TUNE.RETURN_FUEL?'':'disabled'}>${h.fuel>=TUNE.RETURN_FUEL?'🚀 Launch return flight':`Needs ${TUNE.RETURN_FUEL} ⛽ to launch`}</button></div>`;}
-function cargoAct(b,el){const h=holdOf(b);if(!h)return;const a=el.dataset.a,k=el.dataset.k,tot=h.mat+h.ore+h.rare;
+ <button data-a="launch" class="go" ${h.fuel>=TUNE.RETURN_FUEL&&lv>=10?'':'disabled'}>${lv<10?'🔒 Return flights unlock at Lv 10':h.fuel>=TUNE.RETURN_FUEL?'🚀 Launch return flight':`Needs ${TUNE.RETURN_FUEL} ⛽ to launch`}</button></div>`;}
+function cargoAct(b,el){const h=holdOf(b);if(!h)return;const lv=S.demo?99:(S.lvl||1);if(lv<9||(el.dataset.a==='launch'&&lv<10)){toast('🔒 Not unlocked yet — see the ⭐ checklist');return;}const a=el.dataset.a,k=el.dataset.k,tot=h.mat+h.ore+h.rare;
  if(a==='fuel'){const n=Math.min(Math.floor(S.fuel),TUNE.RETURN_FUEL-h.fuel);S.fuel-=n;h.fuel+=n;beep(500,.05,'triangle');}
  else if(a==='l'){const n=Math.min(+el.dataset.n,Math.floor(S[STOCK[k]]),TUNE.HOLD_MAX-tot);if(n>0){S[STOCK[k]]-=n;h[k]+=n;beep(600,.04);}}
  else if(a==='u'){const n=Math.min(10,h[k]);S[STOCK[k]]+=n;h[k]-=n;beep(400,.04);}
@@ -647,7 +660,7 @@ function openM(){document.body.classList.add('pan');panel={mkt:1};const p=$('pan
 function openC(c){document.body.classList.add('pan');if(!c)return;panel={c};const p=$('panel');p.style.display='block';ring.visible=false;
  p.innerHTML=`<div class="ph"><span>👩‍🚀</span><b style="flex:1">${c.n}</b><button id="pclose">✕</button></div><div id="pbody"></div><div class="pbtn"><button id="pfol">🎥 Follow</button></div>`;
  $('pclose').onclick=closePanel;$('pfol').onclick=()=>{const a=agents.get(c.id);if(a){follow=a;zoom=Math.min(zoom,5);camUp();$('pfol').textContent='🎥 Following…';}};renderPanel();}
-const upCost=b=>Math.round(B[b.t].c*(.8+.6*b.lvl));const upMat=b=>Math.round(B[b.t].m*(.6+.5*b.lvl));const upLock=b=>LVUNL[b.lvl]&&S.cols.length<LVUNL[b.lvl]?LVUNL[b.lvl]:0;
+const upCost=b=>Math.round(B[b.t].c*(.8+.6*b.lvl));const upMat=b=>Math.round(B[b.t].m*(.6+.5*b.lvl));const upLock=b=>{if(S.demo||b.lvl+1<=TIERMAX[S.lvl||1])return 0;let l=S.lvl||1;while(l<LVMAX&&TIERMAX[l]<b.lvl+1)l++;return l;};
 function upBoosts(b){const d=B[b.t],m0=LV[b.lvl-1],m1=LV[Math.min(4,b.lvl)];const bits=[];
  if(d.house)bits.push(`🏠 ${Math.round(d.house*m0)}→${Math.round(d.house*m1)}`);
  if(d.food>0)bits.push(`🍞 ${+(d.food*m0).toFixed(1)}→${+(d.food*m1).toFixed(1)}/s`);
@@ -660,7 +673,7 @@ function upBoosts(b){const d=B[b.t],m0=LV[b.lvl-1],m1=LV[Math.min(4,b.lvl)];cons
  if(d.bat)bits.push(`🔋 ${Math.round(d.bat*m0)}→${Math.round(d.bat*m1)}`);
  if(d.bots)bits.push(`🤖 ${Math.round(d.bots*m0)}→${Math.round(d.bots*m1)}`);
  return bits.join(' · ')||'+15% output';}
-function upgrade(b){if(b.lvl>=5)return;if(upLock(b)){toast(`🔒 Level ${b.lvl+1} unlocks at ${upLock(b)} colonists (you have ${S.cols.length})`,1);return;}if(b.cons>0){toast('Still under construction',1);return;}const c=upCost(b),mm=upMat(b);if(!afford(c,mm))return;pay(c,mm);const prev=b.lvl;b.lvl++;const o=placeObj(b);o.scale.set(1,.25,1);o.userData.grow=.25;
+function upgrade(b){if(b.lvl>=5)return;if(upLock(b)){toast(`🔒 L${b.lvl+1} unlocks at colony Lv ${upLock(b)}`,1);return;}if(b.cons>0){toast('Still under construction',1);return;}const c=upCost(b),mm=upMat(b);if(!afford(c,mm))return;pay(c,mm);const prev=b.lvl;b.lvl++;const o=placeObj(b);o.scale.set(1,.25,1);o.userData.grow=.25;
  const ring=new THREE.Mesh(new THREE.TorusGeometry(B[b.t].s*.55,.04,8,32).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.9}));ring.position.set(B[b.t].s/2,.2,B[b.t].s/2);o.add(ring);setTimeout(()=>{try{o.remove(ring);}catch(e){}},900);
  const w=o.getObjectByName('warn');if(w)w.visible=!b.door;assign();if(typeof syncBots==='function')syncBots();floatText(`⬆️ L${b.lvl}`);toast(`⬆️ ${b.name} → Level ${b.lvl}! ${upBoosts({t:b.t,lvl:prev})}`);beep(520,.08,'triangle',.07);setTimeout(()=>beep(780,.1,'triangle',.07),90);renderPanel(true);}
 function bulldoze(b){if(b.t==='ship'){toast('Refuel and launch Starships home instead of bulldozing them',1);return false;}if(b.ship){toast("Can't bulldoze a pad with a ship on it",1);return false;}
@@ -681,7 +694,7 @@ function paint(x,z){if(x<0||z<0||x>=N||z>=N)return;const k=TK(x,z);
  if(sel==='dozer'){if(S.tiles[k]){delete S.tiles[k];changed();}return;}
  if(S.tiles[k]||occ[x][z]||blocked[x][z])return;S.tiles[k]=1;changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
 let doorsDirty=false;function changed(){doorsDirty=true;}
-function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=hover.bz;
+function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=hover.bz;if(lvLocked(sel)){toast(`🔒 ${d.n} unlocks at colony Lv ${lvOf(sel)} · ${LEVELS[lvOf(sel)].n}`);return;}
  if(sel==='dozer'){const b=occ[x]?.[z];if(b)bulldoze(b);}
  else if(d.cat==='b'||d.cat==='d'){if(!free(sel,x,z)){if(!painting){toast("Can't build there — pick a clear spot (green outline)",1);beep(160,.12,'sawtooth',.04);}return;}if(!afford(d.c,d.m))return;pay(d.c,d.m);const b=addB(sel,x,z);
   if(d.cat==='b'){b.cons=CONS_T;b.consT=0;const o=objs.get(b.id);delete o.userData.grow;o.scale.y=.25;const sc=new THREE.Mesh(new THREE.BoxGeometry(d.s*.98,.9,d.s*.98),new THREE.MeshBasicMaterial({color:0xffa040,wireframe:true,transparent:true,opacity:.55}));sc.position.set(d.s/2,.45,d.s/2);sc.name='scaf';o.add(sc);}
@@ -723,8 +736,8 @@ const keys={};addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')retur
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
 $('rotL').onclick=()=>rotT-=Math.PI/2;$('rotR').onclick=()=>rotT+=Math.PI/2;
 document.querySelectorAll('#ctl [data-s]').forEach(b=>b.onclick=()=>{speed=+b.dataset.s;document.querySelectorAll('#ctl [data-s]').forEach(x=>x.classList.toggle('on',x===b));});
-function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT'].forEach(k=>d[k]=S[k]);
- d.b=S.b.map(({id,t,x,z,lvl,name,timer,hold,stock})=>({id,t,x,z,lvl,name,timer,hold,stock}));d.pop=S.cols.length;localStorage.setItem('marsOutpost',JSON.stringify(d));}
+function save(){if(!S||S.demo)return;const d={v:5,N};['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen'].forEach(k=>d[k]=S[k]);
+ d.b=S.b.map(({id,t,x,z,lvl,name,timer,hold,stock,wave})=>({id,t,x,z,lvl,name,timer,hold,stock,wave}));d.pop=S.cols.length;localStorage.setItem('marsOutpost',JSON.stringify(d));}
 $('mktb').onclick=()=>openM();$('save').onclick=()=>{save();toast('💾 Saved');};$('newg').onclick=()=>{save();showTitle();};
 $('buildb').onclick=()=>setMenu(!menuOpen);$('mclose').onclick=()=>setMenu(false);
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);camUp();});
@@ -733,7 +746,7 @@ function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const b
  if(!b.ship){b.timer-=dt;if(b.timer<=0&&!S.demo&&S.t-(S.lastLandT??-999)<TUNE.LAND_GAP){b.timer=TUNE.LAND_GAP-(S.t-S.lastLandT)+5+Math.random()*10;}if(b.timer<=0){S.lastLandT=S.t;const m=rocket();m.position.set(cx,PADL.Y0,cz);m.rotation.order="YXZ";m.rotation.y=Math.PI/4+.85+rot+(Math.random()-.5)*.2;scene.add(m);b.ship={m,ph:'land',t:0};if(!S.demo)rumble(6,.2);}return;}
  const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;m.position.x=cx;m.position.z=cz;
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
-  if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
+  if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;if(!S.demo)S.supplyN=(S.supplyN||0)+1;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
    const room=st.house-S.cols.length;const want=Math.round((TUNE.SHIP_CREW[0]+Math.random()*(TUNE.SHIP_CREW[1]-TUNE.SHIP_CREW[0]))*(S.hap/100+.3)*(1+S.cols.length/60));const n=Math.max(0,Math.min(room,want));
    const mats=TUNE.SHIP_MAT+S.order;const ord=S.order;S.order=0;{const items=[];for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});items.push({k:'cargo',mat:mats});startUnload({sid:b.id,cx,cz,gy:base,items,pad:1});sh.unl=unloads[unloads.length-1];}
    if(!S.demo){toast(`🚀 Supply ship landed at ${b.name} — unloading ${n?n+' crew':'no crew (need housing!)'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
@@ -743,8 +756,8 @@ function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const b
 const SHIP_SPOTS=[[44,44],[47,42],[50,44],[42,47],[52,47]];
 function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
  rk.visible=true;if(!L.r){L.r=1;if(!S.demo)rumble(6,.15);}const P=L.P||PADL;const r=landPose(rk,L.t,P);const b=byId(id);if(b&&r.ph===2&&r.y<6){L.dT=(L.dT||0)-dt;if(L.dT<=0){L.dT=.3;dust(b.x+1,b.z+1,0,r.y<1.5?12:6);if(!L.r2&&r.y<2){L.r2=1;if(!S.demo)rumble(4,.12);}}}
- if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
- if(!any&&!S.demo)ship2Tick();if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
+ if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;if(L.arr&&b)landedArrival(b,L.arr);if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
+ if(!S.demo)arrivalsTick();if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
   ships.forEach((b,i)=>{const items=[];const n=Math.ceil(crew/(ships.length-i));crew-=n;for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(bq>0){items.push({k:'bot'});bq--;}
    if(i===ships.length-1)while(bq-->0)items.push({k:'bot'});if(items.length)startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items,onDone:()=>{if(!S.crewPending&&!unloads.some(u=>u.sid!==b.id&&!u.done)&&!S.tut)toast(`👩‍🚀 Your crew is on the surface. Welcome to Mars!`);}});});
   if(!S.tut)toast('🚪 Cargo lifts lowering — the crew is disembarking');}}
@@ -759,8 +772,116 @@ function ship2Tick(){if(S.demo||S.ship2!=='pending'||S.crewPending||(S.botsLande
  toast('🚀 Second Starship "Serenity" is on final approach — watch the sky!',1);}
 // ---------- tutorial (the early game, told as a story)
 const has=k=>S.b.some(b=>b.t===k&&!(b.cons>0));
+// ---------- colony levels (milestones, not XP). Data-driven: later eras append to LEVELS.
+const cntB=k=>S.b.filter(b=>b.t===k&&!(b.cons>0)).length;
+const housedN=()=>S.cols.filter(c=>c.home).length;
+const sinceLv=k=>Math.floor((S[k]||0)-((S.lvBase||{})[k]||0));
+const TIERMAX=[0,2,2,2,3,3,3,4,4,5,5,5];
+const ERAS=[{n:'Outpost',from:1,to:10}];
+const LEVELS=[null,
+ {n:'Landing',unlock:['hab','farm','ice','solar','wtank','battery','path','bench','planter','flag','sign','dozer'],perk:'Buildings up to L2',goals:[
+  {t:'Build a 🏠 Habitat',v:()=>cntB('hab'),need:1},
+  {t:'Connect ship & habitat with 🚶 paths',v:()=>S.b.some(b=>b.t==='hab'&&b.door)&&S.b.some(b=>b.t==='ship'&&b.door)?1:0,need:1},
+  {t:'Build a 🌱 Farm Dome',v:()=>cntB('farm'),need:1},
+  {t:'Build an 🧊 Ice Extractor',v:()=>cntB('ice'),need:1},
+  {t:'Upgrade a farm to L2',v:()=>S.b.some(b=>b.t==='farm'&&b.lvl>=2)?1:0,need:1},
+  {t:'Build 💧 Tank, ☀️ Solar & 🔋 Battery',v:()=>['wtank','solar','battery'].filter(k=>cntB(k)).length,need:3}]},
+ {n:'First Wave',unlock:[],perk:'Two Starships of colonists inbound',onReach:()=>queueWave(),goals:[
+  {t:'Welcome 2 Starships of colonists',v:()=>S.waveLanded||0,need:2},
+  {t:'House 14 colonists',v:housedN,need:14},
+  {t:'Food production positive',v:()=>lastSt&&lastSt.food>0?1:0,need:1},
+  {t:'Water production positive',v:()=>lastSt&&lastSt.wat>0?1:0,need:1},
+  {t:'Power everyone (no shortage)',v:()=>lastSt&&lastSt.pu>0&&lastSt.pw>=lastSt.pu?1:0,need:1}]},
+ {n:'Industry',unlock:['mine','proc'],perk:'Regolith mining',goals:[
+  {t:'Build a ⛏️ Regolith Mine',v:()=>cntB('mine'),need:1},
+  {t:'Build a 🏗️ Material Processor',v:()=>cntB('proc'),need:1},
+  {t:'Process 100 🧱 materials',v:()=>sinceLv('made'),need:100},
+  {t:'Grow to 16 colonists',v:()=>S.cols.length,need:16}]},
+ {n:'Landing Pad',unlock:['pad'],perk:'Recurring supply ships · L3 upgrades',goals:[
+  {t:'Build a 🛬 Landing Pad',v:()=>cntB('pad'),need:1},
+  {t:'Receive 2 supply ships',v:()=>sinceLv('supplyN'),need:2},
+  {t:'Grow to 22 colonists',v:()=>S.cols.length,need:22}]},
+ {n:'Optimus Bay',unlock:['robot'],perk:'Build Optimus robots',goals:[
+  {t:'Build an 🤖 Optimus Bay',v:()=>cntB('robot'),need:1},
+  {t:'Field 5 robots',v:()=>(S.bots||[]).length,need:5},
+  {t:'Stockpile 300 🧱',v:()=>Math.floor(S.mat),need:300},
+  {t:'Grow to 26 colonists',v:()=>S.cols.length,need:26}]},
+ {n:'Comfort',unlock:['ent','med','waste'],perk:'Morale buildings',goals:[
+  {t:'Build an Entertainment Hub',v:()=>cntB('ent'),need:1},
+  {t:'Build a Medical Bay',v:()=>cntB('med'),need:1},
+  {t:'Upgrade a 🏠 Habitat to L3 (dome block)',v:()=>S.b.some(b=>b.t==='hab'&&b.lvl>=3)?1:0,need:1},
+  {t:'Happiness 70% or more',v:()=>Math.round(S.hap),need:70},
+  {t:'Grow to 32 colonists',v:()=>S.cols.length,need:32}]},
+ {n:'Water & Ice',unlock:['recyc','bigfarm'],perk:'L4 upgrades',goals:[
+  {t:'Water storage 600+',v:()=>lastSt?Math.floor(lastSt.wcap):0,need:600},
+  {t:'Run 2 Water Recyclers',v:()=>cntB('recyc'),need:2},
+  {t:'Run 3 🧊 Ice Extractors',v:()=>cntB('ice'),need:3},
+  {t:'Grow to 38 colonists',v:()=>S.cols.length,need:38}]},
+ {n:'Fuel Depot',unlock:['fuel'],perk:'Methane fuel production',goals:[
+  {t:'Build 2 ⛽ Fuel Plants',v:()=>cntB('fuel'),need:2},
+  {t:'Store 200 ⛽ fuel',v:()=>Math.floor(S.fuel),need:200},
+  {t:'Grow to 44 colonists',v:()=>S.cols.length,need:44}]},
+ {n:'Ready to Launch',unlock:[],perk:'Refuel ships & load cargo · L5 upgrades',goals:[
+  {t:`Fuel a ship to ${TUNE.RETURN_FUEL} ⛽`,v:()=>Math.floor(Math.max(0,...holds().map(h=>h.fuel))),need:TUNE.RETURN_FUEL},
+  {t:'Load 60 cargo into one ship',v:()=>Math.max(0,...holds().map(h=>h.mat+h.ore+h.rare)),need:60},
+  {t:'Grow to 50 colonists',v:()=>S.cols.length,need:50}]},
+ {n:'Return Flights',unlock:['refin','reactor','mega','sec'],perk:'Return flights & full trade',goals:[
+  {t:'Launch a return flight',v:()=>sinceLv('launches'),need:1},
+  {t:'Get paid on Earth (flight lands)',v:()=>sinceLv('flightsDone'),need:1},
+  {t:'Earn ¢1500 from trade',v:()=>sinceLv('tradeEarned'),need:1500},
+  {t:'Grow to 60 colonists',v:()=>S.cols.length,need:60}]},
+];
+const LVMAX=LEVELS.length-1;
+const LVOF={};LEVELS.forEach((L,i)=>L&&L.unlock.forEach(k=>LVOF[k]=i));
+const lvOf=k=>LVOF[k]||1,lvLocked=k=>!!S&&!S.demo&&lvOf(k)>(S.lvl||1);
+function holds(){const r=[];S.b.forEach(b=>{if(b.t==='ship'&&b.hold)r.push(b.hold);if(b.t==='pad'&&b.ship&&b.ship.hold)r.push(b.ship.hold);});return r;}
+function lvGoals(){const L=LEVELS[S.lvl||1];return L?L.goals.map(g=>{const v=Math.max(0,g.v()||0);return{t:g.t,v:Math.min(v,g.need),need:g.need,ok:v>=g.need};}):[];}
+function lvPct(gs){if(!gs.length)return 100;return Math.round(gs.reduce((a,g)=>a+Math.min(1,g.v/g.need),0)/gs.length*100);}
+function lvSnap(){S.lvBase={made:S.made||0,supplyN:S.supplyN||0,launches:S.launches||0,flightsDone:S.flightsDone||0,tradeEarned:S.tradeEarned||0};}
+function lvTick(){if(!S||S.demo||S.lvlFx)return;if((S.lvl||1)>=LVMAX){if(!S.eraDone&&lvGoals().every(g=>g.ok)){S.eraDone=1;celebrate(LVMAX,true);}return;}
+ const gs=lvGoals();if(gs.length&&gs.every(g=>g.ok))levelUp();}
+function levelUp(){S.lvl=(S.lvl||1)+1;lvSnap();const L=LEVELS[S.lvl];if(L.onReach)L.onReach();if(S.lvl>=2&&S.tut)endTut();menu();celebrate(S.lvl);save();}
+function lvUnlockTxt(i){const L=LEVELS[i];const a=L.unlock.filter(k=>B[k]).map(k=>`${B[k].ic} ${B[k].n}`);if(L.perk)a.push('✨ '+L.perk);return a;}
+// Lv2: the first colonist wave — two Starships, never landing together
+function queueWave(){if(S.waveQueued)return;S.waveQueued=1;S.ship2='done';S.arrivals=[{name:'Serenity',crew:6,mat:120},{name:'Endurance',crew:6,mat:80}];S.nextArr=S.t+12;toast('📡 Mission Control: the First Wave launched from Earth — 2 Starships of colonists inbound. Get habitats ready!',1);}
+function arrivalsTick(){if(S.demo||!S.arrivals||!S.arrivals.length||S.crewPending||S.t<(S.nextArr||0))return;
+ if(S.t-(S.lastLandT??-999)<TUNE.LAND_GAP)return;let busy=false;objs.forEach(o=>{if(o.userData.land)busy=true;});if(busy)return;const p=freeShipSpot();if(!p)return;
+ const a=S.arrivals.shift();S.lastLandT=S.t;const b=addB('ship',p[0],p[1],1);b.name=a.name;b.wave=1;const o=objs.get(b.id);o.userData.land={t:0,P:INTROL,arr:a};o.getObjectByName('rk').visible=false;
+ toast(`🚀 Starship "${a.name}" on final approach with ${a.crew} colonists — watch the sky!`,1);}
+function landedArrival(b,a){S.waveLanded=(S.waveLanded||0)+1;assign();refreshDoors();const items=[];for(let k=a.crew;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});items.push({k:'cargo',mat:a.mat});
+ startUnload({sid:b.id,cx:b.x+1,cz:b.z+1,gy:0,items,onDone:()=>toast(`👩‍🚀 ${a.crew} colonists from ${a.name} are on the surface (+${a.mat} 🧱)`)});}
+function oldSaveLevel(){let l=1;const t=new Set(S.b.map(b=>b.t));if(S.b.some(b=>b.t!=='ship'&&B[b.t]&&B[b.t].cat==='b'))l=2;
+ t.forEach(k=>{if(B[k]&&B[k].cat==='b')l=Math.max(l,lvOf(k));});if((S.launches||0)>0||t.has('fuel')||t.has('refin'))l=LVMAX;
+ const mx=Math.max(1,...S.b.map(b=>b.lvl||1));while(l<LVMAX&&TIERMAX[l]<mx)l++;return l;}
+// ---------- level UI: HUD chip, checklist, celebration
+let lvOpen=null;
+function lvEl(){let e=document.getElementById('lvl');if(!e){e=document.createElement('div');e.id='lvl';$('ui').appendChild(e);e.onclick=ev=>{if(ev.target.closest('.lvh')){lvOpen=!lvOpen;S.lvOpen=lvOpen;renderLv(true);beep(700,.04,'triangle');}};}return e;}
+let lvKey='';
+function renderLv(force){if(!S||S.demo)return;const e=lvEl();if(lvOpen===null)lvOpen=S.lvOpen??innerWidth>700;const gs=lvGoals(),p=lvPct(gs),lv=S.lvl||1,L=LEVELS[lv];
+ const done=lv>=LVMAX&&S.eraDone;const key=lv+'|'+lvOpen+'|'+gs.map(g=>g.v).join()+done;if(key===lvKey&&!force){lvPos();return;}lvKey=key;
+ e.className=lvOpen?'open':'';document.body.classList.toggle('lvopen',!!lvOpen);
+ e.innerHTML=`<div class="lvh"><span class="lvn">LV ${lv}</span><span class="lvt">${done?'Outpost era complete':L.n}</span><span class="lvc">${gs.filter(g=>g.ok).length}/${gs.length} ${lvOpen?'▾':'▸'}</span></div><div class="lvbar"><i style="width:${done?100:p}%"></i></div>`+
+ (lvOpen?`<div class="lvb">${gs.map(g=>`<div class="g${g.ok?' ok':''}"><span>${g.ok?'✅':'⬜'}</span><span class="gt">${g.t}</span><span class="gv">${g.need>1?`${g.v}/${g.need}`:''}</span></div>`).join('')}
+ <div class="lvf">${done?'🏁 More eras coming: Settlement → City → Terraforming':lv<LVMAX?`Next: <b>Lv ${lv+1} · ${LEVELS[lv+1].n}</b> — ${lvUnlockTxt(lv+1).join(', ')||'new challenges'}`:'Final Outpost level — complete it to finish the era'}</div></div>`:'');lvPos();}
+function lvPos(){const e=document.getElementById('lvl');if(!e)return;const hb=$('hud').getBoundingClientRect().bottom;let top=hb+6;const ph=innerWidth<=700;
+ if(!ph){const t=$('tut');if(t&&t.style.display==='block'){const r=t.getBoundingClientRect();top=Math.max(top,r.bottom+8);}}
+ e.style.top=top+'px';document.documentElement.style.setProperty('--lvB',(top+e.offsetHeight+6)+'px');}
+function lvChip(){const gs=lvGoals();return['⭐',`Lv ${S.lvl||1}<span class="lvpb"><i style="width:${S.eraDone?100:lvPct(gs)}%"></i></span>`];}
+let confetti=null;
+function celebrate(lv,era){S.lvlFx=1;const L=LEVELS[lv];let o=document.getElementById('lvup');if(!o){o=document.createElement('div');o.id='lvup';document.body.appendChild(o);}
+ const un=era?[]:lvUnlockTxt(lv),nx=LEVELS[lv+1];
+ o.innerHTML=`<canvas id="conf"></canvas><div class="card"><div class="k1">${era?'ERA COMPLETE!':'LEVEL UP!'}</div><div class="big">${era?'🏁':'⭐'} ${era?'OUTPOST':'LV '+lv}</div><div class="nm">${era?'The Outpost era is complete':L.n}</div>
+ ${un.length?`<div class="un"><div class="h">UNLOCKED</div>${un.map(u=>`<div>${u}</div>`).join('')}</div>`:''}
+ <div class="nx">${era?'Next era: <b>Settlement</b> — coming soon':nx?`Next: <b>Lv ${lv+1} · ${nx.n}</b>`:`Final goal: complete <b>${L.n}</b>`}</div><button id="lvok">${era?'ONWARD':'CONTINUE'}</button></div>`;
+ o.style.display='flex';const close=()=>{o.style.display='none';S.lvlFx=0;confetti=null;};$('lvok').onclick=close;clearTimeout(o._t);o._t=setTimeout(close,9000);
+ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,.14,'square',.05),i*110));setTimeout(()=>{beep(784,.5,'triangle',.06);beep(1047,.5,'triangle',.05);beep(1319,.6,'triangle',.04);},600);
+ const c=$('conf'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const C=['#c1440e','#e77d11','#fda600','#f6e3c5','#8a2a0c','#ffd166','#ff6b35'];
+ const P=[...Array(innerWidth<700?110:190)].map(()=>({x:Math.random()*c.width,y:Math.random()*c.height*.75-c.height*.3,vx:(Math.random()-.5)*3,vy:2+Math.random()*3,r:Math.random()*6.3,vr:(Math.random()-.5)*.3,w:6+Math.random()*7,h:3+Math.random()*5,c:C[Math.random()*C.length|0]}));
+ const tok={};confetti=tok;let n=0;const step=()=>{if(confetti!==tok||n++>420)return;x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx+Math.sin(n*.05+p.r)*.6;p.y+=p.vy;p.vy=Math.min(p.vy+.03,5);p.r+=p.vr;
+  x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));x.restore();});requestAnimationFrame(step);};step();}
+
 const TUT=[
- {t:'Touchdown!',x:`Your first Starship just landed on untouched Martian soil with ${TUNE.START_CREW} crew, 2 Optimus robots and the start kit. A second ship is a few minutes behind. Its onboard power runs the camp for now. Watch the cargo lift bring everyone down.`,done:()=>!S.crewPending&&S.tut.t>3},
+ {t:'Touchdown!',x:`Your first Starship just landed on untouched Martian soil with ${TUNE.START_CREW} crew, 2 Optimus robots and the start kit. Its onboard power runs the camp for now. Watch the cargo lift bring everyone down.`,done:()=>!S.crewPending&&S.tut.t>3},
  {t:'Home sweet dome',x:'Your crew is living in the cramped ship. Place your first 🏠 Habitat near them (Build tab) and they\'ll move in.',k:'hab',done:()=>has('hab')},
  {t:'Paths are free',x:'Open the 🚶 Paths tab and drag a path from the ships to the habitat. Anything within 2 tiles of a path counts as connected.',k:'path',tab:'p',done:()=>S.b.some(b=>b.t==='hab'&&b.door)&&S.b.some(b=>b.t==='ship'&&b.door)},
  {t:'Hungry crew',x:'The ration packs won\'t last forever. Build a 🌱 Farm Dome next to your path.',k:'farm',done:()=>has('farm')},
@@ -768,14 +889,13 @@ const TUT=[
  {t:'Grow the farm',x:'One small dome won\'t feed a colony. Tap your farm and press ⬆️ Upgrade to level 2.',arrow:'farm',done:()=>S.b.some(b=>b.t==='farm'&&b.lvl>=2)},
  {t:'Survive the night',x:'Build a 💧 Water Tank for storage, a ☀️ Solar Array, and a 🔋 Battery Farm — solar sleeps at night, batteries don\'t.',k:['wtank','solar','battery'],done:()=>has('wtank')&&has('solar')&&has('battery'),
   leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +¢300');}},
- {t:'Open the skies',x:'Time for reinforcements. Build a 🛬 Landing Pad — supply ships will start arriving with crew and materials.',k:'pad',done:()=>has('pad')},
 ];
 function tutWants(k){if(!S||!S.tut)return false;const st=TUT[S.tut.step];if(!st||!st.k)return false;return Array.isArray(st.k)?st.k.includes(k)&&!has(k):st.k===k;}
 const tutArrow=(()=>{const g=new THREE.Group();const c=mesh(new THREE.ConeGeometry(.22,.45,12),new THREE.MeshStandardMaterial({color:0xff3fa4,emissive:0xff3fa4,emissiveIntensity:.8}),0,0,0,false);c.rotation.x=Math.PI;g.add(c);g.visible=false;scene.add(g);return g;})();
 function tutTick(dt){const T=S.tut;T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
  if(st.done()){if(st.leave)st.leave();T.step++;T.t=0;beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}tab=nx.tab||'b';menu();renderTut();}}
 function endTut(){S.tut=null;$('tut').style.display='none';tutArrow.visible=false;S.b.filter(b=>b.t==='pad').forEach(b=>b.timer=Math.min(b.timer,TUNE.FIRST_SHIP_AFTER));menu();
- if(!S.tutBonus){S.tutBonus=1;S.mat+=120;S.cr+=200;}toast(`🎉 Tutorial complete! Mission bonus +120 🧱 +¢200. A supply ship arrives about every ${TUNE.SHIP_EVERY_SOL} Sols per pad.`);toast('🏠 Build more Habitats — arriving crew only stay if there is room.');toast('💡 Next: ⛏️ Mine + 🏗️ Processor for materials, ⛽ Fuel Plant to refuel Starships for paid return flights (🌍 Market).');}
+ if(!S.tutBonus){S.tutBonus=1;S.mat+=120;S.cr+=200;}toast(`🎉 Tutorial complete! Mission bonus +120 🧱 +¢200. Follow the ⭐ level checklist to grow your colony.`);toast('🏠 Build more Habitats — arriving crew only stay if there is room.');}
 function renderTut(){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.display='none';tutArrow.visible=false;return;}const st=TUT[T.step];if(!st)return;el.style.display='block';
  const list=Array.isArray(st.k)?`<div class="tl">${st.k.map(k=>`${has(k)?'✅':'⬜'} ${B[k].ic} ${B[k].n}`).join(' &nbsp; ')}</div>`:'';
  const ks=[].concat(st.k||st.arrow||[]),bc0=S.b.find(b=>ks.includes(b.t)&&b.cons>0);const cn=bc0?`<p class="tl">🏗️ ${B[bc0.t].n} under construction — ${trucks.length?'a 🚙 Cybertruck is bringing materials':'almost done'}…</p>`:'';
@@ -783,12 +903,12 @@ function renderTut(){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.displa
  const ab=st.arrow&&S.b.find(b=>b.t===st.arrow);tutArrow.visible=!!ab;if(ab){const c=bc(ab);tutArrow.position.set(c.x,1.6,c.z);tutArrow.userData.base=1.6;}}
 // ---------- sim
 let warnT=0,slow=0,lastSt=null;
-function sim(dt){S.t+=dt;if(!S.demo){if(S.mat<45&&S.cr<350&&!S.flights.length){S.safeT=(S.safeT||0)+dt;if(S.safeT>45){S.safeT=-240;S.mat+=120;S.cr+=200;toast('🆘 Mission Control sent an emergency resupply: +120 🧱 +¢200. Tip: a ⛏️ Mine + 🏗️ Processor makes materials for free.',1);}}else if(S.safeT>0)S.safeT=0;}sunK=.08+.92*dayK(S.t);slow-=dt;if(slow<=0){slow=1;assign();calcDeco();syncTrucks();syncBots();}const st=stats(dt);lastSt=st;S.food=Math.max(0,S.food+st.food*dt);S.wat=Math.min(st.wcap,Math.max(0,S.wat+st.wat*dt));S.fuel+=st.fuel*dt;
+function sim(dt){S.t+=dt;if(!S.demo){if(S.mat<45&&S.cr<350&&!S.flights.length){S.safeT=(S.safeT||0)+dt;if(S.safeT>45){S.safeT=-240;S.mat+=120;S.cr+=200;toast('🆘 Mission Control sent an emergency resupply: +120 🧱 +¢200. Tip: a ⛏️ Mine + 🏗️ Processor makes materials for free.',1);}}else if(S.safeT>0)S.safeT=0;}sunK=.08+.92*dayK(S.t);slow-=dt;if(slow<=0){slow=1;lvTick();assign();calcDeco();syncTrucks();syncBots();}const st=stats(dt);lastSt=st;S.food=Math.max(0,S.food+st.food*dt);S.wat=Math.min(st.wcap,Math.max(0,S.wat+st.wat*dt));S.fuel+=st.fuel*dt;
  S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1];if(b.cons>0){b.consT=(b.consT||0)+dt;if(true){b.cons-=dt*(1+.7*botsAt(b.id,'build'));const o=objs.get(b.id);if(o)o.scale.y=.25+.75*Math.max(0,1-b.cons/CONS_T);if(b.cons<=0)finishCons(b);}return;}
   const e=eff(b)*st.pe;if(d.ore&&!bots.length&&b.stock>1){const pr=S.b.find(q=>q.t==='proc'&&!(q.cons>0));if(pr){const n=Math.min(b.stock,dt*1.5);b.stock-=n;deliverOre(pr,n);}}if(d.ore){const capS=60*m;b.stock=(b.stock||0)+d.ore*m*e*(1+.35*Math.min(3,botsAt(b.id,'mine')))*dt;if(b.stock>capS){S.ore+=(b.stock-capS)*.5;b.stock=capS;}}
-  if(d.conv){const c=Math.min(b.stock||0,d.conv*m*e*dt);b.stock=(b.stock||0)-c;S.mat+=c;}});
+  if(d.conv){const c=Math.min(b.stock||0,d.conv*m*e*dt);b.stock=(b.stock||0)-c;S.mat+=c;S.made=(S.made||0)+c;}});
  const sol=Math.floor(S.t/DAY);if(sol!==S.lastSol){S.lastSol=sol;S.mktPrev={...S.mkt};for(const k in S.mkt)S.mkt[k]=Math.max(.6,Math.min(1.6,S.mkt[k]*(1+(Math.random()-.5)*.3)+(1-S.mkt[k])*.1));}
- S.flights=S.flights.filter(f=>{if(S.t<f.t)return true;S.cr+=f.pay;toast(`🌍 ${f.name} reached Earth — cargo & flight paid +¢${f.pay}`);floatText(`+¢${f.pay}`);beep(880,.12,'triangle',.07);setTimeout(()=>beep(1175,.15,'triangle',.07),110);return false;});
+ S.flights=S.flights.filter(f=>{if(S.t<f.t)return true;S.cr+=f.pay;S.flightsDone=(S.flightsDone||0)+1;S.tradeEarned=(S.tradeEarned||0)+f.pay;toast(`🌍 ${f.name} reached Earth — cargo & flight paid +¢${f.pay}`);floatText(`+¢${f.pay}`);beep(880,.12,'triangle',.07);setTimeout(()=>beep(1175,.15,'triangle',.07),110);return false;});
  if(S.tut){S.hap=Math.max(S.hap,75);tutTick(dt);}
  const pop=st.pop,hl=pop?S.cols.filter(c=>!c.home).length/pop:0,un=pop?S.cols.filter(c=>!c.work).length/pop:0,nc=pop?S.cols.filter(c=>{const h=c.home&&byId(c.home);return h&&!h.door;}).length/pop:0;
  let th=82-40*hl-15*un-12*nc;if(S.food<=0)th-=40;if(S.wat<=0)th-=40;if(st.pw<st.pu)th-=25;th-=20*(1-st.clean)+12*(1-st.health)+15*(1-st.safe);th+=12*st.fun+decoBonus;
@@ -856,7 +976,7 @@ function migrate4(d){if(d.v>=5)return d;const t={};for(const k in d.tiles||{})t[
  d.b=(d.b||[]).filter(b=>B[b.t]&&b.t!=='lamp');d.mat=(d.mat||0)+300+d.b.length*6;d.ore=d.ore||0;d.rare=d.rare||0;d.bat=0;d.mkt={mat:1,ore:1,rare:1};d.mktPrev={...d.mkt};d.order=0;d.flights=[];d.tut=null;
  d.lastSol=Math.floor((d.t||0)/DAY);d.v=5;d.up4={lamps,roads:Object.keys(t).length};return d;}
 function start(load,skipTut){clearAll();uid=1;cid=1;const sv=load&&localStorage.getItem('marsOutpost');
- if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;delete S.truckIn;if(d.ship2===undefined)S.ship2='done';if(S.ship2==='landing')S.ship2='pending';S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
+ if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;delete S.truckIn;if(d.ship2===undefined)S.ship2='done';S.ship2='done';if(d.lvl===undefined)S.lvl=null;S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
   d.b.forEach(b=>{rebuildOcc();addB(b.t,b.x,b.z,1,b);});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
@@ -864,6 +984,8 @@ function start(load,skipTut){clearAll();uid=1;cid=1;const sv=load&&localStorage.
   SHIP_SPOTS.slice(0,TUNE.START_SHIPS).forEach(([x,z],i)=>{const b=addB('ship',x,z,1);b.name=['Heart of Gold','Serenity','Red Dawn','Endurance','Tranquility'][i]||('Starship '+(i+1));objs.get(b.id).userData.land={t:-i*2.6,P:INTROL};});if(!S.demo)startIntro();
   S.crewPending=TUNE.START_CREW;if(skipTut){S.mat+=150;S.cr+=300;toast('Tutorial skipped — good luck, Commander!');}else{S.tut={step:0,t:0};}
   toast(`🚀 Starship inbound to ${S.name}…`);}
+ if(!S.demo&&S.lvl==null){S.lvl=oldSaveLevel();lvSnap();if(S.lvl===2)queueWave();if(S.lvl>2)S.waveQueued=1;if(load)toast(`⭐ Colony levels are here! ${S.name} starts at Lv ${S.lvl} · ${LEVELS[S.lvl].n} — tap the ⭐ badge for goals`,1);}
+ if(S.demo)S.lvl=LVMAX;lvOpen=null;lvKey='';
  refreshDoors();assign();syncTrucks();lastLock='';sel=null;tab='b';menu();$('title').style.display='none';$('ui').style.display='';rot=rotT=0;{const p=S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship')||{x:N/2,z:N/2};tgt.set(p.x+2,0,p.z+2);}zoom=(load?9:7)*(innerWidth<innerHeight?1.7:1);camUp();renderTut();beep(600,.1,'triangle',.07);}
 const NAMES=['Olympus Base','Red Rock Station','Valles Hub','Dusty Acres','Phobos View','Jezero Junction','Rusty Ridge','Crater Cove','Tharsis Town','Ares Landing','Hellas Haven','Elon Gulch'];
 let selDiff='standard';
@@ -893,3 +1015,4 @@ addEventListener('resize',dockSync);setInterval(dockSync,500);
 Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;
 
 window.__R=R;Object.defineProperty(window,'__unloads',{get:()=>unloads});
+window.__lv={levelUp,lvGoals,LEVELS,lvLocked,renderLv,celebrate,oldSaveLevel};
