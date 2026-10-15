@@ -395,7 +395,7 @@ function optimus(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const 
  b.add(leg(-1),leg(1),arm(-1),arm(1));b.add(mesh(rbox(.11,.1,.07,.025),OPT.w,0,.3,0));b.add(mesh(rbox(.085,.05,.06,.02),OPT.k,0,.225,0,false));
  b.add(mesh(rbox(.06,.035,.005,.004),OPT.k,0,.32,.036,false));b.add(mesh(cyl(.015,.018,.02,8),OPT.k,0,.36,0,false));
  const h=mesh(new THREE.SphereGeometry(.033,14,10),OPT.w,0,.395,0);h.scale.set(1,1.1,1.05);b.add(h);const v=mesh(new THREE.SphereGeometry(.031,14,10,-.9,1.8,.7,1.3),OPT.v,0,.395,.006,false);v.rotation.y=0;v.scale.set(1,1.1,1.1);b.add(v);
- const cr=mesh(rbox(.09,.06,.07,.01),M(0x9a6a3a,.8),0,.33,.06,false);cr.name='crate';cr.visible=false;b.add(cr);g.scale.setScalar(1.15);return g;}
+ const cr=mesh(rbox(.09,.06,.07,.01),M(0x9a6a3a,.8),0,.33,.06,false);cr.name='crate';cr.visible=false;b.add(cr);g.scale.setScalar(.72);return g;}
 function botsWant(){if(!S||S.demo)return 0;let n=S.botsLanded===undefined?2:Math.min(2,S.botsLanded);S.b.forEach(b=>{if(b.t==='robot'&&!(b.cons>0))n+=Math.round(B.robot.bots*LV[b.lvl-1]);});return Math.min(40,n);}
 function botsAt(id,kind){let n=0;for(const t of bots)if(t.st==='work'&&t.job&&t.job.id===id&&t.kind===kind)n++;return n;}
 function syncBots(){const want=botsWant();if(!S.bots)S.bots=[];while(S.bots.length<want){S.bots.push(1);if(bots.length>=2&&!S.demo)toast('🤖 A new Optimus robot rolled out of the bay');}while(S.bots.length>want)S.bots.pop();
@@ -429,11 +429,11 @@ function startUnload(o){// o:{sid,cx,cz,gy,items:[{k:'crew',n}|{k:'bot'}|{k:'tru
  plat.add(mesh(rbox(1.25,.04,.62,.015),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(1.25,.12,.012),MAT.yellow,0,.06,.31,false));
  const cab=[];for(const sx of[-.58,.58]){const c=mesh(cyl(.006,.006,1,4),MAT.dark,sx,0,R0-.05,false);g.add(c);cab.push(c);}
  unloads.push({...o,g,plat,hatch,lit,cab,HY,R0,dx,dz,ph:'open',t:0,pay:null,i:0});}
-function unloadPayload(u,it){const p=new THREE.Group();u.plat.add(p);if(it.k==='crew'){for(let i=0;i<it.n;i++){const a=astro(cid+i);a.scale.setScalar(1.25);a.position.set((i-(it.n-1)/2)*.32,.02,0);a.rotation.y=0;p.add(a);}}
+function unloadPayload(u,it){const p=new THREE.Group();u.plat.add(p);if(it.k==='crew'){for(let i=0;i<it.n;i++){const a=astro(cid+i);a.scale.setScalar(.8);a.position.set((i-(it.n-1)/2)*.22,.02,0);a.rotation.y=0;p.add(a);}}
  else if(it.k==='bot'){const b=optimus();b.position.y=.02;p.add(b);}else if(it.k==='truck'){const t=truckModel();t.rotation.y=Math.PI/2;t.position.y=.02;p.add(t);}
  else{for(let i=0;i<3;i++)p.add(mesh(rbox(.26,.2,.26,.02),M(0x9a6a3a,.8),(i-1)*.3,.12,0));}return p;}
 function landItem(u,it){const ox=u.cx+u.dx*u.R0,oz=u.cz+u.dz*u.R0,gx=u.cx+u.dx*(u.R0+.9),gz=u.cz+u.dz*(u.R0+.9);const tx=-u.dz,tz=u.dx;
- if(it.k==='crew'){for(let i=0;i<it.n;i++){const c=newCol();c.spawn=u.sid;if(S.crewPending)S.crewPending--;syncAgents();const a=agents.get(c.id);if(a){const off=(i-(it.n-1)/2)*.32;a.m.position.set(ox+tx*off,u.gy+.02,oz+tz*off);a.m.visible=true;a.st='out';a.at=u.sid;a.gp=new THREE.Vector3(gx+tx*off*1.6+(Math.random()-.5)*.3,0,gz+tz*off*1.6+(Math.random()-.5)*.3);}}assign();}
+ if(it.k==='crew'){for(let i=0;i<it.n;i++){const c=newCol();c.spawn=u.sid;if(S.crewPending)S.crewPending--;syncAgents();const a=agents.get(c.id);if(a){const off=(i-(it.n-1)/2)*.22;a.m.position.set(ox+tx*off,u.gy+.02,oz+tz*off);a.m.visible=true;a.st='out';a.at=u.sid;a.gp=new THREE.Vector3(gx+tx*off*1.6+(Math.random()-.5)*.3,0,gz+tz*off*1.6+(Math.random()-.5)*.3);}}assign();}
  else if(it.k==='bot'){S.botsLanded=(S.botsLanded||0)+1;syncBots();const t=bots[bots.length-1];if(t){t.m.position.set(ox,u.gy,oz);t.m.rotation.y=Math.atan2(u.dx,u.dz);t.st='idle';t.wait=1.5;}if(!S.demo)toast('🤖 An Optimus robot stepped off the cargo lift');}
  else if(it.k==='truck'){S.truckIn=1;syncTrucks();const t=trucks[trucks.length-1];if(t){t.m.position.set(ox,u.gy,oz);t.m.rotation.y=Math.atan2(u.dx,u.dz);t.wait=2;}if(!S.demo)toast('🛻 The Cybertruck was lowered from the cargo bay');}
  else{S.mat+=it.mat;if(!S.demo)floatText(`+${it.mat} 🧱`);}}
@@ -450,7 +450,7 @@ function tickUnloads(dt){unloads=unloads.filter(u=>{if(u.done||!S.b.some(b=>b.id
 // ---------- astronaut agents
 let agents=new Map();const MAXA=90;
 function syncAgents(){const want=new Set(S.cols.slice(0,MAXA).map(c=>c.id));agents.forEach((a,id)=>{if(!want.has(id)){scene.remove(a.m);agents.delete(id);}});
- S.cols.slice(0,MAXA).forEach((c,i)=>{if(!agents.has(c.id)){const m=astro(c.id);m.scale.setScalar(1.25);m.visible=false;scene.add(m);m.userData.cid=c.id;
+ S.cols.slice(0,MAXA).forEach((c,i)=>{if(!agents.has(c.id)){const m=astro(c.id);m.scale.setScalar(.8);m.visible=false;scene.add(m);m.userData.cid=c.id;
   agents.set(c.id,{c,m,st:'in',at:c.spawn||c.home,wait:c.spawn?0.5:Math.random()*8,off:(Math.random()-.5)*.22});delete c.spawn;}});}
 function edgeTo(b,o){const c=bc(b),dx=o.x-c.x,dz=o.z-c.z,l=Math.hypot(dx,dz)||1,r=B[b.t].s*.5+.1;return new THREE.Vector3(c.x+dx/l*r,0,c.z+dz/l*r);}
 function edgePos(b,door){const c=bc(b);return new THREE.Vector3((c.x+door.x+.5)/2,0,(c.z+door.z+.5)/2);}
@@ -468,14 +468,32 @@ function tickAgents(dt){agents.forEach(a=>{const u=a.m.userData,c=a.c;
  else{p.x+=vx/d*sp;p.z+=vz/d*sp;a.m.rotation.y=Math.atan2(vx,vz);}u.ph+=dt*9;limbs(u,1);p.y=hgt(p.x,p.z)+.02+Math.abs(Math.sin(u.ph))*.02;});}
 // ---------- Cybertrucks
 let trucks=[];
-function truckModel(){const g=new THREE.Group();const sh=new THREE.Shape();sh.moveTo(-.46,.07);sh.lineTo(.46,.07);sh.lineTo(.48,.17);sh.lineTo(.06,.33);sh.lineTo(-.46,.23);sh.lineTo(-.46,.07);
- const geo=new THREE.ExtrudeGeometry(sh,{depth:.36,bevelEnabled:false});geo.translate(0,0,-.18);geo.rotateY(-Math.PI/2);geo.computeVertexNormals();
- const body=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xc9ccd0,metalness:.9,roughness:.32,envMap:ENV,envMapIntensity:1.2,flatShading:true}));body.castShadow=true;g.add(body);
- const gl=new THREE.Mesh(new THREE.PlaneGeometry(.34,.2),M(0x111418,.1,.6,{side:THREE.DoubleSide}));gl.position.set(0,.262,.27);gl.rotation.x=-Math.PI/2+.36;g.add(gl);
- const wg=cyl(.075,.075,.06,12);wg.rotateZ(Math.PI/2);[[.17,.3],[-.17,.3],[.17,-.29],[-.17,-.29]].forEach(([x,z])=>g.add(mesh(wg,MAT.dark,x,.075,z,false)));
- g.add(mesh(new THREE.BoxGeometry(.34,.012,.012),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:2}),0,.17,.475,false));
- g.add(mesh(new THREE.BoxGeometry(.34,.012,.012),new THREE.MeshStandardMaterial({color:0xff2020,emissive:0xff2020,emissiveIntensity:1.5}),0,.2,-.465,false));
- const cr=mesh(rbox(.26,.1,.3,.02),M(0x9a6a3a,.8),0,.27,-.22,false);cr.name='crate';cr.visible=false;g.add(cr);g.scale.setScalar(1.35);return g;}
+// Cybertruck from the owner's-manual numbers: L 5683, W 2032, H 1796, wheelbase 3635, overhangs 878 / 1170 mm, 35" tyres.
+// k = units per metre, matched to the people (1.8 m astronaut ≈ .31 units).
+const CT_K=.172,CTM={body:new THREE.MeshStandardMaterial({color:0xc4c7cb,metalness:.92,roughness:.34,envMap:SENV,envMapIntensity:1.3,flatShading:true}),
+ glass:new THREE.MeshStandardMaterial({color:0x0c0e12,metalness:.6,roughness:.12,envMap:SENV,envMapIntensity:.8,side:THREE.DoubleSide}),clad:new THREE.MeshStandardMaterial({color:0x26282b,roughness:.8,metalness:.1,side:THREE.DoubleSide}),
+ tonneau:new THREE.MeshStandardMaterial({color:0x3a3d42,roughness:.55,metalness:.4,envMap:SENV,envMapIntensity:.5}),tyre:new THREE.MeshStandardMaterial({color:0x151515,roughness:.9}),
+ hub:new THREE.MeshStandardMaterial({color:0x8a8e94,metalness:.8,roughness:.4,envMap:SENV}),front:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:2.2}),
+ rear:new THREE.MeshStandardMaterial({color:0xff2222,emissive:0xff1a1a,emissiveIntensity:1.8})};
+let CTG=null;
+function ctGeoms(){if(CTG)return CTG;const k=CT_K,L=5.683,W=2.032,cx=L/2;const P=(x,y)=>new THREE.Vector2((x-cx)*k,y*k);
+ // side profile (front = +x): bumper, low nose, one straight hood/windscreen line to the roof apex, one straight sail line down to the tailgate
+ const sh=new THREE.Shape([P(0,.5),P(0,1.2),P(2.95,1.796),P(5.683,1.0),P(5.683,.62),P(5.35,.5),P(5.30,.5),P(4.805+.6,.5),P(4.805+.47,.95),P(4.805-.47,.95),P(4.805-.6,.5),P(1.17+.6,.5),P(1.17+.47,.95),P(1.17-.47,.95),P(1.17-.6,.5)]);
+ const body=new THREE.ExtrudeGeometry(sh,{depth:W*k,bevelEnabled:false});body.translate(0,0,-W*k/2);body.rotateY(-Math.PI/2);body.computeVertexNormals();
+ const arch=x=>{const a=new THREE.Shape([P(x-.66,.42),P(x-.5,1.02),P(x+.5,1.02),P(x+.66,.42),P(x+.54,.42),P(x+.42,.9),P(x-.42,.9),P(x-.54,.42)]);return new THREE.ShapeGeometry(a);};
+ const win=new THREE.ShapeGeometry(new THREE.Shape([P(4.02,1.47),P(2.98,1.765),P(1.78,1.6),P(1.86,1.36),P(3.85,1.36)]));
+ const slope=(x0,y0,x1,y1,w,t)=>{const g=new THREE.BoxGeometry(Math.hypot(x1-x0,y1-y0)*k,t*k,w*k);g.rotateZ(Math.atan2(y1-y0,x1-x0));g.translate(((x0+x1)/2-cx)*k,(y0+y1)/2*k,0);g.rotateY(-Math.PI/2);return g;};
+ const shield=slope(4.02,1.47,3.0,1.77,W-.22,.03),ton=slope(1.85,1.585,.08,1.215,W-.16,.03);
+ const lbF=new THREE.BoxGeometry(W*.92*k,.05*k,.03*k);lbF.translate(0,.99*k,(L/2-.005)*k);const lbT=new THREE.BoxGeometry(W*.9*k,.03*k,.06*k);lbT.translate(0,1.0*k,(L/2-.06)*k);
+ const lbR=new THREE.BoxGeometry(W*.92*k,.05*k,.03*k);lbR.translate(0,1.16*k,(-L/2+.005)*k);
+ const tyre=new THREE.CylinderGeometry(.445*k,.445*k,.3*k,16);tyre.rotateZ(Math.PI/2);const hub=new THREE.CylinderGeometry(.27*k,.27*k,.31*k,6);hub.rotateZ(Math.PI/2);
+ CTG={body,arch,win,shield,ton,lbF,lbT,lbR,tyre,hub,k,L,W,cx};return CTG;}
+function truckModel(){const G=ctGeoms(),k=G.k,g=new THREE.Group();const add=(geo,mat,sh)=>{const m=new THREE.Mesh(geo,mat);if(sh)m.castShadow=true;g.add(m);return m;};
+ add(G.body,CTM.body,1);add(G.shield,CTM.glass);add(G.ton,CTM.tonneau);add(G.lbF,CTM.front);add(G.lbT,CTM.front);add(G.lbR,CTM.rear);
+ for(const sd of[-1,1]){const w=add(G.win,CTM.glass);w.rotation.y=-Math.PI/2;w.position.x=sd*(G.W/2+.004)*k;if(sd<0)w.scale.z=-1;
+  for(const ax of[1.17,4.805]){const a=add(G.arch(ax),CTM.clad);a.rotation.y=-Math.PI/2;a.position.x=sd*(G.W/2+.006)*k;
+   const z=(ax-G.cx)*k;const t=add(G.tyre,CTM.tyre,1);t.position.set(sd*(G.W/2-.17)*k,.445*k,z);const h=add(G.hub,CTM.hub);h.position.set(sd*(G.W/2-.16)*k,.445*k,z);}}
+ const cr=mesh(rbox(.22,.07,.2,.012),M(0x9a6a3a,.8),0,1.38*k,-1.6*k,false);cr.name='crate';cr.visible=false;g.add(cr);return g;}
 // Cybertrucks drive freely over the terrain (no roads), steering around buildings.
 const TRUCKSRC=['proc','pad','ship'];
 function nearestB(list,p){let best=null,bd=1e9;list.forEach(b=>{const c=bc(b),d=Math.hypot(c.x-p.x,c.z-p.z);if(d<bd){bd=d;best=b;}});return best;}
@@ -488,10 +506,15 @@ function drive(t,b,dt){const p=t.m.position,c=bc(b),dx=c.x-p.x,dz=c.z-p.z,d=Math
  const want=Math.atan2(dx,dz),side=t.side||1;let head=null;
  for(const o of[0,.45,-.45,.9,-.9,1.35,-1.35,1.9,-1.9,2.6,-2.6]){const a=want+o*side;if(clearAt(p.x+Math.sin(a)*.75,p.z+Math.cos(a)*.75,t)&&clearAt(p.x+Math.sin(a)*.4,p.z+Math.cos(a)*.4,t)){head=a;if(o!==0)t.side=Math.sign(o*side)||1;break;}}
  if(head===null){head=t.m.rotation.y+Math.PI*.5;}
- // separation from other trucks
- let sx=0,sz=0;for(const o of trucks){if(o===t)continue;const ox=p.x-o.m.position.x,oz=p.z-o.m.position.z,od=Math.hypot(ox,oz);if(od<.6&&od>0){sx+=ox/od*(.6-od);sz+=oz/od*(.6-od);}}
+ // separation + yielding: never drive through other trucks, robots or people
+ let sx=0,sz=0,block=0;const fx=Math.sin(t.m.rotation.y),fz=Math.cos(t.m.rotation.y),me=trucks.indexOf(t);
+ const look=(q,r0,isT,j)=>{const ox=q.x-p.x,oz=q.z-p.z,od=Math.hypot(ox,oz);if(od<1e-4)return;if(od<r0){sx-=ox/od*(r0-od);sz-=oz/od*(r0-od);}
+  const ahead=(ox*fx+oz*fz),lat=Math.abs(ox*fz-oz*fx);if(ahead>0&&ahead<(isT?1.15:.75)&&lat<(isT?.42:.3)){if(!isT||j<me||(t.yT||0)<2.5)block=Math.max(block,isT&&j>me?.5:1);}};
+ trucks.forEach((o,j)=>{if(o!==t)look(o.m.position,.62,1,j);});agents.forEach(a=>{if(a.m.visible)look(a.m.position,.32,0);});bots.forEach(b=>look(b.m.position,.32,0));
+ if(block>=1){t.yT=(t.yT||0)+dt;if(t.yT>2.5){head+=.9*(t.side||1);}}else t.yT=0;
  let da=head-t.m.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));t.m.rotation.y+=da*Math.min(1,dt*6);
- const sp=Math.min(d,(Math.abs(da)>1.2?1:2.2)*dt);p.x+=Math.sin(t.m.rotation.y)*sp+sx*dt*2;p.z+=Math.cos(t.m.rotation.y)*sp+sz*dt*2;p.y=hgt(p.x,p.z);
+ const v0=(Math.abs(da)>1.2?.8:1.8)*(block>=1&&t.yT<=2.5?0:block?.45:1);const sp=Math.min(d,v0*dt);const nx=p.x+Math.sin(t.m.rotation.y)*sp+sx*dt*3,nz=p.z+Math.cos(t.m.rotation.y)*sp+sz*dt*3;
+ if(clearAt(nx,nz,t)||!clearAt(p.x,p.z,t)){p.x=nx;p.z=nz;}p.y=hgt(p.x,p.z);
  t.stuck=(t.stuck||0)+dt;if(t.stuck>40){const e=edgeTo(b,{x:p.x,z:p.z});p.x=e.x;p.z=e.z;}return false;}
 function deliverOre(pr,n){const cap=120*LV[pr.lvl-1];pr.stock=(pr.stock||0)+n;if(pr.stock>cap){S.ore+=pr.stock-cap;pr.stock=cap;}
  if(Math.random()<.12){const r=1+(Math.random()*3|0);S.rare+=r;toast(`💎 Rare ore found in a truckload: +${r}`);}}
@@ -659,7 +682,7 @@ function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=ho
  else if(d.cat==='b'||d.cat==='d'){if(!free(sel,x,z)){if(!painting){toast("Can't build there — pick a clear spot (green outline)",1);beep(160,.12,'sawtooth',.04);}return;}if(!afford(d.c,d.m))return;pay(d.c,d.m);const b=addB(sel,x,z);
   if(d.cat==='b'){b.cons=CONS_T;b.consT=0;const o=objs.get(b.id);delete o.userData.grow;o.scale.y=.25;const sc=new THREE.Mesh(new THREE.BoxGeometry(d.s*.98,.9,d.s*.98),new THREE.MeshBasicMaterial({color:0xffa040,wireframe:true,transparent:true,opacity:.55}));sc.position.set(d.s/2,.45,d.s/2);sc.name='scaf';o.add(sc);}
   assign();beep(520,.07,'triangle',.07);if(d.cat==='b'&&!b.door)toast('⚠️ No path within 2 tiles — paths are free, drag one nearby');setMenu(false);}updPrev();}
-function pick(cx,cy){let best=null,bd=22;const v=new THREE.Vector3();agents.forEach(a=>{if(!a.m.visible)return;v.copy(a.m.position);v.y+=.3;v.project(cam);const sx=(v.x+1)/2*innerWidth,sy=(1-v.y)/2*innerHeight,d=Math.hypot(sx-cx,sy-cy);if(d<bd){bd=d;best=a;}});
+function pick(cx,cy){let best=null,bd=22;const v=new THREE.Vector3();agents.forEach(a=>{if(!a.m.visible)return;v.copy(a.m.position);v.y+=.18;v.project(cam);const sx=(v.x+1)/2*innerWidth,sy=(1-v.y)/2*innerHeight,d=Math.hypot(sx-cx,sy-cy);if(d<bd){bd=d;best=a;}});
  if(best){openC(best.c);beep(800,.04);return;}const c=cell(cx,cy);const b=c&&occ[c.x]?.[c.z];if(b){if(menuOpen&&!sel)setMenu(false);openB(b);beep(700,.04);}else{closePanel();if(menuOpen&&!sel)setMenu(false);}}
 const ptrs=new Map();let drag=null,moved=0,pinch0=0,mid0=null,lp=null,moving=null,painting=false,lastPaint=null,follow=null;
 function moveCell(c){const s=B[moving.b.t].s;return s===2?{x:Math.round(c.p.x-1),z:Math.round(c.p.z-1)}:{x:c.x,z:c.z};}
