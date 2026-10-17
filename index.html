@@ -148,6 +148,21 @@ body.intro::after{content:'Tap anywhere to skip';position:fixed;left:0;right:0;t
 #dozeb.active{background:#d8361a!important;border-color:#ffe14a!important;color:#fff;box-shadow:0 0 10px #ff6b35;animation:dzp 1s ease-in-out infinite}
 @keyframes dzp{50%{box-shadow:0 0 2px #ff6b35}}
 body.dozing #info{color:#ffb090}
+
+/* v14 saves + storm */
+#save{position:relative}#save .sv{position:absolute;right:1px;bottom:0;font-size:8px;opacity:.85;line-height:1}
+#savesb{margin-top:8px;width:100%;background:transparent;border:1px dashed #e77d11;color:#ffd166;padding:7px;cursor:pointer;font-size:12px}
+#loaderr{margin-top:8px;padding:8px;border:1px solid #ff6b35;background:rgba(120,20,0,.4);font-size:12px;line-height:1.4}
+#savebox{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);align-items:center;justify-content:center}
+#savebox .card{background:linear-gradient(180deg,#3a1206,#1a0602);border:3px solid #ffd166;box-shadow:0 0 0 3px #c1440e;padding:14px;width:min(420px,92vw);max-height:88dvh;overflow:auto;font-size:13px;line-height:1.45;color:#f6e3c5;display:flex;flex-direction:column;gap:7px}
+#savebox .h{font-family:'Press Start 2P',monospace;font-size:12px;color:#ffe14a}#savebox .h2{font-family:'Press Start 2P',monospace;font-size:9px;color:#3ff3ff;margin-top:4px}
+#savebox button,#savebox .fbtn{background:#5a2a10;border:1px solid #e77d11;color:#ffd166;padding:7px 9px;border-radius:6px;cursor:pointer;font-size:12px;text-align:center}
+#savebox .fbtn input{display:none}#savebox .row2{display:flex;gap:6px}#savebox .row2>*{flex:1}
+#savebox textarea{width:100%;height:56px;background:#140402;color:#f6e3c5;border:1px solid #7a3a1a;font-size:11px;box-sizing:border-box}
+#savebox .slot{display:flex;gap:8px;align-items:center;justify-content:space-between;border-top:1px dashed #7a3a1a;padding-top:5px}
+#savebox .sub{opacity:.75;font-size:11.5px}#savebox .cl{background:#7a1a08}
+body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at center,rgba(190,90,30,.25),rgba(150,60,15,.55));animation:stm 3s ease-in-out infinite alternate}
+@keyframes stm{to{opacity:.7}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
@@ -162,7 +177,7 @@ body.dozing #info{color:#ffb090}
 <label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>¢1500 · 320🧱</small></button><button data-d="hard">Hard<small>¢1100 · 280🧱</small></button></div></label>
 <label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
 <button id="play" class="big">New colony</button>
-<button id="cont" class="big alt" style="display:none"></button>
+<button id="cont" class="big alt" style="display:none"></button><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
 <div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
 <div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
