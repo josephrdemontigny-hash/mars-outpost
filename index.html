@@ -174,6 +174,18 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #inst{bottom:calc(var(--dockH,110px) + 12px)}#upd{top:calc(10px + env(safe-area-inset-top));cursor:pointer}
 #inst b{color:#ffe14a}#inst button,#upd button{background:#c1440e;border:1px solid #ffd166;color:#ffe14a;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap}#inst .x{background:transparent;border:none;color:#fff;font-size:18px;padding:0 4px}
 #savebox .move{border:1px dashed #3ff3ff;padding:7px;font-size:12px;background:rgba(63,243,255,.07)}
+
+/* v19 dialogs */
+#slotops{gap:6px;margin-top:6px}#slotops button{flex:1;padding:8px;font-size:12px;cursor:pointer}
+.dangerl{color:#ff9a8a!important;border-color:#c0392b!important}
+#mdlg{display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+#mdlg .card{background:linear-gradient(180deg,#3a1206,#1a0602);border:3px solid #ffd166;box-shadow:0 0 0 3px #c1440e;padding:16px;width:min(380px,92vw);color:#f6e3c5;font-size:14px;line-height:1.45;display:flex;flex-direction:column;gap:10px}
+#mdlg .h{font-family:'Press Start 2P',monospace;font-size:12px;color:#ffe14a}#mdlg .sub{opacity:.75;font-size:12px}
+#mdlg input{font-size:16px;padding:9px;background:#140402;color:#fff;border:2px solid #e77d11;border-radius:6px;width:100%}
+#mdlg .btns{display:flex;flex-wrap:wrap;gap:8px}#mdlg .btns button{flex:1 1 30%;min-height:42px;padding:8px;border-radius:6px;border:1px solid #e77d11;background:#5a2a10;color:#ffd166;font-size:13px;cursor:pointer}
+#mdlg .btns button:first-child:nth-last-child(3){flex-basis:100%}
+#mdlg .btns .go{background:#c1440e;color:#ffe14a;border-color:#ffd166;font-weight:700}#mdlg .btns .danger{background:#b3241a!important;color:#fff!important;border-color:#ff8a7a!important;font-weight:700}
+#savebox .slot .sb{display:flex;gap:4px}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
@@ -188,7 +200,7 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 <label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>¢1500 · 320🧱</small></button><button data-d="hard">Hard<small>¢1100 · 280🧱</small></button></div></label>
 <label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
 <button id="play" class="big">New colony</button>
-<button id="cont" class="big alt" style="display:none"></button><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
+<button id="cont" class="big alt" style="display:none"></button><div class="row" id="slotops" style="display:none"><button id="renb">✏️ Rename</button><button id="delb" class="dangerl">🗑️ Delete</button></div><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
 <div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
 <div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
