@@ -1,5 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<link rel="icon" href="data:,">
+<link rel="icon" href="icons/favicon-32.png"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#1e062d"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="MARS">
 <title>MARS — A Terraforming Game</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#c98a5e;font-family:system-ui,sans-serif;color:#fff;user-select:none;touch-action:none}
@@ -163,6 +164,16 @@ body.dozing #info{color:#ffb090}
 #savebox .sub{opacity:.75;font-size:11.5px}#savebox .cl{background:#7a1a08}
 body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at center,rgba(190,90,30,.25),rgba(150,60,15,.55));animation:stm 3s ease-in-out infinite alternate}
 @keyframes stm{to{opacity:.7}}
+
+/* v15 PWA: safe areas + install tip */
+#hud{padding-left:calc(6px + env(safe-area-inset-left));padding-right:calc(6px + env(safe-area-inset-right))}
+#dock{padding-left:calc(4px + env(safe-area-inset-left));padding-right:calc(4px + env(safe-area-inset-right))}
+#lvl{right:calc(6px + env(safe-area-inset-right))}@media(min-width:701px){#lvl{left:calc(8px + env(safe-area-inset-left))}}
+#panel{margin-right:env(safe-area-inset-right)}#info{margin-left:env(safe-area-inset-left)}
+#inst,#upd{position:fixed;left:50%;transform:translateX(-50%);z-index:70;background:linear-gradient(180deg,#3a1206,#1a0602);border:2px solid #ffd166;box-shadow:0 0 0 2px #c1440e,0 4px 18px rgba(0,0,0,.5);color:#f6e3c5;padding:10px 12px;font-size:13px;line-height:1.4;display:flex;gap:10px;align-items:center;width:max-content;max-width:min(420px,92vw);border-radius:8px}
+#inst{bottom:calc(var(--dockH,110px) + 12px)}#upd{top:calc(10px + env(safe-area-inset-top));cursor:pointer}
+#inst b{color:#ffe14a}#inst button,#upd button{background:#c1440e;border:1px solid #ffd166;color:#ffe14a;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap}#inst .x{background:transparent;border:none;color:#fff;font-size:18px;padding:0 4px}
+#savebox .move{border:1px dashed #3ff3ff;padding:7px;font-size:12px;background:rgba(63,243,255,.07)}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
@@ -191,4 +202,22 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 • Bigger buildings (Waste, Medical, Entertainment, Security…) unlock as your population grows.<br>
 <b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
 </div></div>
-<script type="module" src="game.js"></script></body></html>
+<script type="module" src="game.js"></script>
+<script>
+(()=>{const IOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const STAND=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;window.__pwa={IOS,STAND};
+ // service worker + update toast
+ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(reg=>{window.__swreg=reg;
+  const ready=w=>{if(!navigator.serviceWorker.controller||document.getElementById('upd'))return;const d=document.createElement('div');d.id='upd';d.innerHTML='🚀 <span>Update available — tap to reload</span>';d.onclick=()=>{try{window.__mSave&&window.__mSave();}catch(e){}w.postMessage('skipWaiting');};document.body.appendChild(d);};
+  if(reg.waiting)ready(reg.waiting);reg.addEventListener('updatefound',()=>{const w=reg.installing;w&&w.addEventListener('statechange',()=>{if(w.state==='installed')ready(w);});});
+  setInterval(()=>reg.update().catch(()=>{}),30*60*1000);}).catch(e=>console.warn('SW failed',e));
+  let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl||!document.getElementById('upd'))return;rl=true;location.reload();});}
+ // one-time install tip
+ const K='marsInstallTip';const done=()=>localStorage.getItem(K)==='done';const finish=()=>{localStorage.setItem(K,'done');const e=document.getElementById('inst');e&&e.remove();};
+ const show=html=>{if(done()||document.getElementById('inst'))return;const d=document.createElement('div');d.id='inst';d.innerHTML=html+'<button class="x" aria-label="Dismiss">✕</button>';document.body.appendChild(d);d.querySelector('.x').onclick=finish;return d;};
+ if(STAND){localStorage.setItem(K,'done');}
+ else if(IOS){setTimeout(()=>show('📲 <span><b>Install MARS:</b> tap Share <b>⬆︎</b>, then <b>Add to Home Screen</b>. <span style="opacity:.75">Moving over? Export your save first (💾 Saves).</span></span>'),6000);}
+ let dp=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;const d=show('📲 <span><b>Install MARS</b> as an app — plays offline</span><button class="go">Install</button>');if(d)d.querySelector('.go').onclick=async()=>{dp.prompt();const r=await dp.userChoice;dp=null;finish();};});
+ addEventListener('appinstalled',finish);
+})();
+</script></body></html>
