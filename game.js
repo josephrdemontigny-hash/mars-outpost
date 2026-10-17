@@ -229,9 +229,10 @@ const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const bump=new THREE.CanvasTexture(mk('#808080','rgba(30,30,30,1)',[120,16]));
  [col,rough,bump].forEach(t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;});return{col,rough,bump};})();
 const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0xf2f5f8,map:steelMaps.col,roughnessMap:steelMaps.rough,bumpMap:steelMaps.bump,bumpScale:.6,metalness:1,roughness:.85,envMap:SENV,envMapIntensity:1.35}),
- tile:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,roughness:.82,metalness:.05,envMap:SENV,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}),
- flapS:new THREE.MeshStandardMaterial({color:0xd4d8dc,metalness:1,roughness:.32,envMap:SENV,envMapIntensity:1.25}),
+ tile:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,roughness:.82,metalness:.05,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}),
+ flapS:new THREE.MeshStandardMaterial({color:0xd4d8dc,metalness:1,roughness:.32,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
  flapT:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,roughness:.82,metalness:.05,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}),
+ bayIn:new THREE.MeshStandardMaterial({color:0x2c2a28,metalness:.6,roughness:.6,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.4}),
  chine:new THREE.MeshStandardMaterial({color:0x2a2b2e,roughness:.7,metalness:.3,envMap:SENV,envMapIntensity:.5}),
  bell:new THREE.MeshStandardMaterial({color:0x3a3632,metalness:.8,roughness:.45,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.6}),
  bellIn:new THREE.MeshStandardMaterial({color:0x8a5a3a,metalness:.7,roughness:.35,side:THREE.BackSide,envMap:SENV,envMapIntensity:.6}),
@@ -270,7 +271,7 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  const hy=H-1.3;for(const sd of[-1,1])g.add(mesh(new THREE.CylinderGeometry(.012,.012,.03,8).rotateX(Math.PI/2),SHIPMAT.chine,sd*shipR(hy)*.55,y0+hy,shipR(hy)*.82,false));
  g.add(mesh(new THREE.TorusGeometry(shipR(H-.55)+.002,.004,6,40).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+H-.55,0,false));
  // aft skirt and engine bay
- g.add(mesh(new THREE.CylinderGeometry(SH_R,SH_R*1.01,SH_SK,64,1,true),SHIPMAT.steel,0,y0-SH_SK/2,0));
+ {const sk=SHIPMAT.steel.clone();sk.side=THREE.DoubleSide;g.add(mesh(new THREE.CylinderGeometry(SH_R,SH_R*1.01,SH_SK,64,1,true),sk,0,y0-SH_SK/2,0));g.add(mesh(new THREE.CylinderGeometry(SH_R*.985,SH_R*.995,SH_SK,48,1,true),SHIPMAT.bayIn,0,y0-SH_SK/2,0,false));g.add(mesh(new THREE.CircleGeometry(SH_R*1.0,48).rotateX(Math.PI/2),SHIPMAT.bell,0,y0-.003,0,false));}
  g.add(mesh(new THREE.TorusGeometry(SH_R*1.005,.008,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0-SH_SK,0,false));
  g.add(mesh(new THREE.CircleGeometry(SH_R*.99,48).rotateX(Math.PI/2),SHIPMAT.bell,0,y0+.01,0,false));
  const bell=(rt,re,h)=>{const b=new THREE.Group();const pts=[];for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector2(rt+(re-rt)*Math.pow(t,.6),-t*h));}
