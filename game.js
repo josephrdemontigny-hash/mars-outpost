@@ -1055,7 +1055,7 @@ function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=ho
   assign();beep(520,.07,'triangle',.07);}updPrev();}
 function pick(cx,cy){let best=null,bd=22;const v=new THREE.Vector3();agents.forEach(a=>{if(!a.m.visible)return;a.m.getWorldPosition(v);v.y+=.05;v.project(cam);const sx=(v.x+1)/2*innerWidth,sy=(1-v.y)/2*innerHeight,d=Math.hypot(sx-cx,sy-cy);if(d<bd){bd=d;best=a;}});
  if(best){openC(best.c);beep(800,.04);return;}const c=cell(cx,cy);const b=c&&occ[c.x]?.[c.z];if(b){if(menuOpen&&!sel)setMenu(false);openB(b);beep(700,.04);}else{closePanel();if(menuOpen&&!sel)setMenu(false);}}
-let tw0=0;const ptrs=new Map();let drag=null,moved=0,pinch0=0,mid0=null,lp=null,moving=null,painting=false,lastPaint=null,follow=null;
+let tw0=0,gp0=null,gl=null,gmode=null,gd0=0,gy0=0;const TWIST_SIGN=1;const ptrs=new Map();let drag=null,moved=0,pinch0=0,mid0=null,lp=null,moving=null,painting=false,lastPaint=null,follow=null;
 function moveCell(c){const s=B[moving.b.t].s;return s>1?{x:Math.round(c.p.x-s/2),z:Math.round(c.p.z-s/2)}:{x:c.x,z:c.z};}
 function startMove(b){if(b.t==='pad'&&b.ship){toast("Can't move a pad while a ship is on it",1);return;}closePanel();moving={b,ok:true,x:b.x,z:b.z};navigator.vibrate&&navigator.vibrate(30);beep(880,.08,'sine',.06);
  const o=objs.get(b.id);o.parent.position.y=by(b)+.35;prev.visible=true;$('info').textContent=`Moving ${b.name} — drop on a green spot`;}
@@ -1087,7 +1087,7 @@ function undoSync(){const u=$('undob');if(u)u.style.display=lastStroke&&(sel==='
 function dozeSync(){const d=$('dozeb');if(d)d.classList.toggle('active',sel==='dozer');document.body.classList.toggle('dozing',sel==='dozer');}
 R.domElement.addEventListener('pointerdown',e=>{ac();ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(e.button===2){sel=null;menu();updPrev();dozeSync();return;}
  clearTimeout(lp);
- if(ptrs.size>=2){gest=true;strokeCancel();reticle.visible=false;const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);tw0=Math.atan2(b.y-a.y,b.x-a.x);mid0={x:(a.x+b.x)/2,y:(a.y+b.y)/2};moved=99;painting=false;stroke=null;tapStart=null;drag=null;clearTimeout(lp);return;}
+ if(ptrs.size>=2){gest=true;strokeCancel();reticle.visible=false;const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);gp0=[{...a},{...b}];gl=[{x:a.x,y:a.y},{x:b.x,y:b.y}];gmode=null;gd0=pinch0;gy0=(a.y+b.y)/2;tw0=Math.atan2(b.y-a.y,b.x-a.x);mid0={x:(a.x+b.x)/2,y:(a.y+b.y)/2};moved=99;painting=false;stroke=null;tapStart=null;drag=null;clearTimeout(lp);return;}
  drag={x:e.clientX,y:e.clientY};moved=0;gest=false;
  if(!S||S.demo)return;const c=lineTool()?cell(e.clientX,e.clientY-PTR_OFF(e)):cell(e.clientX,e.clientY);
  if(lineTool()&&c){painting=true;stroke={tool:sel,line:1,t0:performance.now(),x0:e.clientX,y0:e.clientY,live:false,set:new Set(),cells:[],start:{x:c.x,z:c.z},tap2:false};tapStart=null;lastPaint={x:c.x,z:c.z};if(tapStart){linePreview(tapStart,c);stroke.live=true;}else reticleAt(c);return;}
@@ -1095,14 +1095,16 @@ R.domElement.addEventListener('pointerdown',e=>{ac();ptrs.set(e.pointerId,{x:e.c
  const b=c&&occ[c.x]?.[c.z];if(b&&!sel)lp=setTimeout(()=>{if(moved<=8&&ptrs.size===1&&!gest)startMove(b);},450);});
 addEventListener('pointermove',e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(moving){dragMove(cell(e.clientX,e.clientY));return;}
- if(ptrs.size>=2){clearTimeout(lp);const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};if(pinch0){zoom=Math.max(3,Math.min(48,zoom*pinch0/d));pinch0=d;const ta=Math.atan2(b.y-a.y,b.x-a.x);let da=ta-tw0;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;tw0=ta;rot-=da;rotT=rot;camEl=Math.max(.35,Math.min(1.35,camEl+(mid.y-mid0.y)*.006));mid0=mid;camUp();}moved=99;return;}
+ if(ptrs.size>=2){clearTimeout(lp);const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};if(pinch0){const G=cell(mid0.x,mid0.y).p.clone();const pa=gp0[0],pb=gp0[1];const dya=a.y-pa.y,dyb=b.y-pb.y,dxa=a.x-pa.x,dxb=b.x-pb.x;if(!gmode&&Math.abs(dya)+Math.abs(dyb)+Math.abs(dxa)+Math.abs(dxb)>14){gmode=(Math.sign(dya)===Math.sign(dyb)&&Math.abs(dya)>4&&Math.abs(dyb)>4&&Math.abs(dya+dyb)>2*Math.abs(dxa+dxb)&&Math.abs(d-gd0)<Math.abs(dya+dyb)*.35)?'tilt':'map';}const tilt=gmode==='tilt';
+  zoom=Math.max(3,Math.min(48,zoom*pinch0/d));pinch0=d;const ta=Math.atan2(b.y-a.y,b.x-a.x);let da;{const A0=cell(gl[0].x,gl[0].y).p.clone(),B0=cell(gl[1].x,gl[1].y).p.clone(),A1=cell(a.x,a.y).p,B1=cell(b.x,b.y).p;da=(Math.atan2(B1.z-A1.z,B1.x-A1.x)-Math.atan2(B0.z-A0.z,B0.x-A0.x));}gl=[{x:a.x,y:a.y},{x:b.x,y:b.y}];if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;tw0=ta;rot+=TWIST_SIGN*da;rotT=rot;
+  if(tilt){camEl=Math.max(.35,Math.min(1.35,camEl+(mid.y-gy0)*.006));gy0=mid.y;camUp();cam.updateMatrixWorld();const G2=cell(mid0.x,mid0.y).p;tgt.x+=G.x-G2.x;tgt.z+=G.z-G2.z;}else{camUp();cam.updateMatrixWorld();const G2=cell(mid.x,mid.y).p;tgt.x+=G.x-G2.x;tgt.z+=G.z-G2.z;mid0=mid;}follow=null;tgt.x=Math.max(0,Math.min(N,tgt.x));tgt.z=Math.max(0,Math.min(N,tgt.z));camUp();}moved=99;return;}
  if(gest)return;
  hover=(lineTool()&&(painting||e.pointerType!=='touch'))?cell(e.clientX,e.clientY-PTR_OFF(e)):cell(e.clientX,e.clientY);
  if(painting&&stroke&&stroke.line&&ptrs.size===1&&hover){const px=Math.hypot(e.clientX-stroke.x0,e.clientY-stroke.y0);moved=Math.max(moved,px);if(!stroke.live&&px>8)stroke.live=true;if(stroke.live&&(hover.x!==lastPaint.x||hover.z!==lastPaint.z||!stroke.cells.length)){lastPaint={x:hover.x,z:hover.z};linePreview(stroke.start,hover);}return;}
  if(painting&&stroke&&ptrs.size===1){const px=Math.hypot(e.clientX-stroke.x0,e.clientY-stroke.y0);moved=Math.max(moved,px);
   if(!stroke.live&&(px>6||performance.now()-stroke.t0>120)){stroke.live=true;strokeAdd(stroke.start.x,stroke.start.z);}
   if(stroke.live&&(hover.x!==lastPaint.x||hover.z!==lastPaint.z)){line(lastPaint,{x:hover.x,z:hover.z},strokeAdd);lastPaint={x:hover.x,z:hover.z};}updPrev();return;}
- if(drag&&ptrs.size===1){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){clearTimeout(lp);pan(-dx,-dy);}drag={x:e.clientX,y:e.clientY};}
+ if(drag&&ptrs.size===1){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;moved+=Math.abs(dx)+Math.abs(dy);if(moved>8){clearTimeout(lp);const g0=cell(drag.x,drag.y),g1=cell(e.clientX,e.clientY);follow=null;tgt.x=Math.max(0,Math.min(N,tgt.x+g0.p.x-g1.p.x));tgt.z=Math.max(0,Math.min(N,tgt.z+g0.p.z-g1.p.z));camUp();}drag={x:e.clientX,y:e.clientY};}
  updPrev();});
 addEventListener('pointerup',e=>{const had=ptrs.has(e.pointerId);ptrs.delete(e.pointerId);clearTimeout(lp);if(moving){endMove();drag=null;return;}
  if(gest){if(ptrs.size===0){gest=false;drag=null;pinch0=0;}return;}
@@ -1714,7 +1716,7 @@ window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.
 Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
 window.__build=(k,x,z,r=0)=>{placeRot=r;const n0=S.b.length;sel=k;hover={x,z,bx:x,bz:z,p:new THREE.Vector3(x+.5,0,z+.5)};try{click();}finally{sel=null;hover=null;placeRot=0;updPrev();}return S.b.length>n0;};
 window.__paint=(x0,z0,x1,z1)=>{sel='path';line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>paint(x,z));sel=null;refreshDoors();};window.__upgrade=b=>upgrade(b);
-window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
+window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__cell=(x,y)=>cell(x,y).p;window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
 {const _t=tip;tip=function(k,el){_t(k,el);clearTimeout(window._tt);window._tt=setTimeout(()=>{$('tip').style.display='none';},3500);};}
 window.__B=B;
 
