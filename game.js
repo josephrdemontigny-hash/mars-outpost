@@ -333,14 +333,9 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  // heat shield: windward half (-z) of the same profile, slightly proud, hex tiles ~1 m
  const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=1.05*SH_K*16*.5,ta=1.05*SH_K/r,dl=2*ta;
  const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),ps.getZ(i));uv.setXY(i,((a+2*Math.PI)%(2*Math.PI))*r/tile,ps.getY(i)/tile*1.15);}return geo;};
- const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2+dl,Math.PI-2*dl)),new THREE.Matrix4()]];
- {const rh=1.05*SH_K*.87;let kL=2,kR=2,sd=11;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
-  for(let y=0;y<H-.25;y+=rh){const y1=Math.min(H-.2,y+rh);kL=Math.max(0,Math.min(4,kL+(rnd()<.5?-1:1)*(rnd()<.6?1:0)));kR=Math.max(0,Math.min(4,kR+(rnd()<.5?-1:1)*(rnd()<.6?1:0)));
-   const pr=[new THREE.Vector2(shipR(y)+.006,y),new THREE.Vector2(shipR((y+y1)/2)+.006,(y+y1)/2),new THREE.Vector2(shipR(y1)+.006,y1)];const sc=Math.max(.15,shipR((y+y1)/2)/r);
-   if(kL)parts.push([tuv(new THREE.LatheGeometry(pr,Math.max(1,kL),Math.PI/2+dl-kL*ta/sc*.5,kL*ta/sc*.5)),new THREE.Matrix4()]);
-   if(kR)parts.push([tuv(new THREE.LatheGeometry(pr,Math.max(1,kR),3*Math.PI/2-dl,kR*ta/sc*.5)),new THREE.Matrix4()]);}}
+ const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2,Math.PI)),new THREE.Matrix4()]];
  {const cy=H*.93,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
- const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
+ parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2,Math.PI)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
  {const ph=Math.PI/2-.55,rw=new THREE.Group();const yT=SH_NOSE*1.02;rw.add(mesh(new THREE.BoxGeometry(.028,yT-.2,.02),SHIPMAT.flapS,0,.1+(yT-.2)/2,0,false));for(let y=.3;y<yT;y+=.35)rw.add(mesh(new THREE.BoxGeometry(.04,.02,.03),SHIPMAT.chine,0,y,0,false));
   rw.position.set(Math.sin(ph)*(r+.012),y0,Math.cos(ph)*(r+.012));rw.rotation.y=ph;g.add(rw);
   for(let i=0;i<9;i++){const a=Math.PI/2-.2-((i*1.7)%1.3),y=.4+i*.47;g.add(mesh(new THREE.BoxGeometry(.035,.025,.006),SHIPMAT.chine,Math.sin(a)*(r+.003),y0+y,Math.cos(a)*(r+.003),false).rotateY(a));}}
@@ -360,7 +355,7 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  // forward flaps on the nose (38.6–45.8 m), swept back
  const fyb=38.6*SH_K,fyt=45.8*SH_K;for(const sd of[-1,1])flap(0,fyt-fyb,-.06,(fyt-fyb)*.55,3.2*SH_K*1.0+.02,sd,fyb,shipR((fyb+fyt)/2)+.004);
  // aft flaps at the base (0.3–14.2 m), ~0.45× diameter
- const ayb=.3*SH_K,ayt=14.2*SH_K;for(const sd of[-1,1])flap(0,ayt-ayb,.02,(ayt-ayb)*.62,SH_R*2*.45,sd,ayb,SH_R+.004);
+ const ayb=-SH_SK+.012,ayt=14.2*SH_K;for(const sd of[-1,1])flap(0,ayt-ayb,0,(ayt-ayb)*.62,SH_R*2*.45,sd,ayb,SH_R+.004);
  // header-tank hint: vents + ring band at the nose base, small dome cap ring near the tip
  g.add(mesh(new THREE.TorusGeometry(SH_R+.003,.006,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+SH_NOSE,0,false));
  const hy=H-1.3;for(const sd of[-1,1])g.add(mesh(new THREE.CylinderGeometry(.012,.012,.03,8).rotateX(Math.PI/2),SHIPMAT.chine,sd*shipR(hy)*.55,y0+hy,shipR(hy)*.82,false));
