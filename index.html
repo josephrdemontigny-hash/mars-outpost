@@ -197,7 +197,7 @@ body.placing #menu{display:none!important}body.placing #buildb::after{content:' 
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
 <div id="ui" style="display:none"><div id="hud"></div>
-<div id="dock"><div id="ctl"><button data-s="0" title="Pause">⏸</button><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
+<div id="dock"><div id="ctl"><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
 <div id="menu" class="closed"><button id="mclose" type="button" aria-label="Close">✕</button><div id="mtools"></div></div></div>
 <div id="info"></div><div id="panel"></div><div id="tut"></div></div><div id="toasts"></div><div id="tip"></div>
 <div id="loading"><div class="lt">MARS</div><div class="lm" style="margin-top:-6px;opacity:.85">A TERRAFORMING GAME</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
@@ -216,7 +216,7 @@ body.placing #menu{display:none!important}body.placing #buildb::after{content:' 
 • Every building costs ¢ credits + 🧱 materials. ⛏️ Mines dig ore, 🏗️ Processors turn it into materials; 🤖 Optimus robots carry ore from mines to processors and help build.<br>
 • Supply ships land on 🛬 pads every ~1.5 Sols with crew + materials. Order extra materials in the 🌍 Market.<br>
 • ⛽ Fuel plants turn water + power into fuel. Tap a landed Starship, refuel it, load surplus cargo and launch a return flight to sell on Earth.<br>
-• Buildings need a 🚶 path within 2 tiles (⚠️ = not connected). Paths are free.<br>
+• Paths are free and optional — buildings work anywhere; crew and rovers prefer walking on paths.<br>
 • Tap a building to rename / upgrade it, tap an astronaut to meet them.<br>• 🌷 Decorations near paths make colonists happier. Buildings light up at night.<br>
 • Bigger buildings (Waste, Medical, Entertainment, Security…) unlock as your population grows.<br>
 <b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
