@@ -298,11 +298,15 @@ const SH_H=5.6,SH_K=SH_H/52.1,SH_R=4.5*SH_K,SH_SK=.15; // true-proportion Starsh
 const SH_NOSE=36*SH_K; // nose cone starts 36 m up (tangent ogive, ~31% of height)
 function shipR(y){const r=SH_R,L=SH_H-SH_NOSE;if(y<=SH_NOSE)return r;const t=y-SH_NOSE,rho=(r*r+L*L)/(2*r);const v=Math.sqrt(Math.max(0,rho*rho-t*t))+r-rho;
  const tip=.05;if(L-t<tip*1.4){const k=(L-t)/(tip*1.4);return Math.max(.002,Math.min(v,tip*Math.sqrt(Math.max(0,k*(2-k)))));}return Math.max(v,.002);}
-const hexTex=(()=>{const W=512,c=document.createElement('canvas');c.width=W;c.height=W;const x=c.getContext('2d');x.fillStyle='#1c1d1f';x.fillRect(0,0,W,W);
- const n=16,r=W/n/Math.sqrt(3),w=Math.sqrt(3)*r;for(let row=-1;row<=Math.ceil(W/(r*1.5))+1;row++)for(let col=-1;col<=n+1;col++){const cx=col*w+(row%2?w/2:0),cy=row*r*1.5;
-  x.beginPath();for(let k=0;k<6;k++){const a=Math.PI/3*k+Math.PI/6;x.lineTo(cx+Math.cos(a)*(r-1.8),cy+Math.sin(a)*(r-1.8));}x.closePath();
-  const v=24+Math.random()*5;const gr=x.createLinearGradient(cx,cy-r,cx,cy+r);gr.addColorStop(0,`rgb(${v+10},${v+10},${v+13})`);gr.addColorStop(1,`rgb(${v},${v},${v+3})`);x.fillStyle=gr;x.fill();}
- const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;})();
+const hexMaps=(()=>{const W=512,n=8,r=W/n/Math.sqrt(3),w=Math.sqrt(3)*r,HH=Math.round(10*1.5*r);const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=HH;return c;};
+ const c=mk(),x=c.getContext('2d'),cb=mk(),xb=cb.getContext('2d'),cr=mk(),xr=cr.getContext('2d');x.fillStyle='#7c8086';x.fillRect(0,0,W,HH);xb.fillStyle='#000';xb.fillRect(0,0,W,HH);xr.fillStyle='#fff';xr.fillRect(0,0,W,HH);
+ const rows=10;let sd=7;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+ for(let row=-1;row<=rows+1;row++)for(let col=-1;col<=n+1;col++){const cx=col*w+(((row%2)+2)%2?w/2:0),cy=row*r*1.5;const path=(q,k0)=>{q.beginPath();for(let k=0;k<6;k++){const a=Math.PI/3*k+Math.PI/6;q.lineTo(cx+Math.cos(a)*(r-k0),cy+Math.sin(a)*(r-k0));}q.closePath();};
+  const v=26+rnd()*26;path(x,3);const gr=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);gr.addColorStop(0,`rgb(${v+16},${v+16},${v+19})`);gr.addColorStop(1,`rgb(${v},${v},${v+2})`);x.fillStyle=gr;x.fill();
+  path(xb,3);const gb=xb.createRadialGradient(cx,cy,0,cx,cy,r);gb.addColorStop(0,'#fff');gb.addColorStop(.85,'#ddd');gb.addColorStop(1,'#999');xb.fillStyle=gb;xb.fill();
+  path(xr,3);const rv=110+rnd()*110|0;xr.fillStyle=`rgb(${rv},${rv},${rv})`;xr.fill();}
+ const T=(cv,srgb)=>{const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;if(srgb)t.colorSpace=THREE.SRGBColorSpace;return t;};return{map:T(c,1),bump:T(cb),rough:T(cr),asp:W/HH};})();
+const hexTex=hexMaps.map;
 // brushed stainless with weld rings every 1.83 m (the 9 m rings Starship is stacked from)
 const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const mk=(fill,line,streak)=>{const c=document.createElement('canvas');c.width=Wd;c.height=H;const x=c.getContext('2d');x.fillStyle=fill;x.fillRect(0,0,Wd,H);
@@ -314,9 +318,9 @@ const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const bump=new THREE.CanvasTexture(mk('#808080','rgba(30,30,30,1)',[120,16]));
  [col,rough,bump].forEach(t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;});return{col,rough,bump};})();
 const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0x9eaab8,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.24,envMap:SENV,envMapIntensity:1.9}),
- tile:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,roughness:.92,metalness:.05,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}),
+ tile:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  flapS:new THREE.MeshStandardMaterial({color:0xd4d8dc,metalness:1,roughness:.32,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
- flapT:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,roughness:.82,metalness:.05,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}),
+ flapT:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  bayIn:new THREE.MeshStandardMaterial({color:0x2c2a28,metalness:.6,roughness:.6,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.4}),
  chine:new THREE.MeshStandardMaterial({color:0x2a2b2e,roughness:.7,metalness:.3,envMap:SENV,envMapIntensity:.5}),
  bell:new THREE.MeshStandardMaterial({color:0x3a3632,metalness:.8,roughness:.45,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.6}),
@@ -331,8 +335,8 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  const hull=new THREE.LatheGeometry(prof,160);{const uv=hull.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*4,uv.getY(i));}
  g.add(mesh(hull,SHIPMAT.steel,0,y0,0));
  // heat shield: windward half (-z) of the same profile, slightly proud, hex tiles ~1 m
- const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=1.05*SH_K*16*.5,ta=1.05*SH_K/r,dl=2*ta;
- const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),ps.getZ(i));uv.setXY(i,((a+2*Math.PI)%(2*Math.PI))*r/tile,ps.getY(i)/tile*1.15);}return geo;};
+ const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=.62*SH_K*8,ta=1.05*SH_K/r,dl=2*ta;
+ const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),-ps.getZ(i)),rr=Math.max(.02,Math.hypot(ps.getX(i),ps.getZ(i)));uv.setXY(i,a*rr/tile+50,ps.getY(i)/tile*hexMaps.asp+50);}return geo;};
  const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2,Math.PI)),new THREE.Matrix4()]];
  {const cy=H*.93,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
  parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2,Math.PI)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
@@ -346,7 +350,7 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  const flap=(rootY0,rootY1,tipY0,tipY1,span,side,yBase,xHinge)=>{const P=[[0,rootY0],[span,tipY0],[span,tipY1],[0,rootY1]].map(([a,b])=>new THREE.Vector2(a,b));
   const sh=new THREE.Shape();sh.moveTo(P[0].x,P[0].y);for(let k=1;k<=P.length;k++){const a=P[k-1],b=P[k%P.length],c=P[(k+1)%P.length];const m1=a.clone().lerp(b,.82),m2=b.clone().lerp(c,.18);sh.lineTo(m1.x,m1.y);sh.quadraticCurveTo(b.x,b.y,m2.x,m2.y);}
   const th=.045,grp=new THREE.Group();const st=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:th,bevelEnabled:true,bevelThickness:.01,bevelSize:.012,bevelSegments:2,curveSegments:8}),SHIPMAT.flapS);st.position.z=-th/2;st.castShadow=true;grp.add(st);
-  const fg=new THREE.ShapeGeometry(sh,8);{const uv=fg.attributes.uv,ps=fg.attributes.position,tile=1.05*SH_K*16;for(let i=0;i<uv.count;i++)uv.setXY(i,ps.getX(i)/tile,ps.getY(i)/tile*1.15);}
+  const fg=new THREE.ShapeGeometry(sh,8);{const uv=fg.attributes.uv,ps=fg.attributes.position,tile=.62*SH_K*8;for(let i=0;i<uv.count;i++)uv.setXY(i,ps.getX(i)/tile,ps.getY(i)/tile*hexMaps.asp);}
   const tl=new THREE.Mesh(fg,SHIPMAT.flapT);tl.position.z=-th/2-.013;grp.add(tl);
   // hinge aerocover fairing along the root (leeward) + small dark root seal
   const hl=rootY1-rootY0;const fair=mesh(new THREE.CapsuleGeometry(.03,hl*.8,4,10),SHIPMAT.flapS,.01,(rootY0+rootY1)/2,.035,true);grp.add(fair);
@@ -680,11 +684,11 @@ function tickBots(dt){bots.forEach(t=>{const g=t.m.children[0],A=n=>g.getObjectB
 // ---------- Starship cargo/crew elevator: everything on the surface came down this lift
 let unloads=[];
 function startUnload(o){// o:{sid,cx,cz,gy,items:[{k:'crew',n}|{k:'bot'}|{k:'truck'}|{k:'cargo',mat}],onCrew,pad}
- let ang=Math.PI/4+.85;{const so=objs.get(o.sid);const rk=so&&(so.getObjectByName('rk')||so.parent?.getObjectByName('rk'));if(rk){rk.updateWorldMatrix(true,false);const q=new THREE.Quaternion();rk.getWorldQuaternion(q);const v=new THREE.Vector3(0,0,1).applyQuaternion(q);ang=Math.atan2(v.x,v.z);}}const dx=Math.sin(ang),dz=Math.cos(ang),R0=SH_R+.24,HY=2.35;const g=new THREE.Group();g.position.set(o.cx,o.gy,o.cz);g.scale.setScalar(4);g.rotation.y=Math.atan2(dx,dz);W.add(g);
+ let ang=Math.PI/4+.85;{const so=objs.get(o.sid);const rk=so&&(so.getObjectByName('rk')||so.parent?.getObjectByName('rk'));if(rk){rk.updateWorldMatrix(true,false);const q=new THREE.Quaternion();rk.getWorldQuaternion(q);const v=new THREE.Vector3(0,0,1).applyQuaternion(q);ang=Math.atan2(v.x,v.z);}}const dx=Math.sin(ang),dz=Math.cos(ang),R0=SH_R+.235,HY=2.35;const g=new THREE.Group();g.position.set(o.cx,o.gy,o.cz);g.scale.setScalar(4);g.rotation.y=Math.atan2(dx,dz);W.add(g);
  const hatch=mesh(rbox(.5,.42,.05,.02),M(0x14161a,.4,.5),0,HY+.12,SH_R-.005,false);hatch.scale.y=.05;g.add(hatch);const lit=mesh(new THREE.BoxGeometry(.44,.36,.01),M(0xffe7b0,.5,0,{emissive:0xffd890,emissiveIntensity:1.1}),0,HY+.12,SH_R-.02,false);lit.visible=false;g.add(lit);
- g.add(mesh(rbox(.82,.04,.06,.01),MAT.steel,0,HY+.36,R0-.05,false));const plat=new THREE.Group();g.add(plat);plat.position.set(0,HY,R0);
- plat.add(mesh(rbox(.8,.03,.46,.012),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.8,.09,.01),MAT.yellow,0,.045,.23,false));
- const cab=[];for(const sx of[-.38,.38]){const c=mesh(cyl(.006,.006,1,4),MAT.dark,sx,0,R0-.05,false);g.add(c);cab.push(c);}
+ g.add(mesh(rbox(.82,.04,.06,.01),MAT.steel,0,HY+.36,SH_R+.03,false));const plat=new THREE.Group();g.add(plat);plat.position.set(0,HY,R0);
+ plat.add(mesh(rbox(.8,.03,.46,.012),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.9,.05,.04),MAT.dark,0,.01,-.22,false));(0&&mesh(rbox(.8,.03,.46,.012),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.8,.09,.01),MAT.yellow,0,.045,.23,false));
+ const cab=[];for(const sx of[-.38,.38]){const c=mesh(cyl(.006,.006,1,4),MAT.dark,sx,0,SH_R+.035,false);g.add(c);cab.push(c);g.add(mesh(new THREE.BoxGeometry(.035,HY+.5,.03),MAT.steel,sx*1.08,(HY+.5)/2,SH_R+.015,false));for(let yy=.3;yy<HY+.4;yy+=.6)g.add(mesh(new THREE.BoxGeometry(.06,.03,.03),MAT.dark,sx*1.08,yy,SH_R+.01,false));}
  unloads.push({...o,g,plat,hatch,lit,cab,HY,R0,dx,dz,ph:'open',t:0,pay:null,i:0});}
 function unloadPayload(u,it){const p=new THREE.Group();u.plat.add(p);if(it.k==='crew'){for(let i=0;i<it.n;i++){const a=astro(cid+i);a.scale.setScalar(HUMAN/4);a.position.set((i-(it.n-1)/2)*.15,.02,0);a.rotation.y=0;p.add(a);}}
  else if(it.k==='bot'){const b=optimus();b.scale.setScalar(HUMAN/4);b.position.y=.02;p.add(b);}else if(it.k==='truck'){const t=truckModel();t.rotation.y=Math.PI/2;t.position.y=.02;p.add(t);}
