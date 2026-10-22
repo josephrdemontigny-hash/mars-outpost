@@ -74,7 +74,7 @@ const B={
  obelisk:{n:'Memorial Obelisk',c:80,m:15,s:1,ic:'🏛️',cat:'d',d:'A plaque for everyone who made it here'},
  dozer:{n:'Bulldoze',c:0,ic:'🚜',cat:'x',d:'Tap/drag · 50% refund'}
 };
-const NEWS={pad:8,hab:4,solar:2,battery:2,farm:4,ice:4,wtank:2,recyc:4,mine:6,proc:6,fuel:4,waste:4,med:4,bigfarm:8,ent:8,reactor:8,refin:8,mega:8,sec:8,robot:4,ship:8,garage:8,lab:8,lpad:8,factory:6,medc:8,school:4,drill:6,icefield:8,kilo:4,outpost:8,hydro:4,gdome:6,algae:4,insect:4,aqua:6,bigdome:12,complex:10,arco:14,bench:2,planter:1,flag:2,sign:1,antenna:1,rockg:2,statue:2,crates:1,bannr:1,obelisk:2,road:1};
+const NEWS={pad:8,hab:4,solar:2,battery:2,farm:4,ice:4,wtank:2,recyc:4,mine:6,proc:6,fuel:4,waste:4,med:4,bigfarm:8,ent:8,reactor:8,refin:8,mega:8,sec:8,robot:8,ship:8,garage:8,lab:8,lpad:8,factory:6,medc:8,school:4,drill:6,icefield:8,kilo:4,outpost:8,hydro:4,gdome:6,algae:4,insect:4,aqua:6,bigdome:12,complex:10,arco:14,bench:2,planter:1,flag:2,sign:1,antenna:1,rockg:2,statue:2,crates:1,bannr:1,obelisk:2,road:1};
 for(const k in B){B[k].s=B[k].s||1;B[k].s0=B[k].s;if(NEWS[k])B[k].s=NEWS[k];B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
@@ -147,8 +147,8 @@ const blocked=Array.from({length:N},()=>Array(N).fill(false));
   const vn=(()=>{const G=64,a=new Float32Array(G*G);let sd=7;for(let i=0;i<G*G;i++){sd=(sd*16807)%2147483647;a[i]=sd/2147483647;}return(u,v)=>{u=u*G;v=v*G;const i=Math.floor(u),j=Math.floor(v),f=u-i,g=v-j,A=(p,q)=>a[((p%G+G)%G)*G+((q%G+G)%G)],sf=f*f*(3-2*f),sg=g*g*(3-2*g);return A(i,j)*(1-sf)*(1-sg)+A(i+1,j)*sf*(1-sg)+A(i,j+1)*(1-sf)*sg+A(i+1,j+1)*sf*sg;};})();
   const fbm=(u,v)=>vn(u,v)*.5+vn(u*2,v*2)*.25+vn(u*4,v*4)*.125+vn(u*8,v*8)*.0625+vn(u*16,v*16)*.04;
   const im=x.createImageData(S2,S2),d=im.data;for(let yy=0;yy<S2;yy++)for(let xx=0;xx<S2;xx++){const u=xx/S2,v=yy/S2,n=fbm(u*2,v*2),m=fbm(u+.37,v+.71),e=vn(u*12+.3*n,v*12);
-   let r=184,g=118,b=86;const ba=Math.max(0,Math.min(1,(m-.52)*2.2))*.45;r=r*(1-ba)+110*ba;g=g*(1-ba)+70*ba;b=b*(1-ba)+56*ba; // basalt patches
-   const du=Math.max(0,Math.min(1,(n-.55)*2.5))*.7;r=r*(1-du*.5)+228*du*.5;g=g*(1-du*.5)+176*du*.5;b=b*(1-du*.5)+136*du*.5; // pale dust
+   let r=184,g=118,b=86;const ba=Math.max(0,Math.min(1,(m-.52)*2.2))*.3;r=r*(1-ba)+110*ba;g=g*(1-ba)+70*ba;b=b*(1-ba)+56*ba; // basalt patches
+   const du=Math.max(0,Math.min(1,(n-.55)*2.5))*.28;r=r*(1-du*.5)+228*du*.5;g=g*(1-du*.5)+176*du*.5;b=b*(1-du*.5)+136*du*.5; // pale dust
    const k=.9+n*.16+(e-.5)*.06+(Math.random()-.5)*.07;const i=(yy*S2+xx)*4;d[i]=Math.min(255,r*k);d[i+1]=Math.min(255,g*k);d[i+2]=Math.min(255,b*k);d[i+3]=255;}
   x.putImageData(im,0,0);
   for(let i=0;i<5000;i++){const v=Math.random();x.fillStyle=v<.55?`rgba(70,34,20,${Math.random()*.22})`:`rgba(240,200,165,${Math.random()*.14})`;const r=Math.random()*2+.5;x.fillRect(Math.random()*S2,Math.random()*S2,r,r);}
@@ -158,7 +158,9 @@ const blocked=Array.from({length:N},()=>Array(N).fill(false));
 const HUMAN=3.2; // v22b: one shared scale (tile units) for every colonist/robot figure everywhere
 const grid=new THREE.GridHelper(N,N,0x3a1608,0x3a1608);grid.position.set(N/2,0.05,N/2);grid.material.opacity=0;grid.material.transparent=true;grid.material.depthWrite=false;W.add(grid);
 const grid4=new THREE.GridHelper(N,N/4,0x2a0e04,0x2a0e04);grid4.position.set(N/2,0.06,N/2);grid4.material.opacity=0;grid4.material.transparent=true;grid4.material.depthWrite=false;W.add(grid4);grid.visible=grid4.visible=false;
-let gridA=0,gridT0=performance.now();requestAnimationFrame(function gl(){requestAnimationFrame(gl);if(typeof tapStart!=='undefined'&&tapStart&&!lineTool()){tapStart=null;reticle.visible=false;}if(typeof reticle!=='undefined'&&reticle.visible&&!lineTool())reticle.visible=false;if(typeof undoSync==='function'&&typeof lastStroke!=='undefined')undoSync();if(typeof sel!=='undefined'&&!sel&&document.body.classList.contains('placing'))document.body.classList.remove('placing');const now=performance.now(),dt=Math.min(.1,(now-gridT0)/1000);gridT0=now;const on=(typeof menuOpen!=='undefined'&&menuOpen)||(typeof sel!=='undefined'&&!!sel)||(typeof moving!=='undefined'&&!!moving);gridA+=((on?1:0)-gridA)*Math.min(1,dt*6);
+function doneSync(){const db=document.getElementById('donebar');if(!db)return;const on=typeof sel!=='undefined'&&!!sel&&!!S&&!S.demo&&!(typeof menuOpen!=='undefined'&&menuOpen&&innerWidth>=700&&false);if(!on){if(db.style.display!=='none')db.style.display='none';return;}
+ const nm=sel==='dozer'?'🚜 Bulldozing':sel==='path'?'🚶 Laying paths':sel==='road'?'🛣️ Laying roads':B[sel]?`${B[sel].ic||''} Placing ${B[sel].n}`:String(sel);const L=document.getElementById('donel');if(L.textContent!==nm)L.textContent=nm;const dk=document.getElementById('dock'),mn=document.getElementById('menu');let bot=(dk?dk.offsetHeight:70)+12;if(mn&&!mn.classList.contains('closed')&&getComputedStyle(mn).display!=='none'&&innerWidth<700)bot=Math.max(bot,innerHeight-mn.getBoundingClientRect().top+10);db.style.bottom=`calc(env(safe-area-inset-bottom,0px) + ${bot}px)`;if(db.style.display!=='flex')db.style.display='flex';}
+let gridA=0,gridT0=performance.now();requestAnimationFrame(function gl(){requestAnimationFrame(gl);doneSync();if(typeof tapStart!=='undefined'&&tapStart&&!lineTool()){tapStart=null;reticle.visible=false;}if(typeof reticle!=='undefined'&&reticle.visible&&!lineTool())reticle.visible=false;if(typeof undoSync==='function'&&typeof lastStroke!=='undefined')undoSync();if(typeof sel!=='undefined'&&!sel&&document.body.classList.contains('placing'))document.body.classList.remove('placing');const now=performance.now(),dt=Math.min(.1,(now-gridT0)/1000);gridT0=now;const on=(typeof menuOpen!=='undefined'&&menuOpen)||(typeof sel!=='undefined'&&!!sel)||(typeof moving!=='undefined'&&!!moving);gridA+=((on?1:0)-gridA)*Math.min(1,dt*6);
  grid.visible=grid4.visible=gridA>.02;if(gridA>.02&&typeof cam!=='undefined'){const a=new THREE.Vector3(tgt.x*CS,0,tgt.z*CS).project(cam),b2=new THREE.Vector3((tgt.x+1)*CS,0,tgt.z*CS).project(cam);const px=Math.hypot((a.x-b2.x)*innerWidth/2,(a.y-b2.y)*innerHeight/2);const f1=Math.max(0,Math.min(1,(px-5)/7)),f4=Math.max(.35,Math.min(1,(px*4-8)/12));grid.material.opacity=.13*gridA*f1;grid.visible=f1>.02;grid4.material.opacity=.30*gridA*f4;}});
 {const rg=new THREE.DodecahedronGeometry(1,0),rm=new THREE.MeshLambertMaterial({color:0x6a2a14}),im=new THREE.InstancedMesh(rg,rm,120),d=new THREE.Object3D();im.castShadow=true;rm.color.setHex(0xffffff);const _c=new THREE.Color();
  for(let i=0;i<120;i++){const a=Math.random()*6.28,dd=NW/2+2+Math.random()*16,x=NW/2+Math.cos(a)*dd,z=NW/2+Math.sin(a)*dd;d.position.set(x,hgtW(x,z)+.1,z);d.scale.setScalar(.15+Math.random()*.4);d.updateMatrix();im.setMatrixAt(i,d.matrix);im.setColorAt(i,_c.setHex(BIO[bio2(x,z).a].r));}W.add(im);}
@@ -318,9 +320,9 @@ const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const bump=new THREE.CanvasTexture(mk('#808080','rgba(30,30,30,1)',[120,16]));
  [col,rough,bump].forEach(t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;});return{col,rough,bump};})();
 const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0x9eaab8,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.24,envMap:SENV,envMapIntensity:1.9}),
- tile:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
+ tile:new THREE.MeshStandardMaterial({color:0x9a9a9a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  flapS:new THREE.MeshStandardMaterial({color:0xd4d8dc,metalness:1,roughness:.32,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
- flapT:new THREE.MeshStandardMaterial({color:0xffffff,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
+ flapT:new THREE.MeshStandardMaterial({color:0x9a9a9a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  bayIn:new THREE.MeshStandardMaterial({color:0x2c2a28,metalness:.6,roughness:.6,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.4}),
  chine:new THREE.MeshStandardMaterial({color:0x2a2b2e,roughness:.7,metalness:.3,envMap:SENV,envMapIntensity:.5}),
  bell:new THREE.MeshStandardMaterial({color:0x3a3632,metalness:.8,roughness:.45,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.6}),
@@ -479,6 +481,7 @@ const DM={frame:M(0x8c929a,.45,.75),dkm:M(0x2e3034,.6,.5),glassD:M(0x1d2a33,.15,
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,2);t.colorSpace=THREE.SRGBColorSpace;DM.corr=new THREE.MeshStandardMaterial({map:t,roughness:.55,metalness:.4});}
 {const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#d9dbe0';x.fillRect(0,0,64,64);x.fillStyle='#3a3d44';for(let j=0;j<6;j++)x.fillRect(8,8+j*5,22,2);x.fillStyle='#e7a21c';x.fillRect(38,8,18,10);x.fillStyle='#222';x.fillRect(40,10,14,2);x.fillRect(40,14,10,2);x.fillStyle='#2a8a3a';x.fillRect(38,44,6,6);
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;DM.cab=new THREE.MeshStandardMaterial({map:t,roughness:.5,metalness:.3});}
+{const c=document.createElement('canvas');c.width=256;c.height=32;const x=c.getContext('2d');x.fillStyle='#ecedef';x.fillRect(0,0,256,32);x.fillStyle='#16181c';x.font='bold 24px sans-serif';x.textAlign='center';x.textBaseline='middle';x.font='bold 20px sans-serif';x.fillText('OPTIMUS ASSEMBLY',146,17);x.fillStyle='#d06a22';x.fillRect(8,6,20,20);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;DM.optSign=new THREE.MeshStandardMaterial({map:t,roughness:.5,emissive:0x222222,emissiveMap:t});}
 // shared parts
 function detDoor(K,x,z,ry,hh=.3,w=.16){const c=Math.cos(ry),s=Math.sin(ry),P=(a,b)=>[x+a*c+b*s,z-a*s+b*c];// door frame + leaf, facing outward along local +z
  const [fx,fz]=P(0,0);K.box(DM.frame,w+.04,hh+.03,.03,fx,hh/2,fz,ry);const [dx,dz]=P(0,.012);K.box(DM.door,w,hh,.02,dx,hh/2,dz,ry);const [wx,wz]=P(0,.024);K.box(DM.glassD,w*.45,hh*.22,.005,wx,hh*.72,wz,ry);
@@ -488,6 +491,39 @@ function detTankH(K,x,z,len,r,ry){const c=Math.cos(ry),s=Math.sin(ry);K.put(DM.t
  for(const t of[-.25,0,.25])K.put(DM.frame,new THREE.TorusGeometry(r*1.01,.004,4,20),x+t*len*c,r+.05,z-t*len*s,0,ry+Math.PI/2,0);}
 function detFound(K,s,r){K.cyl(MAT.concrete,r,r*1.03,.045,s/2,.022,s/2,48);K.tor(DM.dkm,r*1.015,.006,s/2,.046,s/2,64);}
 const DET={
+ robot:L=>{const K=KB();K.box(MAT.concrete,.98,.025,.98,.5,.012,.5);K.box(M(0x6c6862,.9,.05),.9,.004,.2,.5,.027,.87);
+  for(let i=0;i<9;i++)K.box(DM.warnY,.04,.003,.006,.1+i*.1,.03,.77); // apron edge marks
+  const x0=.06,x1=.94,z0=.08,z1=.72,H=.42,cx=(x0+x1)/2,cz=(z0+z1)/2,W=x1-x0,D=z1-z0;
+  // ribbed walls (back, sides, front pieces around doors)
+  K.box(DM.corr,W,H,.02,cx,H/2,z0);K.box(DM.corr,.02,H,D,x0,H/2,cz);K.box(DM.corr,.02,H,D,x1,H/2,cz);
+  const dW=.2,dH=.28,dX=[.3,.7];let px=x0;for(const dx of dX){const a=dx-dW/2;K.box(DM.corr,a-px,H,.02,(px+a)/2,H/2,z1);K.box(DM.corr,dW,H-dH,.02,dx,dH+(H-dH)/2,z1);px=dx+dW/2;}K.box(DM.corr,x1-px,H,.02,(px+x1)/2,H/2,z1);
+  for(let x=x0;x<=x1+.001;x+=W/8){K.box(DM.frame,.012,H+.01,.012,x,H/2,z1+.012);K.box(DM.frame,.012,H+.01,.012,x,H/2,z0-.012);} // columns
+  K.box(DM.frame,W+.03,.02,D+.03,cx,H,cz); // eave
+  // side window strip (+x) showing the line
+  K.box(DM.glassD,.006,.07,D*.8,x1+.012,H*.6,cz);
+  // sawtooth roof: 4 teeth along z, glazing faces +z (north light)
+  const n=4,tD=D/n,tH=.1;for(let i=0;i<n;i++){const za=z0+i*tD,zb=za+tD;const sl=Math.hypot(tD,tH),ang=Math.atan2(tH,tD);
+   K.box(DM.frame,W,.012,sl,cx,H+tH/2,(za+zb)/2,0,ang);K.box(DM.glassD,W*.96,tH,.008,cx,H+tH/2,zb);for(let k=1;k<6;k++)K.box(DM.frame,.008,tH,.012,x0+W*k/6,H+tH/2,zb);}
+  // roll-up doors: left closed (slats), right open with dark interior
+  K.box(DM.door,dW,dH,.015,dX[0],dH/2,z1+.006);for(let j=1;j<10;j++)K.box(DM.dkm,dW,.003,.018,dX[0],j*dH/10,z1+.006);
+  K.box(DM.dkm,dW+.02,.04,.04,dX[0],dH+.02,z1+.02);K.box(DM.dkm,dW+.02,.04,.04,dX[1],dH+.02,z1+.02);K.box(DM.door,dW,.05,.015,dX[1],dH-.025,z1+.006);
+  K.box(DM.rub,dW,dH-.05,.01,dX[1],(dH-.05)/2,z1-.25);
+  // signage
+  K.box(DM.dkm,.42,.07,.012,cx,H-.06,z1+.015);K.box(DM.optSign,.38,.045,.014,cx,H-.06,z1+.016);
+  // interior assembly line + robot arms (visible through open door/glass)
+  K.box(DM.dkm,W*.86,.04,.06,cx,.04,cz+.1);for(let i=0;i<7;i++)K.box(DM.frame,.01,.045,.07,x0+.12+i*.12,.03,cz+.1);
+  for(let i=0;i<4;i++){const ax=x0+.18+i*.19;K.cyl(DM.orange,.025,.03,.03,ax,.015,cz+.18,12);K.pipe(DM.orange,.012,[ax,.03,cz+.18],[ax,.16,cz+.16]);K.pipe(DM.orange,.01,[ax,.16,cz+.16],[ax+.03,.12,cz+.1]);K.sph(DM.dkm,.016,ax,.16,cz+.16,8,6);}
+  for(let i=0;i<5;i++){const ux=x0+.12+i*.16;K.box(MAT.white,.05,.07,.03,ux,.1,cz+.1);K.sph(MAT.white,.018,ux,.155,cz+.1,8,6);K.box(DM.dkm,.03,.012,.004,ux,.155,cz+.12);}
+  K.box(DM.hivis,.02,.18,.02,x0+.05,.09,cz+.25); // gantry posts
+  // roof AC units + vents
+  for(let i=0;i<3;i++){K.box(DM.cab,.09,.05,.07,x0+.15+i*.12,H+tH+.03,z1-tD/2-.02);K.cyl(DM.dkm,.025,.025,.006,x0+.15+i*.12,H+tH+.058,z1-tD/2-.02,12);}
+  for(let i=0;i<3;i++)K.cyl(DM.frame,.02,.02,.1,x1-.1-i*.08,H+tH+.04,z0+.06,10);
+  // charging dock row (+z apron, east side)
+  for(let i=0;i<5;i++){const qx=.56+i*.08;K.box(DM.cab,.045,.11,.03,qx,.08,.95);K.box(DM.led,.012,.012,.004,qx,.12,.966);K.box(MAT.concrete,.06,.006,.08,qx,.028,.91);K.pipe(DM.cable,.003,[qx+.015,.05,.94],[qx+.015,.03,.9],5);}
+  K.box(DM.label,.15,.03,.005,.12,.07,.95);K.pipe(DM.frame,.004,[.12,.03,.95],[.12,.06,.95],5);
+  const g=K.done();for(let i=0;i<Math.min(4,1+L);i++){const o=optimus();o.scale.setScalar(HUMAN/(B.robot.s/B.robot.s0));o.position.set(.56+i*.08,.03,.9);g.add(o);}
+  {const o=optimus();o.scale.setScalar(HUMAN/(B.robot.s/B.robot.s0)*.9);o.position.set(dX[1],.03,z1-.12);g.add(o);}
+  return g;},
  hab:L=>{const K=KB(),r=.36;detFound(K,1,.45);
   const pr=[];for(let i=0;i<=24;i++){const a=i/24*Math.PI/2;pr.push(new THREE.Vector2(Math.cos(a)*r,.06+Math.sin(a)*r*.92));}K.put(MAT.white,new THREE.LatheGeometry(pr,64),.5,0,.5);
   for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const pts=pr.filter((_,k)=>k%3==0).map(p=>new THREE.Vector3(Math.sin(a)*(p.x+.004),p.y,Math.cos(a)*(p.x+.004)));for(let k=1;k<pts.length;k++)K.pipe(DM.frame,.005,[.5+pts[k-1].x,pts[k-1].y,.5+pts[k-1].z],[.5+pts[k].x,pts[k].y,.5+pts[k].z],5);}
@@ -657,7 +693,7 @@ function botsWant(){if(!S||S.demo)return 0;let n=S.botsLanded===undefined?2:Math
 function botsAt(id,kind){let n=0;for(const t of bots)if(t.st==='work'&&t.job&&t.job.id===id&&t.kind===kind)n++;return n;}
 function syncBots(){const want=botsWant();if(!S.bots)S.bots=[];while(S.bots.length<want){S.bots.push(1);if(bots.length>=2&&!S.demo)toast('🤖 A new Optimus robot rolled out of the bay');}while(S.bots.length>want)S.bots.pop();
  while(bots.length>S.bots.length)W.remove(bots.pop().m);
- while(bots.length<S.bots.length){const home=S.b.find(b=>b.t==='robot'&&!(b.cons>0))||S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship');if(!home)break;const c=bc(home),m=optimus(),a=Math.random()*6.28,r=B[home.t].s*.5+1.6;m.scale.setScalar(HUMAN);
+ while(bots.length<S.bots.length){const home=S.b.find(b=>b.t==='robot'&&!(b.cons>0))||S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship');if(!home)break;const c=home.t==='robot'&&home.door?{x:home.door.x+.5,z:home.door.z+.5}:bc(home),m=optimus(),a=Math.random()*6.28,r=B[home.t].s*.5+1.6;m.scale.setScalar(HUMAN);
   m.position.set(c.x+Math.cos(a)*r,hgt(c.x+Math.cos(a)*r,c.z+Math.sin(a)*r),c.z+Math.sin(a)*r);W.add(m);bots.push({m,st:'idle',wait:Math.random(),ph:Math.random()*6});}
  // job assignment: construction (≤3 per site) > mines (≤2) > haul crates
  const load=new Map();bots.forEach(t=>{if(t.job&&(isSite(t.job)||t.kind!=='build')&&S.b.includes(t.job))load.set(t.job.id,(load.get(t.job.id)||0)+1);else if(t.st!=='idle'&&t.kind==='build'){t.st='idle';t.job=null;}});
@@ -1123,23 +1159,23 @@ function closeSaveBox(){const o=$('savebox');if(o)o.style.display='none';}
 function loadFail(e){console.error('load failed',e);saveBlocked=true;showTitle();const m=$('loaderr');if(m){m.style.display='block';m.innerHTML=`⚠️ Your saved colony couldn't be loaded (${String(e&&e.message||e).slice(0,80)}). It has <b>not</b> been touched — open <b>💾 Saves</b> to export it or restore a backup.`;}}
 
 $('mktb').onclick=()=>openM();$('save').onclick=()=>{save();openSaveBox(true);};$('newg').onclick=()=>{save();showTitle();};
-$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
+$('doneb').onclick=e=>{e.stopPropagation();const wasDoze=sel==='dozer';sel=null;document.body.classList.remove('placing');if(typeof tapStart!=='undefined'){tapStart=null;}updPrev();menu();if(wasDoze)dozeSync();beep(500,.05,'square',.04);};$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);camUp();});
 // ---------- ships
 function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const base=by(b)+.36,cx=bc(b).x,cz=bc(b).z;
  if(b.t==='lpad'&&!b.ship){if(!b.call||S.t<b.call.due)return;if(!b.call.go){b.call.go=1;b.timer=0;}}if(!b.ship){b.timer-=dt;if(b.timer<=0&&!S.demo&&S.t-(S.lastLandT??-999)<TUNE.LAND_GAP){b.timer=TUNE.LAND_GAP-(S.t-S.lastLandT)+5+Math.random()*10;}if(b.timer<=0){S.lastLandT=S.t;const m=rocket();m.rotation.order="YXZ";m.rotation.y=Math.PI/4+.85+rot+(Math.random()-.5)*.2;const F=new THREE.Group();F.scale.setScalar(4);F.position.set(cx,0,cz);F.add(m);W.add(F);b.ship={m,F,ph:'land',t:0};if(!S.demo)rumble(6,.2);}return;}
- const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;m.position.x=0;m.position.z=0;
+ const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;if(sh.ph==='land'&&sh.t>PADL.T+30)sh.t=PADL.T;if(sh.ph==='up'&&sh.t>12)sh.t=4.6;m.position.x=0;m.position.z=0;
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base/4;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
   if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;if(!S.demo)S.supplyN=(S.supplyN||0)+1;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
    const room=st.house-S.cols.length;const want=Math.round((TUNE.SHIP_CREW[0]+Math.random()*(TUNE.SHIP_CREW[1]-TUNE.SHIP_CREW[0]))*(S.hap/100+.3)*(1+S.cols.length/60));const call=b.t==='lpad'?b.call:null;const crewed=call?call.k==='crew':Math.random()<((S.births||0)>0?.22:.4);const n=call?(call.k==='crew'?Math.max(0,Math.min(room,8)):0):crewed?Math.max(0,Math.min(room,want)):0;
    const pal=palletN(),mats=pal+S.order;const ord=S.order;S.order=0;{const items=[];for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(!call||call.k!=='parts')items.push({k:'cargo',mat:mats});if((!crewed&&!call)||(call&&call.k==='mat'))items.push({k:'cargo',mat:palletN()});if(call&&call.k==='parts')items.push({k:'cargo',mat:0,parts:50});b.call=null;startUnload({sid:b.id,cx,cz,gy:base,items,pad:1});sh.unl=unloads[unloads.length-1];}
    if(!S.demo){toast(`🚀 Supply ship landed at ${b.name} — unloading ${n?n+' crew':crewed?'no crew (need housing!)':'cargo only'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
  else if(sh.ph==='ground'){sh.stay-=dt;if(sh.stay<=0){if(sh.unl&&!sh.unl.done)finishUnload(sh.unl);const h=sh.hold;S.fuel+=h.fuel;S.mat+=h.mat;S.ore+=h.ore;S.rare+=h.rare;sh.ph='up';sh.t=0;if(!S.demo)toast(`🛫 Supply ship left ${b.name} empty — refuel ships for return-flight income`);if(panel&&panel.b===b)renderPanel(true);}}
- else{if(!sh.lift){sh.lift=1;dust(cx,cz,base,10);if(!S.demo)rumble(3,.25);}pose(m,Math.pow(sh.t,2)*1.6,0);m.position.y+=base/4;setFire(m,true);fl.scale.y=1.5+Math.random();if(sh.t>4.5){W.remove(m);b.ship=null;b.timer=shipInterval(b);}}}
+ else{if(!sh.lift){sh.lift=1;dust(cx,cz,base,10);if(!S.demo)rumble(3,.25);}pose(m,Math.pow(sh.t,2)*1.6,0);m.position.y+=base/4;setFire(m,true);fl.scale.y=1.5+Math.random();if(sh.t>4.5){W.remove(sh.F||m);b.ship=null;b.timer=shipInterval(b);}}}
 // ---------- opening: Starships land on the soil
 const SHIP_SPOTS=[[176,176],[188,168],[200,176],[168,188],[208,188]];
 function frostSync(){S.b.forEach(b=>{if(b.t!=='ship')return;const o=objs.get(b.id);if(!o)return;const rk=o.getObjectByName('rk');if(!rk)return;let f;if(o.userData.land)f=1;else{f=Math.max(0,1-(S.t-(b.frostT??-1e9))/(DAY*1.5));const h=b.hold;if(h&&h.fuel>0)f=Math.max(f,.35+.6*Math.min(1,h.fuel/TUNE.RETURN_FUEL));}setFrost(rk,f);});}
-function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
+function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;if(L.t>(L.P||PADL).T+30)L.t=(L.P||PADL).T;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
  rk.visible=true;if(!L.r){L.r=1;if(!S.demo)rumble(6,.15);}const P=L.P||PADL;const r=landPose(rk,L.t,P);const b=byId(id);if(b&&r.ph===2&&r.y<6){L.dT=(L.dT||0)-dt;if(L.dT<=0){L.dT=.3;dust(bc(b).x,bc(b).z,0,r.y<1.5?12:6);if(!L.r2&&r.y<2){L.r2=1;if(!S.demo)rumble(4,.12);}}}
  if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);delete o.userData.land;if(b){b.frostT=S.t;dustRing(bc(b).x,bc(b).z,S.demo?14:30);}if(L.arr&&b)landedArrival(b,L.arr);if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:bc(b).x,cz:bc(b).z,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
  if(!S.demo)arrivalsTick();if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
@@ -1149,8 +1185,8 @@ function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData
 
 // ---------- the second start ship arrives on its own, minutes after the first
 function freeShipSpot(){const s0=S.b.find(b=>b.t==='ship');const cx=s0?s0.x:176,cz=s0?s0.z:176;
- for(let r=16;r<64;r+=2)for(let k=0;k<24;k++){const a=k/24*6.283+.4,x=Math.round(cx+Math.cos(a)*r),z=Math.round(cz+Math.sin(a)*r);let ok=free('ship',x,z);
-  if(ok)for(let i=-4;i<=11&&ok;i++)for(let j=-4;j<=11;j++){const o=occ[x+i]?.[z+j];if(o){ok=false;break;}}if(ok)return[x,z];}return null;}
+ for(let pass=0;pass<2;pass++)for(let r=16;r<(pass?140:64);r+=2)for(let k=0;k<24;k++){const a=k/24*6.283+.4,x=Math.round(cx+Math.cos(a)*r),z=Math.round(cz+Math.sin(a)*r);let ok=free('ship',x,z);
+  if(ok&&!pass)for(let i=-4;i<=11&&ok;i++)for(let j=-4;j<=11;j++){const o=occ[x+i]?.[z+j];if(o){ok=false;break;}}if(ok)return[x,z];}return null;}
 function ship2Tick(){if(S.demo||S.ship2!=='pending'||S.crewPending||(S.botsLanded||0)<2||unloads.length)return;
  const due=S.t>=S.ship2T||(S.tut&&S.tut.step>=3&&S.t>=S.ship2T*.5);if(!due||S.t-(S.lastLandT??-999)<TUNE.LAND_GAP)return;const p=freeShipSpot();if(!p)return;
  S.ship2='landing';S.lastLandT=S.t;const b=addB('ship',p[0],p[1],1);b.name='Serenity';const o=objs.get(b.id);o.userData.land={t:0,P:INTROL,second:1};o.getObjectByName('rk').visible=false;
@@ -1628,7 +1664,10 @@ function migrate4(d){if(d.v>=5)return d;const t={};for(const k in d.tiles||{})t[
 function start(load,skipTut){saveBlocked=false;try{startInner(load,skipTut);askPersist();if(!load)lastSaved=0;saveUI();}catch(e){if(load){loadFail(e);}else throw e;}}
 function startInner(load,skipTut){speed=1;{const p=document.querySelector('#ctl [data-s]');if(p){p.classList.remove('on');p.textContent='⏸';}}clearAll();uid=1;cid=1;const sv=load&&localStorage.getItem(SK);
  if(sv){const d=migrate4(migrate(JSON.parse(sv)));if(!(d.v>=6)){d.bots=[1,1];d.tf=d.tf||0;d.v=6;d.up6=1;}S={...fresh(),...d,b:[],demo:0};if(d.botsLanded===undefined)S.botsLanded=2;delete S.truckIn;if(d.ship2===undefined)S.ship2='done';S.ship2='done';if(d.lvl===undefined)S.lvl=null;S.unloadStarted=0;S.cols=d.cols||[];S.warned=d.warned||{};S.tiles=d.tiles||{};cid=S.cols.reduce((m,c)=>Math.max(m,c.id+1),1);rebuildOcc();
-  d.b.forEach(b=>{rebuildOcc();if(!B[b.t])return;const nb=addB(b.t,b.x,b.z,1,b);['cons','consN','crewN','upT','upN','frostT','spec','hb','auto','call','cool','rich','siteId','rareK'].forEach(k=>{if(b[k]!=null)nb[k]=b[k];});if(nb.cons>0&&!nb.consN){const sp=buildSpec(nb.t,1);nb.consN=sp.T;nb.crewN=sp.n;nb.cons=Math.max(1,nb.cons/CONS_T*sp.T);}if(nb.upT>0)addScaf(objs.get(nb.id),nb);if(nb.spec)placeObj(nb);const o=objs.get(nb.id);if(nb.cons>0&&o){delete o.userData.grow;o.scale.y=.25+.75*Math.max(0,1-nb.cons/(nb.consN||CONS_T));addScaf(o,nb);}});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
+  d.b.forEach(b=>{rebuildOcc();if(!B[b.t])return;if(b.t==='robot'){const s=B.robot.s,ok=(x,z)=>{if(x<0||z<0||x+s>N||z+s>N)return false;for(let i=0;i<s;i++)for(let j=0;j<s;j++)if(occ[x+i][z+j]||blocked[x+i][z+j]||boulderAt(x+i,z+j))return false;return true;};let p=null;
+  for(let rr=0;rr<=14&&!p;rr++)for(let dx=-rr;dx<=rr&&!p;dx++)for(let dz=-rr;dz<=rr&&!p;dz++){if(Math.max(Math.abs(dx),Math.abs(dz))!==rr)continue;const x=b.x-Math.round((s-4)/2)+dx,z=b.z-Math.round((s-4)/2)+dz;if(ok(x,z))p=[x,z];}
+  if(!p){S.cr+=B.robot.c;S.mat+=B.robot.m;setTimeout(()=>toast(`🤖 Optimus Bay is now a big 8×8 factory and didn't fit at its old spot — refunded ¢${B.robot.c} + 🧱${B.robot.m}. Rebuild it where there's room.`,1),1500);return;}
+  if(p[0]!==b.x||p[1]!==b.z){b.x=p[0];b.z=p[1];}for(let i=0;i<s;i++)for(let j=0;j<s;j++)delete S.tiles[TK(b.x+i,b.z+j)];}const nb=addB(b.t,b.x,b.z,1,b);['cons','consN','crewN','upT','upN','frostT','spec','hb','auto','call','cool','rich','siteId','rareK'].forEach(k=>{if(b[k]!=null)nb[k]=b[k];});if(nb.cons>0&&!nb.consN){const sp=buildSpec(nb.t,1);nb.consN=sp.T;nb.crewN=sp.n;nb.cons=Math.max(1,nb.cons/CONS_T*sp.T);}if(nb.upT>0)addScaf(objs.get(nb.id),nb);if(nb.spec)placeObj(nb);const o=objs.get(nb.id);if(nb.cons>0&&o){delete o.userData.grow;o.scale.y=.25+.75*Math.max(0,1-nb.cons/(nb.consN||CONS_T));addScaf(o,nb);}});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
  else{S=fresh(selDiff,($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
