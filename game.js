@@ -342,6 +342,8 @@ const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0xbcc0c6,map:steelMap
  glow:new THREE.MeshBasicMaterial({color:0xffd9a0,side:THREE.DoubleSide,toneMapped:false}),
  fl:new THREE.MeshBasicMaterial({color:0xff9a3c,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}),
  fl2:new THREE.MeshBasicMaterial({color:0xd8ecff,transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false})};
+let _flapE=null;function flapE(){if(_flapE)return _flapE;const tile=.62*SH_K*8,m=SHIPMAT.flapT.clone();m.map=hexTex.clone();m.map.repeat.set(1/tile,hexMaps.asp/tile);m.map.needsUpdate=true;m.bumpMap=hexMaps.bump.clone();m.bumpMap.repeat.copy(m.map.repeat);m.bumpMap.needsUpdate=true;m.roughnessMap=null;m.polygonOffset=true;m.polygonOffsetFactor=-3;return _flapE=m;}
+function sgnOut(P,a,b){const c=P.reduce((o,p)=>o.add(p),new THREE.Vector2()).multiplyScalar(1/P.length),d=b.clone().sub(a),n=new THREE.Vector2(-d.y,d.x),m=a.clone().add(b).multiplyScalar(.5);return Math.sign(n.dot(m.clone().sub(c)))||1;}
 function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g); // g centred at ship mid-height; tiles face -z (windward/belly)
  const H=SH_H,y0=-H/2,r=SH_R,tw=Math.PI*r/9; // texture tile size so ~9 hex columns span the tiled half... ×16 per texture
  // hull profile (lathe): straight barrel + tangent ogive nose
@@ -351,9 +353,9 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  // heat shield: windward half (-z) of the same profile, slightly proud, hex tiles ~1 m
  const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=.62*SH_K*8,ta=1.05*SH_K/r,dl=2*ta;
  const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),-ps.getZ(i)),rr=Math.max(.02,Math.hypot(ps.getX(i),ps.getZ(i)));uv.setXY(i,a*rr/tile+50,ps.getY(i)/tile*hexMaps.asp+50);}return geo;};
- const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2,Math.PI)),new THREE.Matrix4()]];
+ const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2-.09,Math.PI+.18)),new THREE.Matrix4()]];
  {const cy=H*.93,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
- parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2,Math.PI)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
+ parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2-.09,Math.PI+.18)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
  {const ph=Math.PI/2-.55,rw=new THREE.Group();const yT=SH_NOSE*1.02;rw.add(mesh(new THREE.BoxGeometry(.028,yT-.2,.02),SHIPMAT.flapS,0,.1+(yT-.2)/2,0,false));for(let y=.3;y<yT;y+=.35)rw.add(mesh(new THREE.BoxGeometry(.04,.02,.03),SHIPMAT.chine,0,y,0,false));
   rw.position.set(Math.sin(ph)*(r+.012),y0,Math.cos(ph)*(r+.012));rw.rotation.y=ph;g.add(rw);
   for(let i=0;i<9;i++){const a=Math.PI/2-.2-((i*1.7)%1.3),y=.4+i*.47;g.add(mesh(new THREE.BoxGeometry(.035,.025,.006),SHIPMAT.chine,Math.sin(a)*(r+.003),y0+y,Math.cos(a)*(r+.003),false).rotateY(a));}}
@@ -363,9 +365,9 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  // flaps (rounded trapezoids, thick, steel leeward face + tiled windward face), hinged on the chine, angled 15° windward
  const flap=(rootY0,rootY1,tipY0,tipY1,span,side,yBase,xHinge,th=.045,lean=0,lee=.42)=>{const P=[[0,rootY0],[span,tipY0],[span,tipY1],[0,rootY1]].map(([a,b])=>new THREE.Vector2(a,b));
   const sh=new THREE.Shape();sh.moveTo(P[0].x,P[0].y);for(let k=1;k<=P.length;k++){const a=P[k-1],b=P[k%P.length],c=P[(k+1)%P.length];const m1=a.clone().lerp(b,.82),m2=b.clone().lerp(c,.18);sh.lineTo(m1.x,m1.y);sh.quadraticCurveTo(b.x,b.y,m2.x,m2.y);}
-  const grp=new THREE.Group();const st=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:th,bevelEnabled:true,bevelThickness:.01,bevelSize:.012,bevelSegments:2,curveSegments:8}),SHIPMAT.flapS);st.position.z=-th/2;st.castShadow=true;grp.add(st);
+  const grp=new THREE.Group();const st=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:th,bevelEnabled:true,bevelThickness:.01,bevelSize:.012,bevelSegments:2,curveSegments:8}),[SHIPMAT.flapS,flapE()]);st.position.z=-th/2;st.castShadow=true;grp.add(st);
   const fg=new THREE.ShapeGeometry(sh,8);{const uv=fg.attributes.uv,ps=fg.attributes.position,tile=.62*SH_K*8;for(let i=0;i<uv.count;i++)uv.setXY(i,ps.getX(i)/tile,ps.getY(i)/tile*hexMaps.asp);}
-  const tl=new THREE.Mesh(fg,SHIPMAT.flapT);tl.position.z=-th/2-.013;grp.add(tl);
+  const tl=new THREE.Mesh(fg,SHIPMAT.flapT);tl.position.z=-th/2-.013;grp.add(tl);/* v50: tiles wrap the flap edges and a narrow lip onto the leeward face along the leading/outer edges */{const lw=.022;for(const[a,b]of[[P[0],P[1]],[P[1],P[2]],[P[2],P[3]]]){const d=b.clone().sub(a),L=d.length(),n=new THREE.Vector2(-d.y,d.x).normalize(),m=a.clone().add(b).multiplyScalar(.5);const lip=new THREE.Mesh(new THREE.PlaneGeometry(L*.9,lw),flapE());lip.position.set(m.x+n.x*lw*.6*(a===P[0]?-1:1)*0,m.y,th/2+.0135);lip.position.x=m.x-(n.x)*lw*.35*sgnOut(P,a,b);lip.position.y=m.y-(n.y)*lw*.35*sgnOut(P,a,b);lip.rotation.z=Math.atan2(d.y,d.x);lip.rotation.y=0;grp.add(lip);}}
   // hinge aerocover fairing along the root (leeward) + small dark root seal
   const hl=rootY1-rootY0;const fair=mesh(new THREE.CapsuleGeometry(.03,hl*.8,4,10),SHIPMAT.flapS,.01,(rootY0+rootY1)/2,.035,true);grp.add(fair);
   grp.add(mesh(new THREE.BoxGeometry(.02,hl*.95,.06),SHIPMAT.chine,.005,(rootY0+rootY1)/2,-.02,false));
