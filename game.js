@@ -760,7 +760,7 @@ const GTYPE={solar:'power',battery:'power',reactor:'power',kilo:'power',ice:'wat
  mine:'ind',proc:'ind',fuel:'ind',tfarm:'ind',refin:'ind',factory:'ind',drill:'ind',robot:'ind',garage:'ind',lab:'sci',med:'sci',medc:'sci',school:'sci',sec:'sci',outpost:'sci',pad:'pad',lpad:'pad'};
 // v35: reserved L10 footprint. Every building owns a ring of RVt tiles around its L1 core; the ring is held in rsv[][] so nothing else can be
 // built inside, and the model physically grows into it level by level (hand-designed slot plans per building, landmark at L10).
-const RVt=t=>{const d=B[t];return d&&d.cat==='b'&&t!=='opm'&&t!=='ship'?Math.max(1,Math.round(d.s*.5)):0;};
+const RVX={hab:3,solar:3,farm:4,battery:3,wtank:3,mine:4,proc:4,robot:4,pad:3,tfarm:2,lab:4};const RVt=t=>{const d=B[t];if(!d||d.cat!=='b'||t==='opm'||t==='ship')return 0;return RVX[t]??Math.max(2,Math.round(d.s*.6));};
 const capL=b=>{const R=RVt(b.t),M=B[b.t].maxL||10;if(!R)return M;const r=b.rv??R;return r>=R?M:Math.max(b.lvl,Math.min(M,1+Math.floor(9*r/R)));};
 let _rvF=1;const GHG=new THREE.MeshStandardMaterial({color:0xe4f2ea,transparent:true,opacity:.32,roughness:.08,metalness:.1,depthWrite:false,side:THREE.DoubleSide});
 const GSLOT=[[0,.33],[1,.67],[2,.33],[3,.67],[0,1],[2,0],[0,.67],[3,.33],[1,.33],[2,.67],[0,0],[2,1]],GLV=[2,3,4,5,5,6,6,7,8,8,9,10];
@@ -794,8 +794,8 @@ function gItem(K,k,x,z,u,ax,s0){const w=u*.82,cx=Math.max(0,Math.min(s0,x)),cz=M
  else if(k==='mast'||k==='tower'){const h=k==='tower'?u*2.2:u*1.4;K.cyl(MAT.white,u*.12,u*.2,h,x,h/2,z,12);K.cyl(MAT.white,u*.28,u*.28,u*.18,x,h*.82,z,14);K.cyl(DM.frame,u*.02,u*.02,u*.5,x,h+u*.25,z,6);K.sph(DM.led||MAT.red,u*.05,x,h+u*.5,z);}}
 function growth(g,t,L){const R=RVt(t);if(!R)return;const s0=B[t].s0,u=R*s0/B[t].s*_rvF;if(u<=.001)return;const K=KB();
  const plan=(GPLAN[t]||GPLAN[GTH[GTYPE[t]||'gen']]).split(' '),M=Math.min(10,L);
- for(let i=0;i<12;i++){if(GLV[i]>M)break;const [sd,f]=GSLOT[i],a=-u/2+f*(s0+u),d=u/2;const [x,z]=sd===0?[s0+d,a]:sd===1?[a,s0+d]:sd===2?[-d,a]:[a,-d];gItem(K,plan[i],x,z,u,sd&1,s0);}
- if(M<10){const e=u*.96,lo=-e,hi=s0+e,ph=u*.14;for(const[x0,z0,x1,z1]of[[lo,lo,hi,lo],[hi,lo,hi,hi],[hi,hi,lo,hi],[lo,hi,lo,lo]]){K.box(MAT.yellow,Math.abs(x1-x0)||u*.015,u*.015,Math.abs(z1-z0)||u*.015,(x0+x1)/2,ph,(z0+z1)/2);const n=Math.max(2,Math.round(Math.hypot(x1-x0,z1-z0)/(u*.6)));for(let i=0;i<n;i++)K.box(MAT.orange||MAT.yellow,u*.03,ph*1.2,u*.03,x0+(x1-x0)*i/n,ph*.6,z0+(z1-z0)*i/n);}}
+ for(let i=0;i<12;i++){if(GLV[i]>M)break;const [sd,f]=GSLOT[i],a=-u/2+f*(s0+u),d=u/2;const [x,z]=sd===0?[s0+d,a]:sd===1?[a,s0+d]:sd===2?[-d,a]:[a,-d];gItem(K,plan[i],x,z,Math.min(u,(s0+u)*.35),sd&1,s0);}
+ if(1){const e=u*.96,lo=-e,hi=s0+e,ph=u*.14;for(const[x0,z0,x1,z1]of[[lo,lo,hi,lo],[hi,lo,hi,hi],[hi,hi,lo,hi],[lo,hi,lo,lo]]){K.box(MAT.yellow,Math.abs(x1-x0)||u*.015,u*.015,Math.abs(z1-z0)||u*.015,(x0+x1)/2,ph,(z0+z1)/2);const n=Math.max(2,Math.round(Math.hypot(x1-x0,z1-z0)/(u*.6)));for(let i=0;i<n;i++)K.box(MAT.orange||MAT.yellow,u*.03,ph*1.2,u*.03,x0+(x1-x0)*i/n,ph*.6,z0+(z1-z0)*i/n);}}
  const m=K.done();m.name='growth';g.add(m);}
 
 function model(t,lvl=1){if(t==='ship')return shipModel();const L10=lvl;if(t!=='opm')lvl=Math.min(5,Math.ceil((lvl+1)/2));let g;if(DET[t])g=DET[t](lvl);else if(V2.has(t))g=modelV2(t);else if(NEWM[t])g=NEWM[t](lvl);else g=modelNew(t,lvl);if(B[t].cat==='b'&&t!=='opm')growth(g,t,L10);
@@ -1951,7 +1951,7 @@ Object.assign(window,{__S:()=>S,__cam:cam,__THREE:THREE,__agents:agents,__trucks
 
 ;(()=>{const l=document.getElementById('loading');if(!l)return;const bar=document.getElementById('lbar'),msg=document.getElementById('lmsg');const steps=['GENERATING TERRAIN...','FUELLING STARSHIPS...','WAKING CREW...','READY!'];let i=0;const iv=setInterval(()=>{i++;bar.style.width=(i/steps.length*100)+'%';msg.textContent=steps[Math.min(i,steps.length)-1];if(i>=steps.length){clearInterval(iv);setTimeout(()=>{l.style.opacity=0;setTimeout(()=>l.remove(),600);},250);}},220);})();
 window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.__tutTick=tutTick;
-Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__capL=capL;window.__openB=b=>openB(b);window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
+Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__capL=capL;window.__RVt=RVt;window.__openB=b=>openB(b);window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
 window.__build=(k,x,z,r=0)=>{placeRot=r;const n0=S.b.length;sel=k;hover={x,z,bx:x,bz:z,p:new THREE.Vector3(x+.5,0,z+.5)};try{click();}finally{sel=null;hover=null;placeRot=0;updPrev();}return S.b.length>n0;};
 window.__paint=(x0,z0,x1,z1)=>{sel='path';line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>paint(x,z));sel=null;refreshDoors();};window.__upgrade=b=>upgrade(b);
 window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__cell=(x,y)=>cell(x,y).p;window.__truckModel=()=>truckModel();window.__syncRovers=()=>syncRovers();window.__astro=i=>astro(i);window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
