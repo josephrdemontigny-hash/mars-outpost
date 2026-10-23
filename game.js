@@ -1018,23 +1018,22 @@ function pathTex(){const W2=512,H2=256,c=document.createElement('canvas');c.widt
 let pathMesh=null,pathsDirty=true;const pathMat=new THREE.MeshStandardMaterial({map:pathTex(),vertexColors:true,roughness:.92,envMapIntensity:.25,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
 function rebuildPaths(){pathsDirty=false;tdecoSync();if(pathMesh){W.remove(pathMesh);pathMesh.geometry.dispose();}const P=[],C=[],I=[],U=[];let cu=[0,0,0];const uv=(a,b)=>{const fx=Math.min(1,Math.max(0,a-cu[0])),fz=Math.min(1,Math.max(0,b-cu[1]));U.push(.5*(.01+.98*fx)+(cu[2]===2?.5:0),.01+.98*fz);};
  const quad=(x0,z0,x1,z1,off,c)=>{const n=P.length/3;for(const[x,z]of[[x0,z0],[x1,z0],[x1,z1],[x0,z1]]){P.push(x,hgt(x,z)+off,z);C.push(...c);uv(x,z);}I.push(n,n+2,n+1,n,n+3,n+2);};
- const BH=.12/TILE_M,BW=.32/TILE_M,hs=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5;return v-Math.floor(v);},bc0=[.74,.42,.27];
+ const BH=.12/TILE_M,BW=.32/TILE_M,hs=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5;return v-Math.floor(v);},bc0=[.5,.26,.15];
  /* v58 berm: lumpy lip of shovelled regolith along an open path edge, outward normal (nx,nz) */
  const berm=(ax,az,bx,bz,nx,nz,k=1)=>{const L=Math.hypot(bx-ax,bz-az),n=Math.max(2,Math.ceil(L/.08));let prev=null;
   for(let i=0;i<=n;i++){const f=i/n,px=ax+(bx-ax)*f,pz=az+(bz-az)*f,end=Math.min(1,Math.min(i,n-i)/1.5+.35),sm=.5+.25*Math.sin(px*7.3+pz*5.1)+.25*Math.sin(px*13.7-pz*11.3+1.7),h=BH*k*(.45+.55*sm+.15*hs(px,pz))*end,w=BW*(.8+.4*hs(pz,px));
    const sec=[[px,pz,.03],[px+nx*w*.4,pz+nz*w*.4,.035+h],[px+nx*w,pz+nz*w,0]].map(([a,b,o])=>{P.push(a,hgt(a,b)+o,b);const cv=.9+hs(a*3,b*3)*.2;C.push(bc0[0]*cv,bc0[1]*cv,bc0[2]*cv);uv(a,b);return P.length/3-1;});
-   if(prev)for(let j=0;j<2;j++){const a0=prev[j],a1=prev[j+1],b0=sec[j],b1=sec[j+1];I.push(a0,b0,a1,a1,b0,b1);I.push(a0,a1,b0,a1,b1,b0);}prev=sec;}};
+   if(prev)for(let j=0;j<2;j++){const a0=prev[j],a1=prev[j+1],b0=sec[j],b1=sec[j+1];if((bx-ax)*nz-(bz-az)*nx>0)I.push(a0,a1,b0,a1,b1,b0);else I.push(a0,b0,a1,a1,b0,b1);}prev=sec;}};
  const openG=(a,b)=>a>=0&&b>=0&&a<N&&b<N&&!S.tiles[TK(a,b)]&&!occ[a]?.[b]&&!rsv[a]?.[b]&&!blocked[a]?.[b];
- const doors=new Map();S.b.forEach(b=>{if(b.door){const k=TK(b.door.x,b.door.z);if(!doors.has(k))doors.set(k,[]);doors.get(k).push(b);}});
+ const FP=[],SG=[];const doors=new Map();S.b.forEach(b=>{if(b.door){const k=TK(b.door.x,b.door.z);if(!doors.has(k))doors.set(k,[]);doors.get(k).push(b);}});
  for(const k in S.tiles){const [x,z]=k.split(',').map(Number),t=S.tiles[k],cx=x+.5,cz=z+.5,w=.5;cu=[x,z,t];const v=.92+((x*7+z*13)%5)*.02;
-  const col=t===2?[.34*v,.3*v,.28*v]:[.86*v,.7*v,.54*v];
+  const col=t===2?[.3*v,.22*v,.17*v]:[.64*v,.34*v,.17*v];/*v61: dusty tan-ochre path, warmer road*/
   if(t===1){const hw=.34,isP=(a,b)=>walk(a,b);const strip=(x0,z0,x1,z1)=>{const L=Math.hypot(x1-x0,z1-z0)||1,px=-(z1-z0)/L*hw,pz=(x1-x0)/L*hw;const n=P.length/3;for(const[a,b]of[[x0+px,z0+pz],[x1+px,z1+pz],[x1-px,z1-pz],[x0-px,z0-pz]]){P.push(a,hgt(a,b)+.035,b);C.push(...col);uv(a,b);}I.push(n,n+1,n+2,n,n+2,n+3);};
    const o4=D4.map(([dx,dz])=>isP(x+dx,z+dz)||(doors.get(k)||[]).some(b=>{const s=B[b.t].s;return x+dx>=b.x&&x+dx<b.x+s&&z+dz>=b.z&&z+dz<b.z+s;}));
-   quad(cx-hw,cz-hw,cx+hw,cz+hw,.035,col);o4.forEach((on,i)=>{if(on){const[dx,dz]=D4[i];strip(cx,cz,cx+dx*.5,cz+dz*.5);}});
+   {const n=P.length/3;P.push(cx,hgt(cx,cz)+.035,cz);C.push(...col);uv(cx,cz);for(let q=0;q<12;q++){const t=q*Math.PI/6,a=cx+Math.cos(t)*hw,b=cz+Math.sin(t)*hw;P.push(a,hgt(a,b)+.035,b);C.push(...col);uv(a,b);}for(let q=0;q<12;q++)I.push(n,n+1+(q+1)%12,n+1+q);}o4.forEach((on,i)=>{if(on){const[dx,dz]=D4[i];strip(cx,cz,cx+dx*.5,cz+dz*.5);}});
    for(const[dx,dz]of[[1,1],[1,-1],[-1,1],[-1,-1]])if(isP(x+dx,z+dz)&&!(isP(x+dx,z)&&isP(x,z+dz)))strip(cx,cz,cx+dx*.5,cz+dz*.5);
    if(!o4.some(Boolean))quad(cx-.5,cz-.5,cx+.5,cz+.5,.035,col);
-   else{D4.forEach(([dx,dz],i)=>{const px=-dz,pz=dx;if(!o4[i]){if(openG(x+dx,z+dz))berm(cx+dx*hw-px*hw,cz+dz*hw-pz*hw,cx+dx*hw+px*hw,cz+dz*hw+pz*hw,dx,dz);}
-     else for(const sg of[-1,1]){if(S.tiles[TK(x+px*sg,z+pz*sg)])continue;const ox=px*sg*hw,oz=pz*sg*hw;berm(cx+dx*hw+ox,cz+dz*hw+oz,cx+dx*.5+ox,cz+dz*.5+oz,px*sg,pz*sg);}});}
+   else{FP.push([x,z]);o4.forEach((on,i)=>{if(on)SG.push([cx,cz,cx+D4[i][0]*.5,cz+D4[i][1]*.5]);});for(const[dx,dz]of[[1,1],[1,-1],[-1,1],[-1,-1]])if(isP(x+dx,z+dz)&&!(isP(x+dx,z)&&isP(x,z+dz)))SG.push([cx,cz,cx+dx*.5,cz+dz*.5]);}
    continue;}
   quad(cx-w,cz-w,cx+w,cz+w,.035,col);
   const nb=D4.map(([dx,dz])=>walk(x+dx,z+dz)||(doors.get(k)||[]).some(b=>{const s=B[b.t].s;return x+dx>=b.x&&x+dx<b.x+s&&z+dz>=b.z&&z+dz<b.z+s;}));
@@ -1046,6 +1045,22 @@ function rebuildPaths(){pathsDirty=false;tdecoSync();if(pathMesh){W.remove(pathM
    if(!ns[2]&&openG(x,z+1))berm(x,z+1,x+1,z+1,0,1,.5);if(!ns[3]&&openG(x,z-1))berm(x,z,x+1,z,0,-1,.5);if(!ns[0]&&openG(x+1,z))berm(x+1,z,x+1,z+1,1,0,.5);if(!ns[1]&&openG(x-1,z))berm(x,z,x,z+1,-1,0,.5);
    const e=[.55,.5,.45];if(!ns[2]&&!walk(x,z+1))quad(cx-.45,z+.93,cx+.45,z+.96,.05,e);if(!ns[3]&&!walk(x,z-1))quad(cx-.45,z+.04,cx+.45,z+.07,.05,e);
    if(!ns[0]&&!walk(x+1,z))quad(x+.93,cz-.45,x+.96,cz+.45,.05,e);if(!ns[1]&&!walk(x-1,z))quad(x+.04,cz-.45,x+.07,cz+.45,.05,e);}}
+ /* v61 berm: one continuous smooth ridge traced around the union outline of the footpath network (capsule strips),
+    both sides, faded where the outline enters another strip / a road / a building; no per-tile segments */
+ {const HW=.34,SH=new Map(),sk=(a,b)=>((a|0)*4096+(b|0));SG.forEach(g=>{const k=sk(g[0],g[1]);if(!SH.has(k))SH.set(k,[]);SH.get(k).push(g);});
+  const dseg=(px,pz,[ax,az,bx,bz])=>{const vx=bx-ax,vz=bz-az,l2=vx*vx+vz*vz||1e-9;let t=((px-ax)*vx+(pz-az)*vz)/l2;t=t<0?0:t>1?1:t;return Math.hypot(px-ax-vx*t,pz-az-vz*t);};
+  const D=(px,pz)=>{let m=9;const X=Math.floor(px),Z=Math.floor(pz);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const L=SH.get(sk(X+i,Z+j));if(L)for(const g of L){const d=dseg(px,pz,g);if(d<m)m=d;}const tt=S.tiles[TK(X+i,Z+j)];if(tt===2){const dx=Math.max(X+i-px,0,px-X-i-1),dz=Math.max(Z+j-pz,0,pz-Z-j-1),d=Math.hypot(dx,dz)+HW;if(d<m)m=d;}}return m;};
+  const ss=(e0,e1,v)=>{const t=Math.min(1,Math.max(0,(v-e0)/(e1-e0)));return t*t*(3-2*t);};
+  const UF=[0,.18,.42,.68,1],HH=[0,.55,1,.45,0];
+  const line=(pts)=>{/* pts: [qx,qz,nx,nz] inner-edge samples with outward normal */
+   const f=pts.map(([qx,qz,nx,nz])=>{const d=D(qx+nx*.006,qz+nz*.006),ox=qx+nx*BW*.7,oz=qz+nz*BW*.7;return ss(HW-.05,HW,d)*(openG(Math.floor(ox),Math.floor(oz))||S.tiles[TK(Math.floor(ox),Math.floor(oz))]===1?1:0);});
+   for(let r=0;r<2;r++)for(let i=0;i<f.length;i++)f[i]=Math.min(f[i],(f[Math.max(0,i-1)]+2*f[i]+f[Math.min(f.length-1,i+1)])/4+.0)||0;
+   let prev=null,pf=0,pq=null;pts.forEach(([qx,qz,nx,nz],i)=>{const fi=f[i],h=BH*(.92+.05*Math.sin(qx*2.3+qz*1.9)+.03*Math.sin(qx*6.1-qz*5.3));
+    const sec=UF.map((u,j)=>{const a=qx+nx*BW*u,b=qz+nz*BW*u;cu=[Math.floor(qx),Math.floor(qz),1];const o=.03*(1-u)+fi*h*HH[j]-(1-fi)*.02;P.push(a,hgt(a,b)+o,b);const cv=.96+.14*HH[j]*fi;C.push(bc0[0]*cv*.9,bc0[1]*cv*.88,bc0[2]*cv*.86);U.push(.13,.13);return P.length/3-1;});
+    if(prev&&(fi>.001||pf>.001)){const tx=qx-pq[0],tz=qz-pq[1],up=tx*nz-tz*nx>0;for(let j=0;j<4;j++){const a0=prev[j],a1=prev[j+1],b0=sec[j],b1=sec[j+1];if(up)I.push(a0,a1,b0,a1,b1,b0);else I.push(a0,b0,a1,a1,b0,b1);}}
+    prev=sec;pf=fi;pq=[qx,qz];});};
+  const ST=.06;SG.forEach(([ax,az,bx,bz])=>{const L=Math.hypot(bx-ax,bz-az),ux=(bx-ax)/L,uz=(bz-az)/L,n=Math.max(2,Math.ceil(L/ST));for(const sg of[-1,1]){const nx=-uz*sg,nz=ux*sg,p=[];for(let i=0;i<=n;i++){const t=i/n;p.push([ax+ux*L*t+nx*HW,az+uz*L*t+nz*HW,nx,nz]);}line(p);}});
+  FP.forEach(([x,z])=>{const cx=x+.5,cz=z+.5,p=[];for(let i=0;i<=36;i++){const t=i/36*Math.PI*2,nx=Math.cos(t),nz=Math.sin(t);p.push([cx+nx*HW,cz+nz*HW,nx,nz]);}line(p);});}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('color',new THREE.Float32BufferAttribute(C,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setIndex(I);g.computeVertexNormals();
  pathMesh=new THREE.Mesh(g,pathMat);pathMesh.receiveShadow=true;W.add(pathMesh);}
 function hpush(h,v){h.push(v);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p][0]<=h[i][0])break;[h[p],h[i]]=[h[i],h[p]];i=p;}}
