@@ -1335,7 +1335,7 @@ function finishUp(b){b.upT=0;const prev=b.lvl;b.lvl++;const o=placeObj(b);o.scal
  const ring=new THREE.Mesh(new THREE.TorusGeometry(B[b.t].s0*.55,.04,8,32).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.9}));ring.position.set(B[b.t].s0/2,.2,B[b.t].s0/2);o.add(ring);setTimeout(()=>{try{o.remove(ring);}catch(e){}},900);
  const w=o.getObjectByName('warn');if(w)w.visible=!b.door;assign();if(typeof syncBots==='function')syncBots();floatText(`⬆️ L${b.lvl}`);toast(`⬆️ ${b.name} → Level ${b.lvl}! ${upBoosts({t:b.t,lvl:prev})}`);beep(520,.08,'triangle',.07);setTimeout(()=>beep(780,.1,'triangle',.07),90);renderPanel(true);setTimeout(crewSync,0);}
 function bulldoze(b){if(b.t==='ship'){toast('Refuel and launch Starships home instead of bulldozing them',1);return false;}if(b.ship){toast("Can't bulldoze a pad with a ship on it",1);return false;}
- S.cr+=Math.floor(B[b.t].c*(1+(b.lvl-1)*.3)/2);S.mat+=Math.floor(B[b.t].m*(1+(b.lvl-1)*.25)/2);delB(b);beep(200,.12,'sawtooth',.05);return true;}
+ S.cr+=Math.floor(B[b.t].c*(1+(b.lvl-1)*.3)/2);S.mat+=Math.floor(B[b.t].m*(1+(b.lvl-1)*.25)/2);apRemove(b);delB(b);refreshDoors();beep(200,.12,'sawtooth',.05);return true;}
 // ---------- input
 const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
 // v20 building details: dust drifts against walls, vent fans, beacons on tall structures, processor gears
@@ -1384,8 +1384,12 @@ function autoPath(b,hyp){if(!B[b.t]||B[b.t].cat!=='b'||b.t==='ship'||b.t==='opm'
   const tiles=[...e.run,...out.reverse()],cost=hit[0]+e.run.length*.2;if(tiles.some(([x,z])=>inCore(x,z)))continue;
   if(!best||cost<best.cost)best={cost,tiles:T0?[...tiles,...T0.e.run]:tiles,cs:e.cs,o2:T0};}
  return best;}
-function applyAP(b){const p=autoPath(b);if(!p)return 0;let n=0;p.tiles.forEach(([x,z])=>{const k=TK(x,z);if(!S.tiles[k]&&!occ[x][z]){S.tiles[k]=1;n++;}});
+function applyAP(b){const p=autoPath(b);if(!p)return 0;let n=0;b.ap=b.ap||[];b.apU=b.apU||[];p.tiles.forEach(([x,z])=>{const k=TK(x,z);if(!b.apU.includes(k))b.apU.push(k);if(!S.tiles[k]&&!occ[x][z]){S.tiles[k]=1;b.ap.push(k);n++;}});
  if(b.cs!==p.cs){b.cs=p.cs;placeObj(b);}if(p.o2&&p.o2.o.cs!==p.o2.e.cs){p.o2.o.cs=p.o2.e.cs;placeObj(p.o2.o);}changed();refreshDoors();if(n)toast(`🚶 Footpath laid to the ${B[b.t].n} door (${n} tiles, free)`);return n;}
+/* v38: remove a building's auto-laid tiles (never hand-painted ones, never ones another building's connector uses) */
+function apRemove(b){const own=b.ap||[];let n=0;own.forEach(k=>{if(S.b.some(q=>q!==b&&(q.apU||[]).includes(k)))return;if(S.tiles[k]){delete S.tiles[k];n++;}});
+ S.b.forEach(q=>{if(q!==b&&q.ap){/* hand off shared tiles so they stay tracked */own.forEach(k=>{if((q.apU||[]).includes(k)&&!q.ap.includes(k)&&S.tiles[k])q.ap.push(k);});}});b.ap=[];b.apU=[];if(n)changed();return n;}
+function apHand(keys){/* player-painted or bulldozed tiles become untracked */const ks=new Set(keys);S.b.forEach(q=>{if(q.ap)q.ap=q.ap.filter(k=>!ks.has(k));});}
 function apAll(){S.b.forEach(b=>{if(B[b.t]&&B[b.t].cat==='b'&&b.t!=='ship'&&b.t!=='opm'&&!connected(b))applyAP(b);});}
 const apMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(.9,.06,.9),new THREE.MeshBasicMaterial({color:0xfff2a0,transparent:true,opacity:.75,depthWrite:false}),64);apMesh.count=0;apMesh.frustumCulled=false;apMesh.renderOrder=8;
 function apPreview(t,x,z,ok){apMesh.count=0;if(ok&&t&&B[t]&&B[t].cat==='b'){const p=autoPath({t,x,z,r:placeRot,id:-1},1);if(p){const m=new THREE.Matrix4();p.tiles.slice(0,64).forEach(([a,c])=>{if(walk(a,c))return;m.makeTranslation(a+.5,hgt(a+.5,c+.5)+.07,c+.5);apMesh.setMatrixAt(apMesh.count++,m);});apMesh.instanceMatrix.needsUpdate=true;return p;}}return null;}
@@ -1398,8 +1402,8 @@ function updPrev(){if(moving)return;if(!sel||!hover){prev.visible=false;apMesh.c
  if(d.cat==='b'&&x>=0&&z>=0&&x<N&&z<N)$('info').textContent+=' · '+bioTxt(x+d.s/2,z+d.s/2,sel);{const pp=apPreview(sel,x,z,ok);if(pp)$('info').textContent+=` · 🚶 auto footpath ${pp.tiles.filter(([a,c])=>!walk(a,c)).length} tiles (free)`;_apcs=pp?pp.cs:null;}ghostSync(x,z,ok);
  prev.material.color.set(ok?0x33ff55:0xff3333);}
 function paint(x,z){if(x<0||z<0||x>=N||z>=N)return;const k=TK(x,z);
- if(sel==='dozer'){if(S.tiles[k]){delete S.tiles[k];changed();}return;}
- if(S.tiles[k]||occ[x][z]||blocked[x][z]||rsv[x]?.[z])return;S.tiles[k]=1;changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
+ if(sel==='dozer'){if(S.tiles[k]){delete S.tiles[k];apHand([k]);changed();}return;}
+ if(S.tiles[k]||occ[x][z]||blocked[x][z]||rsv[x]?.[z])return;S.tiles[k]=1;apHand([k]);changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
 let doorsDirty=false;function changed(){doorsDirty=true;}
 function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=hover.bz;if(lvLocked(sel)){toast(`🔒 ${d.n} unlocks at colony Lv ${lvOf(sel)} · ${LEVELS[lvOf(sel)].n}`);return;}
  if(sel==='dozer'){const b=occ[x]?.[z];if(b)bulldoze(b);}
@@ -1414,8 +1418,9 @@ function startMove(b){if(b.t==='pad'&&b.ship){toast("Can't move a pad while a sh
  const o=objs.get(b.id);o.parent.position.y=by(b)+.35;prev.visible=true;$('info').textContent=`Moving ${b.name} — drop on a green spot`;}
 function dragMove(c){if(!c)return;const{x,z}=moveCell(c),b=moving.b,s=B[b.t].s;moving.x=x;moving.z=z;moving.ok=free(b.t,x,z,b);const o=objs.get(b.id);o.parent.position.set(x+s/2,hgt(x+s/2,z+s/2)+.35,z+s/2);
  prev.visible=true;prev.scale.set(s,1,s);prev.position.set(x+s/2,hgt(x+s/2,z+s/2)+.05,z+s/2);prev.material.color.set(moving.ok?0x33ff55:0xff3333);}
-function endMove(){const b=moving.b,o=objs.get(b.id);if(moving.ok&&!(b.t==='pad'&&b.ship)){b.x=moving.x;b.z=moving.z;beep(440,.08,'sine',.06);}else{beep(160,.15,'sawtooth',.04);toast('Invalid spot — returned',1);}
- pivotPos(b,o.parent);rebuildOcc();moving=null;doorModel(b);prev.visible=false;$('info').textContent='';refreshDoors();agents.forEach(a=>{if(a.dest===b.id||a.at===b.id){if(a.st==='walk'){a.st='in';a.at=a.dest;a.wait=1;}}});}
+function endMove(){const b=moving.b,o=objs.get(b.id);let mv_=0;if(moving.ok&&!(b.t==='pad'&&b.ship)){mv_=b.x!==moving.x||b.z!==moving.z;b.x=moving.x;b.z=moving.z;beep(440,.08,'sine',.06);}else{beep(160,.15,'sawtooth',.04);toast('Invalid spot — returned',1);}
+ pivotPos(b,o.parent);rebuildOcc();moving=null;doorModel(b);prev.visible=false;$('info').textContent='';if(mv_){const r_=apRemove(b);rebuildOcc();if(!(b.cons>0))applyAP(b);apAll();if(r_)toast(`🚶 Removed ${r_} auto-laid footpath tile${r_>1?'s':''} from the old spot`);}refreshDoors();agents.forEach(a=>{if(a.dest===b.id||a.at===b.id){if(a.st==='walk'){a.st='in';a.at=a.dest;a.wait=1;}}});}
+window.__move=(b,x,z)=>{startMove(b);moving.x=x;moving.z=z;moving.ok=free(b.t,x,z,b);const ok=moving.ok;endMove();return ok;};window.__doze=b=>bulldoze(b);
 function line(a,b,f){if(!a||!b||![a.x,a.z,b.x,b.z].every(Number.isFinite))return;let x=a.x,z=a.z,guard=0;f(x,z);while((x!==b.x||z!==b.z)&&guard++<N*4){if(Math.abs(b.x-x)>=Math.abs(b.z-z))x+=Math.sign(b.x-x);else z+=Math.sign(b.z-z);f(x,z);}}
 const paintTool=()=>sel==='path'||sel==='road'||sel==='dozer';const lineTool=()=>sel==='path'||sel==='road';let tapStart=null;
 const reticle=(()=>{const g=new THREE.Group();const r=new THREE.Mesh(new THREE.RingGeometry(.55,.75,24).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.9,depthWrite:false}));const c=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x33ff88,transparent:true,opacity:.45,depthWrite:false}));g.add(r,c);g.visible=false;g.renderOrder=5;W.add(g);return g;})();
@@ -1433,7 +1438,7 @@ function strokeAdd(x,z){if(stroke&&stroke.tool==='road'&&!stroke._r){stroke._r=1
 function strokeClear(){strokeMesh.count=0;stroke=null;}
 function strokeCancel(){if(stroke){strokeClear();}painting=false;}
 function strokeCommit(){const st=stroke;strokeClear();painting=false;if(!st||!st.cells.length)return;const done=[];
- st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!occ[x][z]&&!blocked[x][z]&&!rsv[x]?.[z]){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});if(st.tool!=='dozer')setTimeout(apAll,0);
+ st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!occ[x][z]&&!blocked[x][z]&&!rsv[x]?.[z]){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});apHand(done);if(st.tool!=='dozer')setTimeout(apAll,0);
  if(done.length){changed();lastStroke={tool:st.tool,keys:done};undoSync();beep(st.tool==='dozer'?260:520,.06,'triangle',.05);}}
 function undoStroke(){const l=lastStroke;if(!l)return;l.keys.forEach(k=>{if(l.tool==='dozer'){const[x,z]=k.split(',').map(Number);if(!occ[x]?.[z])S.tiles[k]=1;}else delete S.tiles[k];});changed();lastStroke=null;undoSync();beep(400,.06,'triangle',.05);toast(`↶ Undid last ${l.tool==='dozer'?'bulldoze':'path'} stroke (${l.keys.length} tiles)`);}
 function undoSync(){const u=$('undob');if(u)u.style.display=lastStroke&&(sel==='path'||sel==='road'||sel==='dozer')?'':'none';}
@@ -1481,7 +1486,7 @@ let saveBlocked=false,lastSaved=0,lastBak=0,saveErrT=0;
 const SAVE_KEYS=['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen',
  'bots','rovers','rovId','sites','fog','tech','rp','parts','partsMade','scouts','surveys','techN','births','oreDug','roverWater','storms','storm','nextStorm','nightPow','outRuns','lastMeteor','town','tutBonus','safeT','tf','atm','opm2','lv10','lv36'];
 function saveData(){const d={v:SV,N,saved:Date.now()};SAVE_KEYS.forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});
- d.b=S.b.map(({id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin,cs})=>({cs,id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin}));d.pop=S.cols.length;return d;}
+ d.b=S.b.map(({id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin,cs,ap,apU})=>({cs,ap,apU,id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin}));d.pop=S.cols.length;return d;}
 function rotateBak(js){try{for(let i=2;i>0;i--){const v=localStorage.getItem('marsOutpost.bak'+(i-1));if(v)localStorage.setItem('marsOutpost.bak'+i,v);}localStorage.setItem('marsOutpost.bak0',js);}catch(e){console.warn('backup rotate failed',e);}}
 function save(){if(!S||S.demo||saveBlocked||intro)return false;try{const js=JSON.stringify(saveData());const prev=localStorage.getItem(SK);
   if(prev&&Date.now()-lastBak>180000){rotateBak(prev);lastBak=Date.now();}localStorage.setItem(SK,js);lastSaved=Date.now();saveUI();return true;}
@@ -2043,7 +2048,7 @@ function startInner(load,skipTut){speed=1;{const p=document.querySelector('#ctl 
   d.b.forEach(b=>{rebuildOcc();if(!B[b.t])return;if(b.t==='robot'){const s=B.robot.s,ok=(x,z)=>{if(x<0||z<0||x+s>N||z+s>N)return false;for(let i=0;i<s;i++)for(let j=0;j<s;j++)if(occ[x+i][z+j]||blocked[x+i][z+j]||boulderAt(x+i,z+j))return false;return true;};let p=null;
   for(let rr=0;rr<=14&&!p;rr++)for(let dx=-rr;dx<=rr&&!p;dx++)for(let dz=-rr;dz<=rr&&!p;dz++){if(Math.max(Math.abs(dx),Math.abs(dz))!==rr)continue;const x=b.x+dx,z=b.z+dz;if(ok(x,z))p=[x,z];}
   if(!p){S.cr+=B.robot.c;S.mat+=B.robot.m;setTimeout(()=>toast(`🤖 Optimus Bay is now a big 8×8 factory and didn't fit at its old spot — refunded ¢${B.robot.c} + 🧱${B.robot.m}. Rebuild it where there's room.`,1),1500);return;}
-  if(p[0]!==b.x||p[1]!==b.z){b.x=p[0];b.z=p[1];}for(let i=0;i<s;i++)for(let j=0;j<s;j++)delete S.tiles[TK(b.x+i,b.z+j)];}const nb=addB(b.t,b.x,b.z,1,b);['cons','consN','crewN','upT','upN','frostT','spec','hb','auto','call','cool','rich','siteId','rareK','vmin','cs'].forEach(k=>{if(b[k]!=null)nb[k]=b[k];});if(nb.vmin>nb.lvl&&!nb.spec)placeObj(nb);if(nb.cons>0&&!nb.consN){const sp=buildSpec(nb.t,1);nb.consN=sp.T;nb.crewN=sp.n;nb.cons=Math.max(1,nb.cons/CONS_T*sp.T);}if(nb.upT>0)addScaf(objs.get(nb.id),nb);if(nb.spec)placeObj(nb);const o=objs.get(nb.id);if(nb.cons>0&&o){delete o.userData.grow;o.scale.y=.25+.75*Math.max(0,1-nb.cons/(nb.consN||CONS_T));addScaf(o,nb);}});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
+  if(p[0]!==b.x||p[1]!==b.z){b.x=p[0];b.z=p[1];}for(let i=0;i<s;i++)for(let j=0;j<s;j++)delete S.tiles[TK(b.x+i,b.z+j)];}const nb=addB(b.t,b.x,b.z,1,b);['cons','consN','crewN','upT','upN','frostT','spec','hb','auto','call','cool','rich','siteId','rareK','vmin','cs','ap','apU'].forEach(k=>{if(b[k]!=null)nb[k]=b[k];});if(nb.vmin>nb.lvl&&!nb.spec)placeObj(nb);if(nb.cons>0&&!nb.consN){const sp=buildSpec(nb.t,1);nb.consN=sp.T;nb.crewN=sp.n;nb.cons=Math.max(1,nb.cons/CONS_T*sp.T);}if(nb.upT>0)addScaf(objs.get(nb.id),nb);if(nb.spec)placeObj(nb);const o=objs.get(nb.id);if(nb.cons>0&&o){delete o.userData.grow;o.scale.y=.25+.75*Math.max(0,1-nb.cons/(nb.consN||CONS_T));addScaf(o,nb);}});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
  else{S=fresh(selDiff,($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
