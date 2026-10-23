@@ -1454,7 +1454,7 @@ R.domElement.addEventListener('pointerdown',e=>{ac();ptrs.set(e.pointerId,{x:e.c
 addEventListener('pointermove',e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(moving){dragMove(cell(e.clientX,e.clientY));return;}
  if(ptrs.size>=2){clearTimeout(lp);const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};if(pinch0){const G=cell(mid0.x,mid0.y).p.clone();const pa=gp0[0],pb=gp0[1];const dya=a.y-pa.y,dyb=b.y-pb.y,dxa=a.x-pa.x,dxb=b.x-pb.x;if(!gmode&&Math.abs(dya)+Math.abs(dyb)+Math.abs(dxa)+Math.abs(dxb)>14){gmode=(Math.sign(dya)===Math.sign(dyb)&&Math.abs(dya)>4&&Math.abs(dyb)>4&&Math.abs(dya+dyb)>2*Math.abs(dxa+dxb)&&Math.abs(d-gd0)<Math.abs(dya+dyb)*.35)?'tilt':'map';}const tilt=gmode==='tilt';
-  zoom=Math.max(3,Math.min(48,zoom*pinch0/d));pinch0=d;const ta=Math.atan2(b.y-a.y,b.x-a.x);let da;{const A0=cell(gl[0].x,gl[0].y).p.clone(),B0=cell(gl[1].x,gl[1].y).p.clone(),A1=cell(a.x,a.y).p,B1=cell(b.x,b.y).p;da=(Math.atan2(B1.z-A1.z,B1.x-A1.x)-Math.atan2(B0.z-A0.z,B0.x-A0.x));}gl=[{x:a.x,y:a.y},{x:b.x,y:b.y}];if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;tw0=ta;rot+=TWIST_SIGN*da;rotT=rot;
+  zoom=Math.max(3,Math.min(64,zoom*pinch0/d));pinch0=d;const ta=Math.atan2(b.y-a.y,b.x-a.x);let da;{const A0=cell(gl[0].x,gl[0].y).p.clone(),B0=cell(gl[1].x,gl[1].y).p.clone(),A1=cell(a.x,a.y).p,B1=cell(b.x,b.y).p;da=(Math.atan2(B1.z-A1.z,B1.x-A1.x)-Math.atan2(B0.z-A0.z,B0.x-A0.x));}gl=[{x:a.x,y:a.y},{x:b.x,y:b.y}];if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;tw0=ta;rot+=TWIST_SIGN*da;rotT=rot;
   if(tilt){camEl=Math.max(.35,Math.min(1.35,camEl+(mid.y-gy0)*.006));gy0=mid.y;camUp();cam.updateMatrixWorld();const G2=cell(mid0.x,mid0.y).p;tgt.x+=G.x-G2.x;tgt.z+=G.z-G2.z;}else{camUp();cam.updateMatrixWorld();const G2=cell(mid.x,mid.y).p;tgt.x+=G.x-G2.x;tgt.z+=G.z-G2.z;mid0=mid;}follow=null;tgt.x=Math.max(0,Math.min(N,tgt.x));tgt.z=Math.max(0,Math.min(N,tgt.z));camUp();}moved=99;return;}
  if(gest)return;
  hover=(lineTool()&&(painting||e.pointerType!=='touch'))?cell(e.clientX,e.clientY-PTR_OFF(e)):cell(e.clientX,e.clientY);
@@ -1472,7 +1472,7 @@ addEventListener('pointerup',e=>{const had=ptrs.has(e.pointerId);ptrs.delete(e.p
  if(drag&&moved<=8&&e.target===R.domElement&&S&&!S.demo){hover=cell(e.clientX,e.clientY);if(sel)click();else if(!tapBoulder(hover))pick(e.clientX,e.clientY);}if(ptrs.size===0)drag=null;pinch0=0;});
 addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);clearTimeout(lp);if(moving)endMove();strokeCancel();if(ptrs.size===0){gest=false;}drag=null;});
 R.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-R.domElement.addEventListener('wheel',e=>{zoom=Math.max(3,Math.min(48,zoom*(e.deltaY>0?1.1:.9)));camUp();e.preventDefault();},{passive:false});
+R.domElement.addEventListener('wheel',e=>{zoom=Math.max(3,Math.min(64,zoom*(e.deltaY>0?1.1:.9)));camUp();e.preventDefault();},{passive:false});
 function pan(dx,dy){follow=null;const k=zoom*2/innerHeight/CS,ang=Math.PI/4+rot;const rx=Math.cos(ang),rz=-Math.sin(ang),fx=-Math.sin(ang),fz=-Math.cos(ang);
  const kf=1/Math.max(.35,Math.sin(camEl));tgt.x+=(dx*rx-dy*fx*kf)*k;tgt.z+=(dx*rz-dy*fz*kf)*k;tgt.x=Math.max(0,Math.min(N,tgt.x));tgt.z=Math.max(0,Math.min(N,tgt.z));camUp();}
 const keys={};addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.key.toLowerCase()]=1;if(e.key==='Escape'){sel=null;closePanel();if(menuOpen)setMenu(false);else menu();updPrev();dozeSync();}if(S&&S.demo)return;if(e.key==='r')rotateAct();if(e.key==='q')rotT-=Math.PI/2;if(e.key==='e')rotT+=Math.PI/2;});
@@ -1685,7 +1685,7 @@ function lvPct(gs){if(!gs.length)return 100;return Math.round(gs.reduce((a,g)=>a
 function lvSnap(){S.lvBase={};['made','supplyN','launches','flightsDone','tradeEarned','scouts','surveys','partsMade','births','oreDug','roverWater','storms','outRuns'].forEach(k=>S.lvBase[k]=S[k]||0);}
 function lvTick(){if(!S||S.demo||S.lvlFx)return;if((S.lvl||1)>=LVMAX){if(S.eraDone!==LVMAX&&lvGoals().every(g=>g.ok)){S.eraDone=LVMAX;S.town=1;celebrate(LVMAX,true);save();}return;}
  const gs=lvGoals();if(gs.length&&gs.every(g=>g.ok))levelUp();}
-function levelUp(){S.lvl=(S.lvl||1)+1;lvSnap();const L=LEVELS[S.lvl];if(L.onReach)L.onReach();if(S.lvl>=2&&S.tut)endTut();menu();celebrate(S.lvl);save();}
+function levelUp(){S.lvl=(S.lvl||1)+1;lvSnap();fogGrow();const L=LEVELS[S.lvl];if(L.onReach)L.onReach();if(S.lvl>=2&&S.tut)endTut();menu();celebrate(S.lvl);save();}
 function lvUnlockTxt(i){const L=LEVELS[i];const a=L.unlock.filter(k=>B[k]).map(k=>`${B[k].ic} ${B[k].n}`);if(L.perk)a.push('✨ '+L.perk);return a;}
 // Lv2: the first colonist wave — two Starships, never landing together
 function queueWave(){if(S.waveQueued)return;S.waveQueued=1;S.ship2='done';S.arrivals=[{name:'Serenity',crew:6},{name:'Endurance',crew:6}];S.nextArr=S.t+12;toast('📡 Mission Control: the First Wave launched from Earth — 2 Starships of colonists inbound. Get habitats ready!',1);}
@@ -1714,11 +1714,15 @@ function drawFog(){const k=fogC.width/N;fogX.globalCompositeOperation='source-ov
  fogX.globalCompositeOperation='destination-out';(S.fog||[]).forEach(f=>{const g=fogX.createRadialGradient(f.x*k,f.z*k,f.r*k*.75,f.x*k,f.z*k,f.r*k);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');fogX.fillStyle=g;fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k,0,7);fogX.fill();});
  fogTex.needsUpdate=true;fogMesh.visible=!S.demo&&(S.lvl||1)>=11;}
 const explored=(x,z)=>(S.fog||[]).some(f=>Math.hypot(x-f.x,z-f.z)<f.r*.85);
+window.__drawFog=()=>drawFog();
 function reveal(x,z,r){S.fog.push({x,z,r});const f=[];(S.sites||[]).forEach(s=>{if(!s.found&&Math.hypot(s.x-x,s.z-z)<r*.9){s.found=1;f.push(s);}});drawFog();syncSites();return f;}
 function genSites(){const ks=['ice','ice','ice','iron','iron','iron','rare','rare','hab','hab','hab'];const out=[];let id=1;
  ks.forEach(k=>{for(let tr=0;tr<80;tr++){const a=Math.random()*6.283,d=96+Math.random()*80,x=Math.round(CENTER.x+Math.cos(a)*d),z=Math.round(CENTER.z+Math.sin(a)*d);
   if(x<16||z<16||x>N-24||z>N-24||occ[x]?.[z]||explored(x,z)||out.some(s=>Math.hypot(s.x-x,s.z-z)<36))continue;out.push({id:id++,k,x,z,found:0,surv:0,rich:+(0.8+Math.random()*.7).toFixed(2)});break;}});return out;}
-function initSettle(){S.fog=S.fog||null;if(!S.fog){S.fog=[{x:CENTER.x,z:CENTER.z,r:88}];const bs=S.b.filter(b=>b.t!=='ship'||true);if(bs.length){let r=0;bs.forEach(b=>r=Math.max(r,Math.hypot(b.x-CENTER.x,b.z-CENTER.z)));if(r>64)S.fog[0].r=Math.min(240,r+32);}}
+/* v39: much larger starting land (r165 vs r88 ≈ 3.5x buildable area), grows +8 per colony level up to the map edge; old saves get the big core circle added */
+const FOG0=165,fogCore=()=>Math.min(FOG0+8*((S.lvl||1)-1),CENTER.x+4);
+function fogGrow(){if(!S.fog)return;const r=fogCore();let c=S.fog.find(f=>f.core);if(!c){c={x:CENTER.x,z:CENTER.z,r,core:1};S.fog.unshift(c);}if(c.r<r){c.r=r;drawFog&&drawFog();}}
+function initSettle(){S.fog=S.fog||null;if(S.fog)fogGrow();if(!S.fog){S.fog=[{x:CENTER.x,z:CENTER.z,r:FOG0,core:1}];const bs=S.b.filter(b=>b.t!=='ship'||true);if(bs.length){let r=0;bs.forEach(b=>r=Math.max(r,Math.hypot(b.x-CENTER.x,b.z-CENTER.z)));if(r>64)S.fog[0].r=Math.min(240,r+32);}}
  if(!S.sites)S.sites=genSites();S.rovers=S.rovers||[];S.tech=S.tech||{};S.rp=S.rp||0;S.parts=S.parts||0;drawFog();syncSites();syncRovers();}
 // ---------- site markers
 let siteObjs=new Map();
@@ -1771,7 +1775,7 @@ function tickRovers(dt){if(!S.rovers||!S.rovers.length)return;const sp=roverSpee
   else if(r.st==='back'){if(goR(M.fx,M.fz)){roverHome(r);r.st='home';r.mis=null;}}
   m.position.set(r.x,Math.abs(Math.sin(S.t*9+r.id))*.08,r.z);if(Math.random()<dt*1.2&&r.st!=='work')dust(r.x-Math.cos(m.rotation.y)*1.6,r.z+Math.sin(m.rotation.y)*1.6,0,1);});}
 function roverArrive(r){const M=r.mis;
- if(M.type==='scout'){const f=reveal(M.tx,M.tz,40);S.scouts=(S.scouts||0)+1;const bz_=BIO[bioAt(M.tx,M.tz)];toast(f.length?`📡 ${r.name} (${bz_.ic} ${bz_.n}) picked up ${f.length} unknown signal${f.length>1?'s':''} — ${S.lvl>=13?'send a survey mission':'surveys unlock at Lv 13'}`:`🗺️ ${r.name} mapped new terrain — ${bz_.ic} ${bz_.n}, no signals here`,!!f.length);}
+ if(M.type==='scout'){const f=reveal(M.tx,M.tz,56);S.scouts=(S.scouts||0)+1;const bz_=BIO[bioAt(M.tx,M.tz)];toast(f.length?`📡 ${r.name} (${bz_.ic} ${bz_.n}) picked up ${f.length} unknown signal${f.length>1?'s':''} — ${S.lvl>=13?'send a survey mission':'surveys unlock at Lv 13'}`:`🗺️ ${r.name} mapped new terrain — ${bz_.ic} ${bz_.n}, no signals here`,!!f.length);}
  else if(M.type==='survey'){const s=S.sites.find(q=>q.id===M.site);if(s&&!s.surv){s.surv=1;S.surveys=(S.surveys||0)+1;syncSites();toast(`🧭 Survey report from ${r.name}: ${SITEK[s.k].ic} ${SITEK[s.k].n}${s.k!=='hab'?` (richness ×${s.rich})`:' — flat, stable ground for a second base'}`,1);}}
  else if(M.type==='supply'){const b=byId(M.bid);if(b&&b.t==='icefield'){const n=Math.min(b.stock||0,60*(T('drive')?1.5:1));b.stock-=n;M.cargo=n;}else M.cargo=0;}}
 function roverHome(r){const M=r.mis;if(M&&M.type==='supply'){const b=byId(M.bid);if(b&&b.t==='icefield'&&M.cargo){const n=Math.floor(M.cargo);S.wat=Math.min((lastSt?lastSt.wcap:500),S.wat+n);S.roverWater=(S.roverWater||0)+n;floatText(`+${n} 💧`);toast(`❄️ ${r.name} hauled ${n} 💧 home from ${b.name}`);}
