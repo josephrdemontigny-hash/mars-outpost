@@ -432,7 +432,7 @@ function landPose(m,t,P=PADL){const T=P.T,tb=T*.42,tf=Math.min(2.6,T*.2),td=T-tb
  return{k:Math.min(1,t/T),y,ph};}
 const AG={body:new THREE.BoxGeometry(.11,.13,.07),helm:new THREE.SphereGeometry(.065,10,8),visor:new THREE.SphereGeometry(.05,10,6,-.9,1.8,.9,1.1),
  pack:new THREE.BoxGeometry(.09,.11,.05),limb:new THREE.BoxGeometry(.035,.1,.035)};AG.limb.translate(0,-.05,0);
-const AM={suit:new THREE.MeshStandardMaterial({color:0xf2f2f2,roughness:.6}),visor:new THREE.MeshStandardMaterial({color:0x0e1622,metalness:.95,roughness:.04,envMapIntensity:2.2}),
+const AM={suit:new THREE.MeshStandardMaterial({color:0xf2f2f2,roughness:.6}),visor:new THREE.MeshStandardMaterial({color:0x050608,metalness:.9,roughness:.05,envMapIntensity:2}),
  pack:new THREE.MeshStandardMaterial({color:0xbfc4c9,roughness:.5}),boot:new THREE.MeshStandardMaterial({color:0x555555})};
 const ACC=[0xff7733,0x33aaff,0x55cc55,0xffcc33].map(c=>new THREE.MeshStandardMaterial({color:c}));
 const HVM={suit:new THREE.MeshStandardMaterial({color:0xff8a12,emissive:0x6a2a00,emissiveIntensity:.35,roughness:.55}),strip:new THREE.MeshStandardMaterial({color:0xe8eef4,metalness:.9,roughness:.18,envMap:SENV,envMapIntensity:1.6,emissive:0x888888,emissiveIntensity:.35})};
@@ -458,14 +458,21 @@ function mergeC(list){const G=mergeG(list.map(([g,m])=>[g,m]));const n=G.attribu
  list.forEach(([g,m,col])=>{const k=(g.index?g.index.count:g.attributes.position.count);c.set(col);for(let q=0;q<k;q++){C[(o+q)*3]=c.r;C[(o+q)*3+1]=c.g;C[(o+q)*3+2]=c.b;}o+=k;});G.setAttribute('color',new THREE.BufferAttribute(C,3));return G;}
 const T4=(x,y,z)=>new THREE.Matrix4().makeTranslation(x,y,z),AVM={suit:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.6,vertexColors:true}),hv:new THREE.MeshStandardMaterial({color:0xff8a12,emissive:0x6a2a00,emissiveIntensity:.35,roughness:.55,vertexColors:true})};
 const ACOL=[0xff7733,0x33aaff,0x55cc55,0xffcc33],SUITC=0xf2f2f2,PACKC=0xbfc4c9,BOOTC=0x555555;
-/* v53: SpaceX-style suit — white body, charcoal shoulder/upper-arm/thigh/knee panels, black gloves+boots, black helmet shell, dark visor, slim white-grey pack, thin accent stripe */
-const DARKC=0x34373c,BLKC=0x16171a,CAP=(r,l,rs=10)=>new THREE.CapsuleGeometry(r,l,3,rs);
-const AGB=ACOL.map(ac=>mergeC([[AG2.torso,T4(0,.235,0),SUITC],[AG2.head,T4(0,.345,0),0x44474d],[AG2.pack,T4(0,.25,-.043),0xd9dcdf],[new THREE.CylinderGeometry(.0405,.0405,.004,16).scale(1,1,.8),T4(0,.19,0),ac],[AG2.belt,T4(0,.2,0),DARKC]]));
-const AGL=mergeC([[CAP(.0172,.05),T4(0,-.035,0),DARKC],[new THREE.SphereGeometry(.0168,10,6),T4(0,-.07,.002),DARKC],[CAP(.0145,.05),T4(0,-.1,0),SUITC],[AG2.boot,T4(0,-.128,.008),BLKC]]),
- AGA=mergeC([[new THREE.SphereGeometry(.0172,10,6),T4(0,0,0),DARKC],[CAP(.012,.045),T4(0,-.033,0),DARKC],[new THREE.SphereGeometry(.0115,8,6),T4(0,-.065,0),SUITC],[CAP(.0105,.042),T4(0,-.093,0),SUITC],[AG2.glove,T4(0,-.118,0),BLKC]]);
+/* v54: SpaceX IVA suit per reference — white helmet + big black wrap visor, white collar, white jacket w/ grey seams + V-neck, black side panels torso→outer legs, black upper-arm patch + forearm band, white gauntlets, black gloves, quilted knee pads, tall silver boots */
+const BLKC=0x141518,GRYC=0x9a9ea5,SILC=0xb4b9c0,CAP=(r,l,rs=12)=>new THREE.CapsuleGeometry(r,l,4,rs);
+function mergeF(list){const parts=list.map(([g,m])=>(g.index?g.toNonIndexed():g.clone()).applyMatrix4(m));const G=mergeG(parts.map(g=>[g,new THREE.Matrix4()]));const P=G.attributes.position.array,n=P.length/3,C=new Float32Array(n*3),c=new THREE.Color();let o=0;
+ list.forEach(([g,m,col],k)=>{const cnt=parts[k].attributes.position.count;for(let q=0;q<cnt;q++){const v=o+q;c.set(typeof col==='function'?col(P[v*3],P[v*3+1],P[v*3+2]):col);C[v*3]=c.r;C[v*3+1]=c.g;C[v*3+2]=c.b;}o+=cnt;});G.setAttribute('color',new THREE.BufferAttribute(C,3));return G;}
+const bxG=(w,h,d)=>new THREE.BoxGeometry(w,h,d),RX=(a)=>new THREE.Matrix4().makeRotationZ(a);
+const AGB=ACOL.map(ac=>{const tor=(x,y,z)=>Math.abs(x)>.031&&Math.abs(z)<.022?BLKC:SUITC;const L=[[AG2.torso,T4(0,.235,0),tor],[AG2.head,T4(0,.345,0),SUITC],[new THREE.CylinderGeometry(.03,.034,.014,16),T4(0,.31,0),SUITC],[AG2.pack,T4(0,.25,-.043),0xdfe2e5]];
+ for(const sx of[-1,1]){L.push([bxG(.0012,.1,.002),T4(sx*.016,.23,.0272),GRYC]);L.push([bxG(.0012,.03,.002),new THREE.Matrix4().makeTranslation(sx*.007,.287,.0262).multiply(RX(sx*.5)),GRYC]);L.push([bxG(.0012,.095,.002),T4(sx*.012,.235,-.0272),GRYC]);}
+ L.push([bxG(.07,.0016,.002),T4(0,.183,.026),GRYC]);L.push([bxG(.006,.004,.002),T4(-.018,.27,.0272),ac]);return mergeF(L);});
+function legG(sd){const out=(x,y,z)=>x*sd>.009?BLKC:SUITC;const L=[[CAP(.0172,.05),T4(0,-.035,0),out],[new THREE.SphereGeometry(.0168,12,6),T4(0,-.07,.002),SUITC],[CAP(.0145,.05),T4(0,-.1,0),SUITC],[new THREE.CylinderGeometry(.0158,.0152,.055,12),T4(0,-.112,0),SILC],[AG2.boot,T4(0,-.128,.008),SILC]];
+ for(let k=0;k<4;k++)L.push([bxG(.022,.0028,.006),T4(0,-.058-k*.0075,.0155),k%2?SUITC:0xd8dbde]);return mergeF(L);}
+function armG(sd){const L=[[new THREE.SphereGeometry(.0172,12,6),T4(0,0,0),(x,y,z)=>x*sd>.006&&y>-.012?BLKC:SUITC],[CAP(.012,.045),T4(0,-.033,0),(x,y,z)=>x*sd>.007&&y>-.03?BLKC:SUITC],[new THREE.SphereGeometry(.0115,10,6),T4(0,-.065,0),SUITC],[CAP(.0105,.042),T4(0,-.093,0),(x,y,z)=>y<-.084&&y>-.098?BLKC:SUITC],[new THREE.CylinderGeometry(.0128,.0122,.016,12),T4(0,-.108,0),SUITC],[AG2.glove,T4(0,-.12,0),BLKC]];return mergeF(L);}
+const AGL=[legG(-1),legG(1)],AGA=[armG(-1),armG(1)],AGV=new THREE.SphereGeometry(.0352,20,12,Math.PI/2-1.3,2.6,.78,1.2);
 function astro(i){const g=new THREE.Group();const p=(geo,mat,x,y,z,sh,par=g)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(sh)m.castShadow=true;par.add(m);return m;};
- const bodyM=p(AGB[i%4],AVM.suit,0,0,0,1);p(AG2.visor,AM.visor,0,.347,.003);
- const ll=p(AGL,AVM.suit,-.021,.17,0),lr=p(AGL,AVM.suit,.021,.17,0),al=p(AGA,AVM.suit,-.05,.288,0),ar=p(AGA,AVM.suit,.05,.288,0);
+ const bodyM=p(AGB[i%4],AVM.suit,0,0,0,1);p(AGV,AM.visor,0,.345,.002);
+ const ll=p(AGL[0],AVM.suit,-.021,.17,0),lr=p(AGL[1],AVM.suit,.021,.17,0),al=p(AGA[0],AVM.suit,-.05,.288,0),ar=p(AGA[1],AVM.suit,.05,.288,0);
  const hv=[];const st=(par,geo,x,y,z)=>{const m=new THREE.Mesh(geo,HVM.strip);m.position.set(x,y,z);m.visible=false;par.add(m);hv.push(m);};
  st(g,AG2.band,0,.215,0);st(g,AG2.band,0,.25,0);for(const l of[al,ar])st(l,AG2.cuff,0,-.08,0);for(const l of[ll,lr])st(l,AG2.cuff,0,-.09,0);
  g.userData={ll,lr,al,ar,bodyM,hv,ph:Math.random()*6};return g;}
@@ -1487,14 +1494,16 @@ function updPrev(){if(moving)return;fpHide();if(!sel||!hover){prev.visible=false
  prev.material.color.set(ok?0x33ff55:0xff3333);if((d.cat==='b'||d.cat==='d')&&sel!=='dozer'){prev.visible=false;fpShow(sel,x,z,null,!!ok,hover.fx,hover.fz);}}
 /* v43: tiles a building's grown modules actually cover at its current level (paths may use the rest of the lot) */
 const _btC=new Map();function builtTiles(b){const d=B[b.t],s=d.s,key=[b.lvl,b.r,b.cs,b.x,b.z,b.vmin].join('|');const c=_btC.get(b.id);if(c&&c.k===key)return c.v;const v=new Set();
- for(let i=0;i<s;i++)for(let j=0;j<s;j++)v.add(TK(b.x+i,b.z+j));const R=RVt(b.t);
+ const R=RVt(b.t),GT=growT(b);if(!GT)for(let i=0;i<s;i++)for(let j=0;j<s;j++)v.add(TK(b.x+i,b.z+j));
  if(R&&d.cat==='b'&&b.t!=='opm'&&b.t!=='ship'){const keep=MAINB.has(b.t)&&b.t!=='pad'?0:1,lw0=b.lot||{e:R,s:R,w:R,n:R},lw=[lw0.e,lw0.s,lw0.w,lw0.n],q=(b.r||0)%4,lot={e:lw[q%4],s:lw[(1+q)%4],w:lw[(2+q)%4],n:lw[(3+q)%4]},cs=b.cs??((1+q)%4),csL=(cs-q+4)%4;
   try{const L=Math.max(b.lvl,b.vmin||1),lay=layout(b.t,lot,csL,keep),ph=-q*Math.PI/2,cc=Math.cos(ph),sn=Math.sin(ph),cx=b.x+s/2,cz=b.z+s/2,T=TILE_M;
    const put=(X,Z)=>{const wx=X*cc+Z*sn,wz=-X*sn+Z*cc;v.add(TK(Math.floor(cx+wx),Math.floor(cz+wz)));};
    for(const o of lay.mods.concat(lay.links.map(l=>({x:l.x,z:l.z,w:l.ax?2.2:l.g,d:l.ax?l.g:2.2,lv:l.lv})))){if(o.lv>L)continue;const x0=(o.x-o.w/2)/T,x1=(o.x+o.w/2)/T,z0=(o.z-o.d/2)/T,z1=(o.z+o.d/2)/T;
     for(let X=x0;X<=x1+1e-6;X+=Math.min(.5,(x1-x0)||.5))for(let Z=z0;Z<=z1+1e-6;Z+=Math.min(.5,(z1-z0)||.5))put(X,Z);}}catch(e){}}
- _btC.set(b.id,{k:key,v});return v;}
-function pathWhy(x,z,tool){if(x<0||z<0||x>=N||z>=N)return 'edge of map';if(blocked[x][z])return 'rough terrain';const o=occ[x][z];if(o)return B[o.t].n;const r=rsv[x]?.[z];
+ if(!v.size)for(let i=0;i<s;i++)for(let j=0;j<s;j++)v.add(TK(b.x+i,b.z+j));_btC.set(b.id,{k:key,v});return v;}
+/* v54: growth buildings only block the tiles their modules physically cover — the rest of the footprint square is open lot (paths OK) */
+function growT(b){const d=B[b.t];return !!RVt(b.t)&&d.cat==='b'&&MAINB.has(b.t)&&b.t!=='pad'&&b.t!=='opm'&&b.t!=='ship';}
+function pathWhy(x,z,tool){if(x<0||z<0||x>=N||z>=N)return 'edge of map';if(blocked[x][z])return 'rough terrain';const o=occ[x][z];if(o&&(!growT(o)||builtTiles(o).has(TK(x,z))))return B[o.t].n;const r=rsv[x]?.[z];
  if(r){if(tool==='road')return r.name+"'s lot (roads can't enter lots)";if(builtTiles(r).has(TK(x,z)))return r.name;}return '';}
 function clearGrownDecos(b){const bt=builtTiles(b),gone=[];S.b.filter(q=>B[q.t].cat==='d').forEach(q=>{const s=B[q.t].s;let hit=false;for(let i=0;i<s&&!hit;i++)for(let j=0;j<s;j++)if(bt.has(TK(q.x+i,q.z+j))){hit=true;break;}if(hit)gone.push(q);});
  if(!gone.length)return 0;let c=0,m=0;gone.forEach(q=>{const d=B[q.t];c+=d.c||0;m+=d.m||0;rmObj(objs.get(q.id));objs.delete(q.id);S.b.splice(S.b.indexOf(q),1);});S.cr+=c;S.mat+=m;rebuildOcc();changed();
@@ -1509,8 +1518,11 @@ function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=ho
  else if(d.cat==='b'||d.cat==='d'){if(!S.demo&&!explored(x+d.s/2,z+d.s/2)){toast('🌫️ Unexplored ground — send a rover to scout it before building',1);return;}if(!free(sel,x,z)){IGB=true;const okNB=free(sel,x,z);IGB=false;if(okNB&&!painting){let n=0,busy=0;for(let i=0;i<d.s;i++)for(let j=0;j<d.s;j++)if(boulderAt(x+i,z+j)){const bi=BOUL.get(TK0(x+i,z+j));if(miners.some(m=>m.i===bi))busy++;else n+=mineBoulder(bi);}if(n)toast(`🤖 Optimus dispatched to break up ${n} boulder${n>1?'s':''} — build here once it's clear (+🧱)`);else if(busy)toast('🤖 Robots are already clearing this spot');return;}if(!painting){toast("Can't build there — pick a clear spot (green outline)",1);beep(160,.12,'sawtooth',.04);}return;}const st_=d.site?siteNear(x+d.s/2,z+d.s/2,d.site):null;if(d.site&&!st_){toast(`${d.ic} ${d.n} must sit on a surveyed ${d.site.map(k=>SITEK[k].n.toLowerCase()).join(' / ')} — send a rover to find one`,1);beep(160,.12,'sawtooth',.04);return;}const cc_=bcost(d);const SI=fromStore!=null&&S.store&&S.store[fromStore]&&S.store[fromStore].t===sel?S.store[fromStore]:null;if(!SI){if(cc_.p&&(S.parts||0)<cc_.p){toast(`Needs ⚙️ ${cc_.p} parts — build a Parts Factory or Call Earth`,1);return;}if(!afford(cc_.c,cc_.m))return;pay(cc_.c,cc_.m);S.parts=(S.parts||0)-cc_.p;}const b=SI?unstore(SI,x,z):addB(sel,x,z,0,{r:placeRot,cs:(1+placeRot)%4});{const nc=clearLotPaths(b);if(nc)toast(`🚶 ${nc} footpath tile${nc>1?'s':''} under the new lot were cleared`);}if(!S.demo||window.__apDemo)applyAP(b);if(st_){b.rich=st_.rich;b.siteId=st_.id;st_.used=1;if(st_.k==='rare')b.rareK=st_.rich;syncSites();}else if(sel==='mine'){const r_=siteNear(x+.5,z+.5,['rare'],3.2);if(r_)b.rareK=r_.rich;}
   if(SI){sel=null;document.body.classList.remove('placing');menu();crewSync();}else{const sp=buildSpec(sel,1);b.cons=b.consN=sp.T;b.crewN=sp.n;b.consT=0;const o=objs.get(b.id);delete o.userData.grow;o.scale.y=.25;addScaf(o,b);crewSync();}
   assign();beep(520,.07,'triangle',.07);}updPrev();}
+/* v54: tap anywhere on a building's visible model selects it (raycast, nearest hit; lot patch ignored) */
+const _rc=new THREE.Raycaster(),_rv=new THREE.Vector2();function pickB(cx,cy){const roots=[],ids=new Map();objs.forEach((o,id)=>{if(o.visible){roots.push(o);ids.set(o,id);}});_rv.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);_rc.setFromCamera(_rv,cam);
+ const hs=_rc.intersectObjects(roots,true);for(const h of hs){let m=h.object,ok=m.visible&&m.material!==_lotM&&!(m.material&&m.material.depthWrite===false);for(let p=m;p&&ok;p=p.parent)if(!p.visible)ok=false;if(!ok)continue;let r=m;while(r&&!ids.has(r))r=r.parent;if(r){const b=byId(ids.get(r));if(b)return b;}}return null;}
 function pick(cx,cy){let best=null,bd=22;const v=new THREE.Vector3();agents.forEach(a=>{if(!a.m.visible)return;a.m.getWorldPosition(v);v.y+=.05;v.project(cam);const sx=(v.x+1)/2*innerWidth,sy=(1-v.y)/2*innerHeight,d=Math.hypot(sx-cx,sy-cy);if(d<bd){bd=d;best=a;}});
- if(best){openC(best.c);beep(800,.04);return;}const c=cell(cx,cy);const b=c&&occ[c.x]?.[c.z];if(b){if(menuOpen&&!sel)setMenu(false);openB(b);beep(700,.04);}else if(c&&openSite(c.p.x,c.p.z)){beep(700,.04);}else{closePanel();if(menuOpen&&!sel)setMenu(false);}}
+ if(best){openC(best.c);beep(800,.04);return;}const c=cell(cx,cy);const b=pickB(cx,cy)||(c&&occ[c.x]?.[c.z]);if(b){if(menuOpen&&!sel)setMenu(false);openB(b);beep(700,.04);}else if(c&&openSite(c.p.x,c.p.z)){beep(700,.04);}else{closePanel();if(menuOpen&&!sel)setMenu(false);}}
 let tw0=0,gp0=null,gl=null,gmode=null,gd0=0,gy0=0;const TWIST_SIGN=1;const ptrs=new Map();let drag=null,moved=0,pinch0=0,mid0=null,lp=null,moving=null,painting=false,lastPaint=null,follow=null;
 function moveCell(c){const s=B[moving.b.t].s;return s>1?{x:Math.round(c.p.x-s/2),z:Math.round(c.p.z-s/2)}:{x:c.x,z:c.z};}
 function startMove(b){if(b.t==='pad'&&b.ship){toast("Can't move a pad while a ship is on it",1);return;}closePanel();moving={b,ok:true,x:b.x,z:b.z};navigator.vibrate&&navigator.vibrate(30);beep(880,.08,'sine',.06);
@@ -1644,9 +1656,9 @@ function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const b
  const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;if(sh.ph==='land'&&sh.t>PADL.T+30)sh.t=PADL.T;if(sh.ph==='up'&&sh.t>12)sh.t=4.6;m.position.x=0;m.position.z=0;
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base/4;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
   if(sh.t>=PADL.T){pose(m,0,0);m.position.y+=base;setFire(m,false);sh.ph='ground';sh.t=0;if(!S.demo)S.supplyN=(S.supplyN||0)+1;sh.stay=S.demo?6:TUNE.PAD_STAY;sh.hold={fuel:0,mat:0,ore:0,rare:0};
-   const room=st.house-S.cols.length;const want=Math.round((TUNE.SHIP_CREW[0]+Math.random()*(TUNE.SHIP_CREW[1]-TUNE.SHIP_CREW[0]))*(S.hap/100+.3)*(1+S.cols.length/60));const call=b.t==='lpad'?b.call:null;const crewed=call?call.k==='crew':Math.random()<((S.births||0)>0?.22:.4);const n=call?(call.k==='crew'?Math.max(0,Math.min(room,8)):0):crewed?Math.max(0,Math.min(room,want)):0;
+   const room=st.house-S.cols.length;const want=Math.round((TUNE.SHIP_CREW[0]+Math.random()*(TUNE.SHIP_CREW[1]-TUNE.SHIP_CREW[0]))*(S.hap/100+.3)*(1+S.cols.length/60));const call=b.t==='lpad'?b.call:null;/* v54: supply ships bring passengers whenever there are free beds (was 22–40% random, ~22% once any baby was born) */const crewed=call?call.k==='crew':room>0&&Math.random()<.8;const n=call?(call.k==='crew'?Math.max(0,Math.min(room,8)):0):crewed?Math.max(0,Math.min(room,want)):0;
    const pal=palletN(),mats=pal+S.order;const ord=S.order;S.order=0;{const items=[];for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(!call||call.k!=='parts')items.push({k:'cargo',mat:mats});if((!crewed&&!call)||(call&&call.k==='mat'))items.push({k:'cargo',mat:palletN()});if(call&&call.k==='parts')items.push({k:'cargo',mat:0,parts:50});b.call=null;startUnload({sid:b.id,cx,cz,gy:base,items,pad:1,rk:m});sh.unl=unloads[unloads.length-1];}
-   if(!S.demo){toast(`🚀 Supply ship landed at ${b.name} — unloading ${n?n+' crew':crewed?'no crew (need housing!)':'cargo only'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
+   if(!S.demo){toast(`🚀 Supply ship landed at ${b.name} — unloading ${n?n+' crew':room<=0?'no crew — no free beds, passengers stayed home (build habitats!)':'cargo only'} + ${mats} 🧱${ord?` (incl. your ${ord} order)`:''}`,!n);toast(`⛽ Refuel it & load cargo within ${TUNE.PAD_STAY}s for a paid return flight (tap the pad)`);}}}
  else if(sh.ph==='ground'){sh.stay-=dt;if(sh.stay<=0){if(sh.unl&&!sh.unl.done)finishUnload(sh.unl);const h=sh.hold;S.fuel+=h.fuel;S.mat+=h.mat;S.ore+=h.ore;S.rare+=h.rare;sh.ph='up';sh.t=0;if(!S.demo)toast(`🛫 Supply ship left ${b.name} empty — refuel ships for return-flight income`);if(panel&&panel.b===b)renderPanel(true);}}
  else{if(!sh.lift){sh.lift=1;dust(cx,cz,base,10);if(!S.demo)rumble(3,.25);}pose(m,Math.pow(sh.t,2)*1.6,0);m.position.y+=base/4;setFire(m,true);fl.scale.y=1.5+Math.random();if(sh.t>4.5){W.remove(sh.F||m);b.ship=null;b.timer=shipInterval(b);}}}
 // ---------- opening: Starships land on the soil
@@ -2195,7 +2207,7 @@ window.__B=B;
 
 function dockSync(){const d=$('dock');if(!d)return;document.documentElement.style.setProperty('--dockH',d.offsetHeight+'px');}
 addEventListener('resize',dockSync);setInterval(dockSync,500);
-Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;
+Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;window.__Wg=W;window.__hvT=setHV;
 
 window.__R=R;Object.defineProperty(window,'__unloads',{get:()=>unloads});
 window.__inp={get stroke(){return stroke},get gest(){return gest},get last(){return lastStroke},undoStroke,get tab(){return tab},get sel(){return sel},get menuOpen(){return menuOpen}};window.__stats=()=>stats();window.__dlg={renameColony,deleteColony,deleteSlot};window.__bio={bioAt,BIO,bio2};window.__td={TD,tdecoSync,BOUL,mineBoulder,get miners(){return miners}};window.__set={meteorStrike,sendRover,buildRover,reveal,callEarth,saveData,slotInfo,openSaveBox,get saveBlocked(){return saveBlocked}};window.__lv={levelUp,lvGoals,LEVELS,lvLocked,renderLv,celebrate,oldSaveLevel};
