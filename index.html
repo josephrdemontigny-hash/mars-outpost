@@ -252,6 +252,18 @@ html,body{background:#8f3010!important}
  #title#title{background:url(poster.webp) calc(50% - 33vh - 224px) 50%/auto 88vh no-repeat,#8f3010!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;padding:0 0 0 calc(66vh + 28px)!important}
  #title#title .card{margin:auto 0!important;width:420px!important;max-height:94vh!important;overflow:auto}#title .card:before{display:none}}
 </style>
+<style id="active64">
+#title .actc{font:700 12px/1.2 "Futura Condensed","Futura","Avenir Next Condensed","Arial Narrow",sans-serif!important;letter-spacing:.22em!important;text-transform:uppercase;color:#f3e0b5!important;text-align:center;margin:10px auto 2px!important;padding:6px 14px!important;border:2px solid #2a1208!important;border-radius:999px!important;background:#3d8a86!important;box-shadow:3px 3px 0 #2a1208!important;width:max-content;max-width:92%}
+#title .actc b{color:#fff3d6}
+</style>
+<script>
+(function(){var NS='mars-outpost-jdm',B='https://abacus.jasoncameron.dev/';
+function day(){return new Date().toISOString().slice(0,10).replace(/-/g,'')}
+function f(u){var c=new AbortController();var t=setTimeout(function(){c.abort()},2500);return fetch(u,{signal:c.signal,cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'}).then(function(r){clearTimeout(t);return r.ok?r.json():null}).catch(function(){clearTimeout(t);return null})}
+window.marsActivePing=function(){try{var d=day();if(localStorage.getItem('marsActiveDay')===d)return;localStorage.setItem('marsActiveDay',d);f(B+'hit/'+NS+'/active-'+d)}catch(e){}};
+window.marsActiveShow=function(){var el=document.getElementById('actc');if(!el||!navigator.onLine)return;f(B+'get/'+NS+'/active-'+day()).then(function(j){var n=j&&+j.value;if(n>0){el.innerHTML='<b>'+n+'</b> ACTIVE '+(n==1?'COLONY':'COLONIES')+' TODAY';el.style.display='block'}else el.style.display='none'})};
+})();
+</script>
 </head><body>
 <div id="ui" style="display:none"><div id="hud"></div>
 <div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
@@ -265,6 +277,7 @@ html,body{background:#8f3010!important}
 <label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
 <button id="play" class="big">New colony</button>
 <button id="cont" class="big alt" style="display:none"></button><div class="row" id="slotops" style="display:none"><button id="renb">✏️ Rename</button><button id="delb" class="dangerl">🗑️ Delete</button></div><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
+<div id="actc" class="actc" style="display:none"></div>
 <div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
 <div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
