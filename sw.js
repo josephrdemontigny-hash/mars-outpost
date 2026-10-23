@@ -1,5 +1,5 @@
 // MARS service worker — offline play. Bump VERSION on every release.
-const VERSION='mars-v58';
+const VERSION='mars-v59';
 const CORE=['./','index.html','game.js','manifest.webmanifest','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/favicon-32.png'];
 const CDN=['https://unpkg.com/three@0.160.0/build/three.module.js','https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js','https://unpkg.com/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(async c=>{await c.addAll(CORE);await Promise.all(CDN.map(u=>c.add(new Request(u,{mode:'cors'})).catch(()=>{})));}));});
