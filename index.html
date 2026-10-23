@@ -195,6 +195,47 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #donebar{position:fixed;left:50%;transform:translateX(-50%);z-index:60;display:none;align-items:center;gap:10px;background:rgba(30,18,12,.92);border:2px solid #f0a040;border-radius:16px;padding:6px 6px 6px 14px;color:#fff;font:600 15px system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.5);max-width:92vw}#donebar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#doneb{background:#e8532a;color:#fff;border:0;border-radius:12px;font:700 18px system-ui,sans-serif;padding:12px 20px;min-height:48px;min-width:110px}body.placing #menu{display:none!important}body.placing #buildb::after{content:' ✓'}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<style id="poster62">
+/* v62: 1960s screen-print travel-poster title screen */
+#title[style*="none"]{display:none!important}
+#title{--rust:#b03f14;--rust2:#8f3010;--cream:#f4dcb0;--teal:#3f8a86;--teal2:#2c6663;--brown:#3a160a;
+ display:block!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding:0!important;
+ background:url(poster.webp) top center/min(100vw,560px) auto no-repeat,var(--rust2)!important}
+#title:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;mix-blend-mode:multiply;
+ background:radial-gradient(rgba(58,22,10,.55) .7px,transparent 1.2px) 0 0/4px 4px,radial-gradient(rgba(255,240,210,.25) .6px,transparent 1.1px) 2px 2px/5px 5px}
+#title:after{display:none!important;animation:none!important}
+#title .card{position:relative;z-index:1;box-sizing:border-box;width:min(560px,100vw)!important;max-height:none!important;margin:calc(min(100vw,560px)*1.3) auto 0!important;
+ padding:16px 18px calc(18px + env(safe-area-inset-bottom))!important;display:flex;flex-direction:column;gap:9px;align-items:stretch;
+ background:var(--rust)!important;border:0!important;border-radius:0!important;box-shadow:inset 0 0 0 5px var(--rust),inset 0 0 0 8px var(--cream)!important;
+ font-family:'Futura-CondensedExtraBold','Futura Condensed ExtraBold','AvenirNextCondensed-Heavy','Arial Narrow',Impact,sans-serif!important;font-stretch:condensed;font-weight:800;color:var(--cream);text-align:center}
+#title .card:before{content:'';position:absolute;left:0;right:0;top:calc(-1 * min(100vw,560px)*.06);height:calc(min(100vw,560px)*.06);background:linear-gradient(transparent,var(--rust))}
+#title .card h1{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+#title .card label{font-family:inherit!important;font-size:13px!important;letter-spacing:4px;text-transform:uppercase;color:var(--cream)!important;display:flex;flex-direction:column;gap:5px;text-align:center}
+#title .card label:before{content:'';display:block;height:2px;margin:0 22%;background:var(--teal)}
+#title .card button{font-family:inherit!important;text-transform:uppercase;letter-spacing:1.5px;border-radius:999px!important;border:3px solid var(--brown)!important;
+ background:var(--cream)!important;color:var(--brown)!important;box-shadow:3px 3px 0 var(--brown)!important;font-size:17px!important;padding:8px 12px!important;margin:0!important;animation:none}
+#title .card button:hover{background:#fbeacb!important;color:var(--brown)!important}#title .card button.big:hover,#title .card button.on:hover{background:#4a9a95!important;color:var(--cream)!important}#title .card button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--brown)!important}
+#title .card button.on{border-color:var(--brown)!important;background:var(--teal)!important;color:var(--cream)!important}
+#title .card button small{display:block;font-size:11px!important;letter-spacing:0;opacity:.8;font-family:system-ui,sans-serif}
+#title .card button.big{border-color:var(--brown)!important;font-size:24px!important;padding:12px!important;background:var(--teal)!important;color:var(--cream)!important;letter-spacing:3px;
+ border-radius:14px!important;box-shadow:0 0 0 3px var(--cream) inset,4px 4px 0 var(--brown)!important}
+#title .card button.big:before{content:'★ ';animation:none!important;color:var(--cream)}
+#title .card button.big.alt{background:var(--cream)!important;color:var(--brown)!important;box-shadow:0 0 0 3px var(--teal) inset,4px 4px 0 var(--brown)!important;font-size:19px!important}
+#title .card button.big.alt:before{color:var(--teal)}
+#title .card .row{display:flex;gap:7px;justify-content:center}#title .card .row>button{flex:1}
+#title .card #reroll{flex:0 0 52px}
+#cname{font-family:inherit!important;font-size:20px!important;letter-spacing:1px;text-align:center;border-radius:10px!important;border:3px solid var(--brown)!important;background:#fbeacb!important;color:var(--brown)!important;flex:1;min-width:0;padding:6px}
+#title .chk{flex-direction:row!important;justify-content:center;letter-spacing:1px!important;font-size:14px!important;color:var(--cream)!important}#title .chk:before{display:none!important}
+#title .chk input{accent-color:var(--teal)!important}
+#savesb{border:2px dashed var(--cream)!important;background:transparent!important;color:var(--cream)!important;box-shadow:none!important;border-radius:10px!important;font-size:14px!important}
+#title .ins{font-family:inherit!important;font-size:11px!important;letter-spacing:3px;color:var(--cream)!important;opacity:.9;display:block!important;text-shadow:none!important;animation:none!important;border-top:2px solid var(--teal);border-bottom:2px solid var(--teal);padding:4px 0}
+#title #how{font-family:system-ui,sans-serif!important;text-align:left;background:rgba(58,22,10,.35);border:2px solid var(--cream);border-radius:8px;color:var(--cream)}
+#title #loaderr{color:#fff2c8}
+#play{order:-3}#cont{order:-2}#slotops{order:-1}
+@media (min-aspect-ratio:1/1){#poster62x{}
+ #title#title{background:url(poster.webp) calc(50% - 33vh - 224px) 50%/auto 88vh no-repeat,#8f3010!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;padding:0 0 0 calc(66vh + 28px)!important}
+ #title#title .card{margin:auto 0!important;width:420px!important;max-height:94vh!important;overflow:auto}#title .card:before{display:none}}
+</style>
 </head><body>
 <div id="ui" style="display:none"><div id="hud"></div>
 <div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
