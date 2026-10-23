@@ -922,11 +922,11 @@ function tickAgents(dt){agents.forEach(a=>{const u=a.m.userData,c=a.c;setHV(a.m,
 let trucks=[];
 // Cybertruck from the owner's-manual numbers: L 5683, W 2032, H 1796, wheelbase 3635, overhangs 878 / 1170 mm, 35" tyres.
 // k = units per metre, matched to the people (1.8 m astronaut ≈ .31 units).
-const CT_K=.172,CTM={body:new THREE.MeshStandardMaterial({color:0xc4c7cb,metalness:.92,roughness:.34,envMap:SENV,envMapIntensity:1.3,flatShading:true}),
+const CT_K=.172,CTM={body:new THREE.MeshStandardMaterial({color:0xbfc2c6,metalness:.85,roughness:.42,envMap:SENV,envMapIntensity:1.0,side:THREE.DoubleSide}),
  glass:new THREE.MeshStandardMaterial({color:0x0c0e12,metalness:.6,roughness:.12,envMap:SENV,envMapIntensity:.8,side:THREE.DoubleSide}),clad:new THREE.MeshStandardMaterial({color:0x26282b,roughness:.8,metalness:.1,side:THREE.DoubleSide}),
  tonneau:new THREE.MeshStandardMaterial({color:0x3a3d42,roughness:.55,metalness:.4,envMap:SENV,envMapIntensity:.5}),tyre:new THREE.MeshStandardMaterial({color:0x151515,roughness:.9}),
- hub:new THREE.MeshStandardMaterial({color:0x8a8e94,metalness:.8,roughness:.4,envMap:SENV}),front:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:2.2}),
- rear:new THREE.MeshStandardMaterial({color:0xff2222,emissive:0xff1a1a,emissiveIntensity:1.8})};
+ hub:new THREE.MeshStandardMaterial({color:0x8a8e94,metalness:.8,roughness:.4,envMap:SENV}),front:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:1.2}),
+ rear:new THREE.MeshStandardMaterial({color:0xff2222,emissive:0xff1a1a,emissiveIntensity:1.0})};
 let CTG=null;
 function ctGeoms(){if(CTG)return CTG;const k=CT_K,L=5.683,W=2.032,cx=L/2;const P=(x,y)=>new THREE.Vector2((x-cx)*k,y*k);
  // side profile (front = +x): bumper, low nose, one straight hood/windscreen line to the roof apex, one straight sail line down to the tailgate
@@ -940,12 +940,45 @@ function ctGeoms(){if(CTG)return CTG;const k=CT_K,L=5.683,W=2.032,cx=L/2;const P
  const lbR=new THREE.BoxGeometry(W*.92*k,.05*k,.03*k);lbR.translate(0,1.16*k,(-L/2+.005)*k);
  const tyre=new THREE.CylinderGeometry(.445*k,.445*k,.3*k,16);tyre.rotateZ(Math.PI/2);const hub=new THREE.CylinderGeometry(.27*k,.27*k,.31*k,6);hub.rotateZ(Math.PI/2);
  CTG={body,arch,win,shield,ton,lbF,lbT,lbR,tyre,hub,k,L,W,cx};return CTG;}
-function truckModel(){const G=ctGeoms(),k=G.k,g=new THREE.Group();const add=(geo,mat,sh)=>{const m=new THREE.Mesh(geo,mat);if(sh)m.castShadow=true;g.add(m);return m;};
- add(G.body,CTM.body,1);add(G.shield,CTM.glass);add(G.ton,CTM.tonneau);add(G.lbF,CTM.front);add(G.lbT,CTM.front);add(G.lbR,CTM.rear);
- for(const sd of[-1,1]){const w=add(G.win,CTM.glass);w.rotation.y=-Math.PI/2;w.position.x=sd*(G.W/2+.004)*k;if(sd<0)w.scale.z=-1;
-  for(const ax of[1.17,4.805]){const a=add(G.arch(ax),CTM.clad);a.rotation.y=-Math.PI/2;a.position.x=sd*(G.W/2+.006)*k;
-   const z=(ax-G.cx)*k;const t=add(G.tyre,CTM.tyre,1);t.position.set(sd*(G.W/2-.17)*k,.445*k,z);const h=add(G.hub,CTM.hub);h.position.set(sd*(G.W/2-.16)*k,.445*k,z);}}
- const cr=mesh(rbox(.22,.07,.2,.012),M(0x9a6a3a,.8),0,1.38*k,-1.6*k,false);cr.name='crate';cr.visible=false;g.add(cr);return g;}
+// v32: clean Cybertruck — lofted flat-panel body (sharp roof apex, long vault slope, beltline crease, flat sides), wheel-arch flares,
+// shaped glass, light bars, aero-cover wheels with chunky A/T tyres. Built once, merged per material; every truck clones the template (shared geometry).
+let CTT=null;
+function ctTemplate(){if(CTT)return CTT;const k=CT_K,L=5.683,W=2.032,cx=L/2,K=KB();
+ const lerpT=(pts,x)=>{for(let i=1;i<pts.length;i++)if(x<=pts[i][0]){const [a,b]=[pts[i-1],pts[i]],t=(x-a[0])/(b[0]-a[0]||1);return a[1]+(b[1]-a[1])*t;}return pts[pts.length-1][1];};
+ const TOP=[[0,1.24],[3.35,1.796],[4.72,1.22],[L,1.06]],WT=[[0,1.66],[4.72,1.66],[L,1.94]];
+ const AX=[1.17,4.805],ytop=x=>lerpT(TOP,x),wt=x=>lerpT(WT,x),belt=x=>Math.min(1.12,ytop(x)-.05);
+ const yb=x=>{let y=.42;for(const a of AX){const d=Math.abs(x-a);if(d<.34)y=.98;else if(d<.56)y=Math.max(y,.98-(d-.34)/.22*.56);}return y;};
+ const xs=[0,.61,.65,.83,1.17,1.51,1.69,1.73,3.35,4.245,4.285,4.465,4.72,4.805,5.145,5.325,5.365,L];
+ const sec=x=>{const w=W/2,t=wt(x)/2;return[[-w,yb(x)],[-w,belt(x)],[-t,ytop(x)],[t,ytop(x)],[w,belt(x)],[w,yb(x)]];};
+ for(let j=0;j<6;j++){const j2=(j+1)%6,ps=[],ix=[];xs.forEach((x,i)=>{const S=sec(x);for(const q of[S[j],S[j2]])ps.push(q[0]*k,q[1]*k,(x-cx)*k);if(i){const a=2*(i-1);ix.push(a,a+2,a+3,a,a+3,a+1);}});
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));g.setIndex(ix);g.computeVertexNormals();K.put(CTM.body,g,0,0,0);}
+ {const pos=[],V=(p,x)=>pos.push(p[0]*k,p[1]*k,(x-cx)*k);for(const [x,f] of[[0,1],[L,-1]]){const S=sec(x);for(let j=1;j<5;j++){const a=S[0],b=S[j],c=S[j+1];if(f>0){V(a,x);V(c,x);V(b,x);}else{V(a,x);V(b,x);V(c,x);}}}
+ var body=new THREE.BufferGeometry();body.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));body.computeVertexNormals();}
+ K.put(CTM.body,body,0,0,0);
+ // helpers to place panels on the lofted faces
+ const onFace=(x,j,t,off)=>{const S=sec(x),a=S[j],b=S[j+1],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);return[a[0]+dx*t-dy/l*off,a[1]+dy*t+dx/l*off,x];};
+ const panel=(mat,j,x0,x1,t0,t1,off,t0b=t0,t1b=t1)=>{const P=[onFace(x0,j,t0,off),onFace(x1,j,t0b,off),onFace(x1,j,t1b,off),onFace(x0,j,t1,off)];const ps=[];for(const i of[0,1,2,0,2,3])ps.push(P[i][0]*k,P[i][1]*k,(P[i][2]-cx)*k);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));g.computeVertexNormals();K.put(mat,g,0,0,0);};
+ // glass: windshield on roof face (j=2) from cowl to just short of apex; side window band on the upper side faces (j=1 left, j=3 right)
+ panel(CTM.glass,2,4.7,3.4,.05,.95,.006);panel(CTM.glass,2,3.3,2.05,.08,.92,.006);
+ for(const j of[1,3]){const lo=j===1?0:1;panel(CTM.glass,j,4.55,1.95,j===1?.14:.86,j===1?.9:.1,.008,j===1?.14:.86,j===1?.88:.12);}
+ // vault (tonneau) cover: dark satin on the long rear slope
+ panel(CTM.tonneau,2,1.95,.04,.03,.97,.005);
+ // light bars (full width) — front just under the hood edge, rear across the tailgate top
+ K.box(CTM.front,W*.96*k,.035*k,.02*k,0,1.035*k,(L/2+.004)*k);K.box(CTM.rear,W*.96*k,.04*k,.02*k,0,1.19*k,(-L/2-.004)*k);
+ // black cladding: arch flares + rocker strip, slightly proud of the side
+ for(const sd of[-1,1]){const xo=sd*(W/2+.02)*k;
+  for(const a of AX){const pts=[[-.6,.42],[-.4,.98],[.4,.98],[.6,.42]];for(let i=1;i<pts.length;i++){const p=pts[i-1],q=pts[i];K.pipe(CTM.clad,.05*k,[xo,(p[1]+.03)*k,(a+p[0]-cx)*k],[xo,(q[1]+.03)*k,(a+q[0]-cx)*k],4);}}
+  K.box(CTM.clad,.03*k,.12*k,(AX[1]-AX[0]-1.2)*k,xo,.48*k,((AX[0]+AX[1])/2-cx)*k);}
+ // wheels: chunky A/T tyre with tread blocks + flat aero cover + hub
+ const tyR=.445,tyW=.32;for(const sd of[-1,1])for(const a of AX){const x=sd*(W/2-.19)*k,z=(a-cx)*k,y=tyR*k;
+  K.put(CTM.tyre,new THREE.CylinderGeometry(tyR*k,tyR*k,tyW*k,22),x,y,z,0,0,Math.PI/2);
+  for(let i=0;i<18;i++){const an=i/18*Math.PI*2;K.put(CTM.tyre,new THREE.BoxGeometry(tyW*.94*k,.035*k,.1*k),x,y+Math.sin(an)*(tyR+.005)*k,z+Math.cos(an)*(tyR+.005)*k,an,0,0);}
+  K.put(CTM.hub,new THREE.CylinderGeometry(.31*k,.31*k,.02*k,6),x+sd*(tyW/2+.005)*k,y,z,0,0,Math.PI/2);
+  K.put(CTM.clad,new THREE.CylinderGeometry(.08*k,.08*k,.025*k,6),x+sd*(tyW/2+.012)*k,y,z,0,0,Math.PI/2);}
+ const g=K.done();g.traverse(m=>{if(m.isMesh){m.castShadow=m.material===CTM.body||m.material===CTM.tyre;}});CTT=g;return g;}
+function truckModel(){const g=ctTemplate().clone();
+ const cr=mesh(rbox(.22,.07,.2,.012),M(0x9a6a3a,.8),0,1.38*CT_K,-1.6*CT_K,false);cr.name='crate';cr.visible=false;g.add(cr);return g;}
+
 // Cybertrucks drive freely over the terrain (no roads), steering around buildings.
 const TRUCKSRC=['proc','pad','ship'];
 function nearestB(list,p){let best=null,bd=1e9;list.forEach(b=>{const c=bc(b),d=Math.hypot(c.x-p.x,c.z-p.z);if(d<bd){bd=d;best=b;}});return best;}
@@ -1846,7 +1879,7 @@ window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.
 Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
 window.__build=(k,x,z,r=0)=>{placeRot=r;const n0=S.b.length;sel=k;hover={x,z,bx:x,bz:z,p:new THREE.Vector3(x+.5,0,z+.5)};try{click();}finally{sel=null;hover=null;placeRot=0;updPrev();}return S.b.length>n0;};
 window.__paint=(x0,z0,x1,z1)=>{sel='path';line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>paint(x,z));sel=null;refreshDoors();};window.__upgrade=b=>upgrade(b);
-window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__cell=(x,y)=>cell(x,y).p;window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
+window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__cell=(x,y)=>cell(x,y).p;window.__truckModel=()=>truckModel();window.__astro=i=>astro(i);window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
 {const _t=tip;tip=function(k,el){_t(k,el);clearTimeout(window._tt);window._tt=setTimeout(()=>{$('tip').style.display='none';},3500);};}
 window.__B=B;
 
