@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="icon" href="icons/favicon-32.png"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png">
-<meta name="theme-color" content="#1e062d"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="MARS">
+<meta name="theme-color" content="#8f3010"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="MARS">
 <title>MARS — A Terraforming Game</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#c98a5e;font-family:system-ui,sans-serif;color:#fff;user-select:none;touch-action:none}
@@ -195,20 +195,36 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #donebar{position:fixed;left:50%;transform:translateX(-50%);z-index:60;display:none;align-items:center;gap:10px;background:rgba(30,18,12,.92);border:2px solid #f0a040;border-radius:16px;padding:6px 6px 6px 14px;color:#fff;font:600 15px system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.5);max-width:92vw}#donebar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#doneb{background:#e8532a;color:#fff;border:0;border-radius:12px;font:700 18px system-ui,sans-serif;padding:12px 20px;min-height:48px;min-width:110px}body.placing #menu{display:none!important}body.placing #buildb::after{content:' ✓'}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<style id="loader63">
+/* v63: poster-theme loader (inline, renders before any asset) + rust page background under safe areas */
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+html,body{background:#8f3010!important}
+#loading{background:radial-gradient(rgba(58,22,10,.35) .7px,transparent 1.2px) 0 0/4px 4px,radial-gradient(ellipse at 50% 40%,#bf4a1a,#8f3010 75%)!important;
+ font-family:'Futura-CondensedExtraBold','Futura Condensed ExtraBold','AvenirNextCondensed-Heavy','Arial Narrow',Impact,sans-serif!important;font-weight:800;color:#f4dcb0!important;gap:14px!important;
+ box-shadow:inset 0 0 0 calc(10px) #8f3010,inset 0 0 0 13px #f4dcb0;padding:var(--sat) 0 var(--sab)}
+#loading:after{display:none!important;animation:none!important}
+#loading .lt{font-family:inherit!important;font-size:min(27vw,150px)!important;line-height:.9!important;letter-spacing:-.02em;color:#f4dcb0!important;text-shadow:5px 5px 0 #5a1f08!important;font-stretch:condensed;transform:scaleY(1.15)}
+#loading .lm{font-family:inherit!important;font-size:12px!important;letter-spacing:4px;text-transform:uppercase;color:#f4dcb0!important;opacity:1!important;animation:none!important}
+#loading .lsub{display:flex;align-items:center;gap:10px;color:#4fa09a!important;font-size:14px!important;width:min(360px,84vw);justify-content:center;margin-top:4px}
+#loading .lsub:before,#loading .lsub:after{content:'';flex:1;height:2px;background:#3f8a86}
+#loading .lstar{color:#3f8a86;font-size:22px;line-height:1;margin-top:-8px}
+#loading .bar{width:min(320px,78vw)!important;height:22px!important;border:3px solid #3a160a!important;border-radius:999px;background:#f4dcb0;padding:3px!important;box-shadow:4px 4px 0 #3a160a;box-sizing:border-box}
+#loading .bar i{border-radius:999px;background:#3f8a86!important}
+</style>
 <style id="poster62">
 /* v62: 1960s screen-print travel-poster title screen */
 #title[style*="none"]{display:none!important}
 #title{--rust:#b03f14;--rust2:#8f3010;--cream:#f4dcb0;--teal:#3f8a86;--teal2:#2c6663;--brown:#3a160a;
  display:block!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding:0!important;
- background:url(poster.webp) top center/min(100vw,560px) auto no-repeat,var(--rust2)!important}
+ background:url(poster.webp) center calc(var(--sat) + 10px)/min(100vw,560px) auto no-repeat,var(--rust2)!important}
 #title:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;mix-blend-mode:multiply;
  background:radial-gradient(rgba(58,22,10,.55) .7px,transparent 1.2px) 0 0/4px 4px,radial-gradient(rgba(255,240,210,.25) .6px,transparent 1.1px) 2px 2px/5px 5px}
 #title:after{display:none!important;animation:none!important}
-#title .card{position:relative;z-index:1;box-sizing:border-box;width:min(560px,100vw)!important;max-height:none!important;margin:calc(min(100vw,560px)*1.3) auto 0!important;
+#title .card{position:relative;z-index:1;box-sizing:border-box;width:min(560px,100vw)!important;max-height:none!important;margin:calc(min(100vw,560px)*1.3 + var(--sat) + 10px) auto 0!important;
  padding:16px 18px calc(18px + env(safe-area-inset-bottom))!important;display:flex;flex-direction:column;gap:9px;align-items:stretch;
  background:var(--rust)!important;border:0!important;border-radius:0!important;box-shadow:inset 0 0 0 5px var(--rust),inset 0 0 0 8px var(--cream)!important;
  font-family:'Futura-CondensedExtraBold','Futura Condensed ExtraBold','AvenirNextCondensed-Heavy','Arial Narrow',Impact,sans-serif!important;font-stretch:condensed;font-weight:800;color:var(--cream);text-align:center}
-#title .card:before{content:'';position:absolute;left:0;right:0;top:calc(-1 * min(100vw,560px)*.06);height:calc(min(100vw,560px)*.06);background:linear-gradient(transparent,var(--rust))}
+#title .card:before{content:'';position:absolute;left:0;right:0;top:calc(-1 * min(100vw,560px)*.06);display:none;height:calc(min(100vw,560px)*.06);background:linear-gradient(transparent,var(--rust))}
 #title .card h1{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
 #title .card label{font-family:inherit!important;font-size:13px!important;letter-spacing:4px;text-transform:uppercase;color:var(--cream)!important;display:flex;flex-direction:column;gap:5px;text-align:center}
 #title .card label:before{content:'';display:block;height:2px;margin:0 22%;background:var(--teal)}
@@ -241,7 +257,7 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 <div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
 <div id="menu" class="closed"><button id="mclose" type="button" aria-label="Close">✕</button><div id="mtools"></div></div></div>
 <div id="info"></div><div id="panel"></div><div id="tut"></div></div><div id="toasts"></div><div id="tip"></div>
-<div id="loading"><div class="lt">MARS</div><div class="lm" style="margin-top:-6px;opacity:.85">A TERRAFORMING GAME</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
+<div id="loading"><div class="lt">MARS</div><div class="lm lsub">A TERRAFORMING GAME</div><div class="lstar">✦</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
 <div id="title"><div class="card">
 <h1>MARS<span>A TERRAFORMING GAME</span></h1>
 <label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
