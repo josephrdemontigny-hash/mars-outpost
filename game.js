@@ -364,11 +364,11 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
   // hinge aerocover fairing along the root (leeward) + small dark root seal
   const hl=rootY1-rootY0;const fair=mesh(new THREE.CapsuleGeometry(.03,hl*.8,4,10),SHIPMAT.flapS,.01,(rootY0+rootY1)/2,.035,true);grp.add(fair);
   grp.add(mesh(new THREE.BoxGeometry(.02,hl*.95,.06),SHIPMAT.chine,.005,(rootY0+rootY1)/2,-.02,false));
-  /* v40: hinge set toward the leeward steel side (+z), root follows the body taper */grp.position.set(side*xHinge*Math.cos(lee),y0+yBase,xHinge*Math.sin(lee));grp.scale.x=side;grp.rotation.order='YXZ';grp.rotation.z=side*lean;grp.rotation.y=side*(.26+lee*.5);grp.userData.fb=side*(.26+lee*.5);(g.userData.flaps||(g.userData.flaps=[])).push(grp);g.add(grp);return grp;};
+  /* v41: hinge right on the chine at the tile/steel boundary (z≈0), flap canted slightly windward so its tiled face continues the heat shield */grp.position.set(side*(xHinge+.006),y0+yBase,-.004+xHinge*Math.sin(lee));grp.scale.x=side;grp.rotation.order='YXZ';grp.rotation.z=side*lean;grp.rotation.y=side*.17;grp.userData.fb=side*.17;(g.userData.flaps||(g.userData.flaps=[])).push(grp);g.add(grp);return grp;};
  // forward flaps on the nose (38.6–45.8 m), swept back
- /* v40: small, strongly swept/tapered forward flaps high on the nose (real: ~7 m root, ~2.6 m tip chord, ~3 m span) */const fyb=38.8*SH_K,fyt=46.2*SH_K,fL=fyt-fyb,fLean=Math.atan2(shipR(fyb)-shipR(fyt),fL);for(const sd of[-1,1])flap(0,fL,fL*.04,fL*.38,3.0*SH_K,sd,fyb,shipR(fyb+fL*.3)+.004,.32*SH_K,fLean,.5);
+ /* v40: small, strongly swept/tapered forward flaps high on the nose (real: ~7 m root, ~2.6 m tip chord, ~3 m span) */const fyb=38.8*SH_K,fyt=46.2*SH_K,fL=fyt-fyb,fLean=Math.atan2(shipR(fyb)-shipR(fyt),fL);for(const sd of[-1,1])flap(0,fL,fL*.04,fL*.38,3.0*SH_K,sd,fyb,shipR(fyb+fL*.3)+.004,.32*SH_K,fLean,0);
  // aft flaps at the base (0.3–14.2 m), ~0.45× diameter
- const ayb=-SH_SK+.012,ayt=14.2*SH_K;/* v40: larger tapered aft flaps (~13.9 m root, ~7 m tip, ~4.3 m span, thicker) */for(const sd of[-1,1])flap(0,ayt-ayb,(ayt-ayb)*.03,(ayt-ayb)*.52,4.3*SH_K,sd,ayb,SH_R+.004,.5*SH_K,0,.42);
+ const ayb=-SH_SK+.012,ayt=14.2*SH_K;/* v40: larger tapered aft flaps (~13.9 m root, ~7 m tip, ~4.3 m span, thicker) */for(const sd of[-1,1])flap(0,ayt-ayb,(ayt-ayb)*.03,(ayt-ayb)*.52,4.3*SH_K,sd,ayb,SH_R+.004,.5*SH_K,0,0);
  // header-tank hint: vents + ring band at the nose base, small dome cap ring near the tip
  g.add(mesh(new THREE.TorusGeometry(SH_R+.003,.006,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+SH_NOSE,0,false));
  const hy=H-1.3;for(const sd of[-1,1])g.add(mesh(new THREE.CylinderGeometry(.012,.012,.03,8).rotateX(Math.PI/2),SHIPMAT.chine,sd*shipR(hy)*.55,y0+hy,shipR(hy)*.82,false));
@@ -841,8 +841,12 @@ function layout(t,lot,cs,keep){const T=TILE_M,s=B[t].s,key=t+'|'+lot.e+','+lot.s
    if(oz>=2.4){const g=Math.max(o.x-o.w/2,p.x-p.w/2)-Math.min(o.x+o.w/2,p.x+p.w/2);if(g>0&&g<4&&(!bst||g<bst.g)){const cz=(Math.max(o.z-o.d/2,p.z-p.d/2)+Math.min(o.z+o.d/2,p.z+p.d/2))/2;bst={g,z:cz,x:(o.x>p.x?o.x-o.w/2:o.x+o.w/2)-(o.x>p.x?g/2:-g/2),ax:1};}}}
   if(bst)links.push({...bst,lv:Math.max(o.lv,1)});});
  const r={mods:out,links};_lay.set(key,r);return r;}
-let _lotM=null;function LOTMAT(){if(_lotM)return _lotM;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');for(let i=0;i<20;i++){x.fillStyle='rgba(255,255,255,.12)';const m=2+i;x.fillRect(m,m,128-2*m,128-2*m);}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
- _lotM=new THREE.MeshStandardMaterial({color:0xe6b48c,map:t,transparent:true,opacity:.55,depthWrite:false,roughness:1,metalness:0,polygonOffset:true,polygonOffsetFactor:-1});return _lotM;}
+let _lotM=null;function LOTMAT(){if(_lotM)return _lotM;/* v41: subtle graded patch — near-terrain hue, wide feathered edge, faint grader-blade striations + speckle */
+ const n=256,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d'),im=x.createImageData(n,n),D=im.data,rnd=mulberry(4141);
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const e=Math.min(i,j,n-1-i,n-1-j)/(n*.5),f=Math.min(1,e/.42),a=f*f*(3-2*f);
+  const st=.5+.5*Math.sin(j*.55+Math.sin(i*.04)*2.2),sp=rnd();const v=232+st*14+sp*9;const k=(j*n+i)*4;D[k]=v;D[k+1]=v*.93;D[k+2]=v*.86;D[k+3]=255*a*(.78+.22*st)*(.9+.1*sp);}
+ x.putImageData(im,0,0);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+ _lotM=new THREE.MeshStandardMaterial({color:0xd59c78,map:t,transparent:true,opacity:.3,depthWrite:false,roughness:1,metalness:0,polygonOffset:true,polygonOffsetFactor:-1});return _lotM;}
 function growth(g,t,L,keep){const R=RVt(t);if(!R)return;const d=B[t],s=d.s,s0=d.s0,mpt=s0/s,T=TILE_M,u=mpt/T,lotW=_lot||{e:R,s:R,w:R,n:R},
  /* v40: the whole site is laid out in the building's own frame and turns with it as one rigid unit (lot, modules, growth, entrance) */
  lw=[lotW.e,lotW.s,lotW.w,lotW.n],q=(_rot||0)%4,lot={e:lw[(0+q)%4],s:lw[(1+q)%4],w:lw[(2+q)%4],n:lw[(3+q)%4]},csL=((_cs??1)-q+4)%4,th=0,c=Math.cos(th),sn=Math.sin(th),odd=false;
@@ -1725,7 +1729,7 @@ const fogC=document.createElement('canvas');fogC.width=fogC.height=1024;const fo
 const fogMesh=new THREE.Mesh(new THREE.PlaneGeometry(2*N,2*N).rotateX(-Math.PI/2).translate(N/2,.035,N/2),new THREE.MeshBasicMaterial({map:fogTex,fog:true,transparent:true,depthWrite:false}));fogMesh.renderOrder=2;W.add(fogMesh);{const m=new THREE.MeshBasicMaterial({color:0x1c0802,transparent:true,opacity:.62,depthWrite:false,fog:true});const L=-N/2,H=1.5*N,F=8*N;[[ -F,-F,L,F],[H,-F,F,F],[L,-F,H,L],[L,H,H,F]].forEach(([x0,z0,x1,z1])=>{const g=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0).rotateX(-Math.PI/2).translate((x0+x1)/2,.035,(z0+z1)/2),m);g.renderOrder=2;W.add(g);fogMesh.userData.out=(fogMesh.userData.out||[]).concat(g);});}
 function drawFog(){const k=fogC.width/(2*N);fogX.setTransform(1,0,0,1,N/2*k,N/2*k);fogX.globalCompositeOperation='source-over';fogX.clearRect(-N,-N,4*N,4*N);fogX.fillStyle='rgba(28,8,2,.62)';fogX.fillRect(-N,-N,4*N,4*N);
  fogX.globalCompositeOperation='destination-out';(S.fog||[]).forEach(f=>{const g=fogX.createRadialGradient(f.x*k,f.z*k,f.r*k*.8,f.x*k,f.z*k,f.r*k*.9);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');fogX.fillStyle=g;fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.9,0,7);fogX.fill();});
- /* v40: bright survey rim on the frontier (only where fog remains) */fogX.globalCompositeOperation='source-atop';fogX.strokeStyle='rgba(255,190,90,.95)';fogX.lineWidth=Math.max(1.5,fogC.width/340);(S.fog||[]).forEach(f=>{fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.87,0,7);fogX.stroke();});
+ /* v40: bright survey rim on the frontier (only where fog remains) */fogX.globalCompositeOperation='source-atop';fogX.strokeStyle='rgba(236,186,140,.38)';fogX.lineWidth=Math.max(1.5,fogC.width/300);fogX.filter='blur(2px)';(S.fog||[]).forEach(f=>{fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.87,0,7);fogX.stroke();});fogX.filter='none';
  fogTex.needsUpdate=true;fogMesh.visible=!S.demo;(fogMesh.userData.out||[]).forEach(g=>g.visible=true);}
 const explored=(x,z)=>(S.fog||[]).some(f=>Math.hypot(x-f.x,z-f.z)<f.r*.85);
 window.__drawFog=()=>drawFog();
