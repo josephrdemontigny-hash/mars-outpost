@@ -30,8 +30,8 @@ const B={
  ice:{n:'Ice Extractor',c:100,m:35,s:1,ic:'🧊',cat:'b',wat:2,pw:-2,jobs:2,d:'+water'},
  wtank:{n:'Water Tank',c:90,m:30,s:1,ic:'💧',cat:'b',wcap:250,d:'+250 water storage'},
  recyc:{n:'Water Recycler',c:140,m:45,s:1,ic:'🚰',cat:'b',wat:1.5,pw:-1,jobs:1,d:'+water, recycles'},
- mine:{n:'Regolith Mine',c:160,m:30,s:1,ic:'⛏️',cat:'b',ore:.6,pw:-2,jobs:2,d:'Digs ore (trucks haul it)'},
- proc:{n:'Material Processor',c:300,m:60,s:2,ic:'🏗️',cat:'b',conv:.8,pw:-3,jobs:3,d:'Ore → building materials'},
+ mine:{n:'Regolith Mine',c:160,m:30,s:1,ic:'⛏️',cat:'b',ore:.8,pw:-2,jobs:2,d:'Digs ore (trucks haul it)'},
+ proc:{n:'Material Processor',c:300,m:60,s:2,ic:'🏗️',cat:'b',conv:1.0,pw:-3,jobs:3,d:'Ore → building materials'},
  fuel:{n:'Fuel Plant',c:250,m:70,s:1,ic:'⛽',cat:'b',fuel:1.2,pw:-3,wat:-.6,jobs:3,d:'Methane/LOX (water+power)'},
  waste:{n:'Waste Management',c:350,m:90,s:1,ic:'♻️',cat:'b',waste:30,pw:-2,jobs:2,unl:15,d:'Keeps 30 clean'},
  med:{n:'Medical Bay',c:400,m:100,s:1,ic:'🩺',cat:'b',med:30,pw:-2,jobs:3,unl:20,d:'Health for 30'},
@@ -50,7 +50,7 @@ const B={
  complex:{n:'Habitat Complex',c:2200,m:520,p:50,s:3,ic:'🏘️',cat:'b',house:90,pw:-6,d:'3×3 block of linked habitat modules · houses 90 · roof solar'},
  arco:{n:'Arcology',c:5000,m:1200,p:150,s:4,ic:'🌆',cat:'b',house:220,ent:20,pw:-12,jobs:10,d:'4×4 terraced mega-structure for a chartered town · houses 220'},
  sec:{n:'Security Outpost',c:900,m:220,s:2,ic:'🛡️',cat:'b',sec:40,pw:-3,jobs:5,unl:60,d:'Safety for 40'},
- robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Assembles Optimus robots from shipped kits (they need power, not food)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:15,d:'Landed Starship'},
+ robot:{n:'Optimus Bay',c:400,m:120,s:1,ic:'🤖',cat:'b',bots:2,pw:-4,jobs:2,unl:10,d:'Assembles Optimus robots from shipped kits (they need power, not food)'},opm:{n:'Open Pit Mine',c:2600,m:260,s:8,ic:'🕳️',cat:'b',ore:6,conv:4.5,pw:-8,jobs:10,d:'Huge terraced pit: haul trucks, excavators & an on-site crusher turn rock straight into 🧱 materials (surplus ore is hauled out)'},ship:{n:'Starship',c:0,m:0,s:2,ic:'🚀',cat:'z',pw:15,d:'Landed Starship'},
  garage:{n:'Rover Garage',c:600,m:160,s:2,ic:'🚙',cat:'b',pw:-2,jobs:3,d:'Builds pressurized rovers for exploration missions'},
  lab:{n:'Research Lab',c:700,m:180,s:2,ic:'🔬',cat:'b',rp:.12,pw:-3,jobs:4,d:'Generates research points for tech upgrades'},
  lpad:{n:'Launch Pad',c:900,m:240,s:2,ic:'🛰️',cat:'b',pw:-2,jobs:3,d:'Call Earth: request a ship of materials, parts or colonists'},
@@ -75,7 +75,7 @@ const B={
  obelisk:{n:'Memorial Obelisk',c:80,m:15,s:1,ic:'🏛️',cat:'d',d:'A plaque for everyone who made it here'},
  dozer:{n:'Bulldoze',c:0,ic:'🚜',cat:'x',d:'Tap/drag · 50% refund'}
 };
-const NEWS={pad:8,hab:4,solar:2,battery:2,farm:4,ice:4,wtank:2,recyc:4,mine:6,proc:6,fuel:4,waste:4,med:4,bigfarm:8,ent:8,reactor:8,refin:8,mega:8,sec:8,robot:8,tfarm:10,ship:8,garage:8,lab:8,lpad:8,factory:6,medc:8,school:4,drill:6,icefield:8,kilo:4,outpost:8,hydro:4,gdome:6,algae:4,insect:4,aqua:6,bigdome:12,complex:10,arco:14,bench:2,planter:1,flag:2,sign:1,antenna:1,rockg:2,statue:2,crates:1,bannr:1,obelisk:2,road:1};
+const NEWS={pad:8,hab:4,solar:2,battery:2,farm:4,ice:4,wtank:2,recyc:4,mine:6,proc:6,fuel:4,waste:4,med:4,bigfarm:8,ent:8,reactor:8,refin:8,mega:8,sec:8,robot:8,tfarm:10,ship:8,garage:8,lab:8,lpad:8,factory:6,medc:8,school:4,drill:6,icefield:8,kilo:4,outpost:8,opm:32,hydro:4,gdome:6,algae:4,insect:4,aqua:6,bigdome:12,complex:10,arco:14,bench:2,planter:1,flag:2,sign:1,antenna:1,rockg:2,statue:2,crates:1,bannr:1,obelisk:2,road:1};
 for(const k in B){B[k].s=B[k].s||1;B[k].s0=B[k].s;if(NEWS[k])B[k].s=NEWS[k];B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
@@ -602,13 +602,143 @@ function detFarm(s,L){const K=KB(),h=s/2,r=s*.45;detFound(K,s,r*1.06);
 const V2=new Set(['pad','hab','mega','solar','farm','bigfarm','ice','fuel','refin','reactor']);
 function shipModel(){const g=new THREE.Group();const rk=rocket();rk.name='rk';rk.position.set(1,0,1);rk.rotation.order='YXZ';rk.rotation.y=Math.PI/4+.85;pose(rk,0,0);g.add(rk);
  const sh=new THREE.Mesh(new THREE.CircleGeometry(.5,20).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x5a2a14,transparent:true,opacity:.35,depthWrite:false}));sh.position.set(1,.012,1);g.add(sh);return g;}
+// ---- v31: detailed models for buildings that were still crude placeholders (reactor, sec, algae, recyc, waste, med, ent, ice, fuel, refin, mega) + Open Pit Mine
+DM.dishW=M(0xe9e9e6,.45,.15,{side:THREE.DoubleSide});DM.algae=new THREE.MeshStandardMaterial({color:0x3fae52,roughness:.25,metalness:.1,transparent:true,opacity:.78});
+DM.cool=M(0xcfc8bc,.9,0);DM.coolIn=M(0x6b655c,1,0,{side:THREE.BackSide});DM.redX=M(0xc8302a,.6,.1);DM.haul=M(0xe0a422,.55,.25);DM.tyre=M(0x1b1b1b,.95,0);
+DM.rock=[M(0x9b5a3a,1,0),M(0x87503a,1,0),M(0xa76a45,1,0),M(0x7a4632,1,0)];DM.rockTop=M(0xb3714a,1,0);DM.ore=M(0x5a4a42,1,0);DM.belt=M(0x2a2a2a,.9,0);
+function detDish(K,x,z,mh,r,tilt=.7,yaw=0){K.cyl(MAT.concrete,.07,.08,.04,x,.02,z,12);K.pipe(DM.frame,.035,[x,0,z],[x,mh,z],10);K.box(DM.dkm,.09,.07,.09,x,mh+.02,z,yaw);
+ const pts=[];for(let i=0;i<=8;i++){const u=i/8*r;pts.push(new THREE.Vector2(u,u*u/(2.2*r)));}const geo=new THREE.LatheGeometry(pts,24);
+ const cx=x+Math.sin(yaw)*.05,cz=z+Math.cos(yaw)*.05,cy=mh+.06;K.put(DM.dishW,geo,cx,cy,cz,tilt,yaw,0);
+ const ax=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(tilt,yaw,0)),f=[cx+ax.x*r*.7,cy+ax.y*r*.7,cz+ax.z*r*.7];K.sph(DM.dkm,.02,f[0],f[1],f[2],8,6);
+ for(let k=0;k<3;k++){const a=k*2.094,v=new THREE.Vector3(Math.cos(a)*r*.85,(r*.85)**2/(2.2*r),Math.sin(a)*r*.85).applyEuler(new THREE.Euler(tilt,yaw,0));K.pipe(DM.frame,.005,[cx+v.x,cy+v.y,cz+v.z],f,4);}}
+function detWin(K,mat,w,h,x,y,z,ry){K.box(DM.frame,w+.02,h+.02,.012,x,y,z,ry);K.box(DM.glassD,w,h,.016,x,y,z,ry);}
+function detPad(K,s){K.box(MAT.concrete,s*.98,.03,s*.98,s/2,.015,s/2);for(let i=1;i<4;i++){K.box(DM.dkm,s*.98,.002,.006,s/2,.031,s*i/4);K.box(DM.dkm,.006,.002,s*.98,s*i/4,.031,s/2);}}
+function detHabCyl(K,x,z,r,len,ry,y=0){const c=Math.cos(ry),s=Math.sin(ry);K.put(DM.tank,new THREE.CapsuleGeometry(r,len,6,20),x,r+.04+y,z,0,ry,Math.PI/2);
+ for(const t of[-.3,0,.3])K.put(DM.frame,new THREE.TorusGeometry(r*1.01,.005,4,24),x+t*len*c,r+.04+y,z-t*len*s,0,ry+Math.PI/2,0);
+ for(let i=-2;i<=2;i++){const px=x+i*len*.18*c,pz=z-i*len*.18*s;for(const sd of[-1,1])K.box(DM.glassD,.05,.035,.012,px+sd*s*r*.98,r*1.25+.04+y,pz+sd*c*r*.98,ry);}
+ for(const t of[-.4,.4])K.box(DM.frame,.04,r+.04,r*1.5,x+t*len*c,(r+.04)/2+y,z-t*len*s,ry);}
+Object.assign(DET,{
+ reactor:L=>{const K=KB();detPad(K,2);
+  const pts=[];for(let i=0;i<=16;i++){const t=i/16,y=t*1.45,r=.32+.24*Math.pow(Math.abs(t-.72)/.72,1.6)*(t<.72?1:.55);pts.push(new THREE.Vector2(r,y));}
+  const lg=new THREE.LatheGeometry(pts,40);K.put(DM.cool,lg,.62,.03,.68);K.put(DM.coolIn,lg,.62,.03,.68,0,0,0,.985,1,.985);
+  for(let k=0;k<20;k++){const a=k/20*Math.PI*2;K.pipe(MAT.concrete,.012,[.62+Math.cos(a)*.56,.03,.68+Math.sin(a)*.56],[.62+Math.cos(a+.16)*.52,.16,.68+Math.sin(a+.16)*.52],5);}
+  K.tor(DM.dkm,.55,.008,.62,.17,.68,40);K.tor(DM.frame,pts[16].x,.01,.62,1.48,.68,40);
+  K.cyl(MAT.white,.3,.3,.45,1.45,.255,.6,32);K.sph(MAT.white,.3,1.45,.48,.6,32,12,Math.PI/2);K.tor(DM.dkm,.302,.008,1.45,.4,.6,40);K.tor(DM.dkm,.302,.008,1.45,.2,.6,40);
+  K.box(DM.corr,.9,.32,.42,1.35,.19,1.38);K.box(DM.dkm,.94,.03,.46,1.35,.365,1.38);for(let i=0;i<5;i++)detWin(K,0,.1,.06,1.0+i*.17,.26,1.6,0);
+  for(let i=0;i<3;i++)K.box(DM.frame,.08,.07,.06,1.0+i*.3,.4,1.38);K.cyl(DM.frame,.03,.035,.7,1.75,.38,1.55,12);
+  for(let i=0;i<4;i++){K.box(DM.dkm,.1,.12,.08,.25+i*.16,.09,1.72);K.box(DM.frame,.012,.2,.012,.25+i*.16,.13,1.82);}K.pipe(DM.frame,.004,[.2,.24,1.82],[.74,.24,1.82],4);
+  K.pipe(DM.tfPipe,.03,[1.45,.12,.92],[1.45,.12,1.17],10);K.pipe(DM.tfPipe,.025,[1.0,.1,1.2],[.95,.1,.95],10);K.pipe(DM.tfPipe,.025,[.95,.1,.95],[.95,.1,.85],8);
+  detDoor(K,1.75,1.6,0,.28,.15);detDoor(K,1.45,.32,Math.PI,.26,.14);return K.done();},
+ sec:L=>{const K=KB();detPad(K,2);
+  for(let i=0;i<14;i++){const a=i/14*Math.PI*2;K.box(DM.dkm,.16,.07,.05,1+Math.cos(a)*.9,.05,1+Math.sin(a)*.9,-a+Math.PI/2);}
+  K.box(DM.corr,.9,.32,.55,.75,.19,1.25);K.box(DM.dkm,.94,.04,.59,.75,.37,1.25);for(let i=0;i<4;i++)detWin(K,0,.12,.05,.45+i*.2,.27,1.53,0);detDoor(K,.75,1.53,0,.27,.15);
+  for(const x of[1.45,1.75])for(const z of[.35,.65])K.box(DM.frame,.03,1.15,.03,x,.6,z);for(let j=1;j<5;j++){const y=j*.22;K.pipe(DM.frame,.006,[1.45,y,.35],[1.75,y+.2,.35],4);K.pipe(DM.frame,.006,[1.45,y,.65],[1.75,y+.2,.65],4);}
+  K.box(DM.door,.42,.24,.42,1.6,1.3,.5);for(let k=0;k<4;k++){const a=k*Math.PI/2;K.box(DM.glassD,.36,.1,.01,1.6+Math.sin(a)*.215,1.33,.5+Math.cos(a)*.215,a);}K.box(DM.dkm,.48,.03,.48,1.6,1.44,.5);
+  detDish(K,1.55,.5,1.7,.14,.5,.8);K.box(DM.frame,.04,.8,.04,1.85,.4,1.7);K.box(MAT.blue||DM.door,.18,.11,.005,1.94,.73,1.7);
+  K.box(DM.door,.5,.24,.44,.6,.13,.5);K.box(DM.rub,.42,.2,.01,.6,.11,.721);detHabCyl(K,1.45,1.25,.11,.25,Math.PI/2);return K.done();},
+ algae:L=>{const K=KB();detPad(K,1);K.box(DM.corr,.3,.24,.22,.18,.13,.82);detDoor(K,.18,.93,0,.18,.1);
+  for(let r=0;r<4;r++){const z=.12+r*.16;for(let lv=0;lv<3;lv++){const y=.1+lv*.1;K.put(DM.algae,new THREE.CylinderGeometry(.035,.035,.78,14),.5,y,z,0,0,Math.PI/2);}
+   for(const x of[.12,.5,.88]){K.box(DM.frame,.015,.34,.015,x,.17,z);}K.tor(DM.algae,.05,.035,.89,.15,z,10,Math.PI,0,Math.PI/2,Math.PI/2);}
+  K.cyl(DM.tank,.08,.08,.3,.82,.18,.84,16);K.pipe(DM.tfPipe,.012,[.75,.1,.84],[.34,.1,.84],6);return K.done();},
+ recyc:L=>{const K=KB();detPad(K,1);K.box(DM.corr,.5,.28,.34,.32,.17,.7);K.box(DM.dkm,.53,.03,.37,.32,.32,.7);detDoor(K,.32,.88,0,.2,.11);detWin(K,0,.1,.05,.5,.24,.88,0);
+  for(const [x,z] of[[.3,.22],[.62,.22]]){K.cyl(DM.tank,.12,.12,.55,x,.31,z,24);K.sph(DM.tank,.12,x,.585,z,24,8,Math.PI/2);for(const y of[.15,.35,.5])K.tor(DM.frame,.121,.004,x,y,z,24);K.pipe(DM.frame,.004,[x+.125,.03,z],[x+.125,.6,z],4);}
+  for(let i=0;i<3;i++)K.cyl(MAT.white,.035,.035,.2,.82+0,.13,.42+i*.12,10);K.box(DM.frame,.12,.02,.4,.82,.03,.54);
+  K.pipe(DM.tfPipe,.015,[.3,.1,.34],[.3,.1,.52],6);K.pipe(DM.tfPipe,.015,[.62,.1,.34],[.62,.1,.52],6);K.pipe(DM.tfPipe,.012,[.75,.2,.54],[.57,.2,.6],6);return K.done();},
+ waste:L=>{const K=KB();detPad(K,1);K.box(DM.corr,.55,.3,.42,.33,.18,.62);K.box(DM.dkm,.58,.03,.45,.33,.345,.62);detDoor(K,.22,.84,0,.2,.11);K.box(DM.rub,.18,.18,.01,.47,.12,.835);
+  K.cyl(DM.frame,.04,.05,.6,.78,.33,.72,12);K.cyl(DM.dkm,.045,.045,.03,.78,.64,.72,12);
+  for(let i=0;i<3;i++){const x=.2+i*.22;K.box([DM.orange,DM.hivis,DM.door][i],.16,.12,.12,x,.09,.18);K.box(DM.dkm,.17,.015,.13,x,.157,.18);}
+  K.put(DM.belt,new THREE.BoxGeometry(.08,.02,.42),.78,.2,.3,.35,0,0);for(const z of[.15,.45])K.box(DM.frame,.012,.2,.012,.78,.1,z);return K.done();},
+ med:L=>{const K=KB();detPad(K,1);detHabCyl(K,.42,.5,.17,.4,0);K.box(MAT.white,.2,.3,.3,.82,.17,.5);K.box(DM.redX,.16,.004,.04,.82,.322,.5);K.box(DM.redX,.04,.004,.16,.82,.322,.5);
+  K.box(DM.redX,.003,.1,.03,.921,.2,.5);K.box(DM.redX,.003,.03,.1,.921,.2,.5);detDoor(K,.82,.65,0,.22,.12);K.box(DM.frame,.5,.01,.12,.42,.02,.86);return K.done();},
+ ent:L=>{const K=KB();detPad(K,2);K.cyl(MAT.concrete,.82,.85,.08,1,.07,1,48);
+  K.put(DM.glassD,new THREE.SphereGeometry(.78,24,12,0,Math.PI*2,0,Math.PI/2),1,.1,1,0,0,0,1,.72,1);
+  K.put(DM.frame,new THREE.IcosahedronGeometry(.785,2),1,.1,1,0,0,0,1,.72,1);
+  K.cyl(DM.plant,.35,.35,.04,1,.13,1,24);for(let i=0;i<6;i++){const a=i*1.05;K.cyl(DM.soil,.02,.03,.12,1+Math.cos(a)*.22,.2,1+Math.sin(a)*.22,6);K.sph(DM.plant2,.07,1+Math.cos(a)*.22,.3,1+Math.sin(a)*.22,10,8);}
+  K.box(MAT.white,.5,.3,.28,1,.16,1.85);K.box(DM.orange,.54,.04,.3,1,.33,1.85);detDoor(K,1,1.99,0,.24,.18);K.cyl(DM.frame,.12,.12,.05,1,.62,1,16);return K.done();},
+ ice:L=>{const K=KB();detPad(K,1);K.cyl(DM.dkm,.1,.12,.05,.4,.04,.45,16);
+  for(const [x,z] of[[.25,.3],[.55,.3],[.4,.62]])K.pipe(DM.frame,.012,[x,0,z],[.4,.75,.45],5);K.box(DM.dkm,.1,.08,.1,.4,.77,.45);K.pipe(DM.frame,.02,[.4,.05,.45],[.4,.72,.45],8);
+  K.box(DM.corr,.3,.22,.25,.78,.13,.75);detDoor(K,.78,.88,0,.16,.1);K.cyl(DM.tank,.1,.1,.3,.78,.18,.25,18);K.sph(DM.tank,.1,.78,.33,.25,18,6,Math.PI/2);
+  K.pipe(DM.tfPipe,.015,[.4,.08,.45],[.78,.08,.3],6);K.pipe(DM.tfPipe,.012,[.78,.08,.35],[.78,.08,.62],6);return K.done();},
+ fuel:L=>{const K=KB();detPad(K,1);detTankH(K,.4,.25,.45,.09,0);detTankH(K,.4,.48,.45,.09,0);
+  K.cyl(DM.frame,.06,.06,.8,.82,.42,.3,14);for(let i=1;i<6;i++)K.tor(DM.dkm,.061,.004,.82,i*.14,.3,14);K.box(DM.frame,.16,.01,.16,.82,.6,.3);
+  K.sph(MAT.white,.12,.7,.16,.75,18,12);K.cyl(DM.frame,.03,.05,.05,.7,.03,.75,8);K.box(DM.corr,.28,.2,.22,.3,.12,.78);detDoor(K,.3,.89,0,.15,.1);
+  K.pipe(DM.tfPipe,.012,[.65,.15,.25],[.76,.15,.3],5);K.pipe(DM.tfPipe,.012,[.82,.1,.36],[.72,.1,.65],5);return K.done();},
+ refin:L=>{const K=KB();detPad(K,2);for(const [x,z,h,r] of[[.4,.4,1.3,.09],[.65,.4,1.0,.07],[.4,.7,.85,.06]]){K.cyl(DM.frame,r,r,h,x,h/2+.03,z,16);for(let y=.2;y<h;y+=.2)K.tor(DM.dkm,r+.004,.004,x,y,z,16);K.tor(DM.frame,r+.04,.006,x,h*.8,z,16);K.box(DM.frame,.006,h,.006,x+r+.03,h/2,z);}
+  for(const [x,z] of[[1.3,.45],[1.7,.45]]){K.sph(MAT.white,.18,x,.25,z,24,14);for(let k=0;k<4;k++){const a=k*1.57+.78;K.pipe(DM.frame,.01,[x+Math.cos(a)*.13,0,z+Math.sin(a)*.13],[x+Math.cos(a)*.15,.25,z+Math.sin(a)*.15],5);}}
+  for(let i=0;i<4;i++){detTankH(K,1.4,1.0+i*.24,.55,.08,0);}
+  for(let x=.3;x<1.0;x+=.25)K.box(DM.frame,.02,.3,.4,x,.15,1.25);for(const y of[.2,.28])K.pipe(DM.tfPipe,.015,[.3,y,1.15],[1.0,y,1.15],6);K.pipe(DM.tfPipe,.015,[.3,.24,1.35],[1.0,.24,1.35],6);
+  K.box(DM.corr,.55,.25,.3,.5,.15,1.72);detDoor(K,.5,1.87,0,.2,.12);K.pipe(DM.tfPipe,.02,[.65,.25,.4],[1.3,.25,.45],6);return K.done();},
+ mega:L=>{const K=KB();detPad(K,2);
+  for(const [x,z,n] of[[.6,.6,3],[1.4,.6,2],[1,1.4,4]]){for(let i=0;i<n;i++){const y=.04+i*.26;K.cyl(DM.tank,.34,.34,.24,x,y+.12,z,32);K.tor(DM.frame,.342,.006,x,y+.24,z,40);
+    for(let k=0;k<10;k++){const a=k/10*Math.PI*2;K.box(DM.glassD,.07,.06,.01,x+Math.cos(a)*.343,y+.14,z+Math.sin(a)*.343,-a+Math.PI/2);}}
+   K.sph(DM.tank,.34,x,.04+n*.26,z,32,8,Math.PI/2);K.cyl(DM.pv||DM.glassD,.25,.25,.01,x,.04+n*.26+.25,z,24);}
+  K.put(DM.tank,new THREE.CylinderGeometry(.07,.07,.5,12),1,.2,.6,0,0,Math.PI/2);K.put(DM.tank,new THREE.CylinderGeometry(.07,.07,.5,12),.8,.2,1.0,0,-.78,Math.PI/2);K.put(DM.tank,new THREE.CylinderGeometry(.07,.07,.5,12),1.2,.2,1.0,0,.78,Math.PI/2);
+  detDoor(K,1,1.75,0,.24,.14);detDoor(K,.6,.25,Math.PI,.24,.14);return K.done();},
+ opm:L=>opmModel(L),
+});
+// ---- Open Pit Mine (24×24 fine tiles = 6 model units). Pit is sunk below ground: pit meshes draw first, then an invisible depth mask at ground level hides the ground plane over the opening.
+let _HH=0;const humanH=()=>{if(!_HH){const a=astro(0);_HH=new THREE.Box3().setFromObject(a).getSize(new THREE.Vector3()).y;}return _HH*HUMAN/4;};
+const pitMask=new THREE.MeshBasicMaterial({colorWrite:false});
+function haulTruck(K,x,y,z,ry,hh,load){const S=hh/1.7,c=Math.cos(ry),s=Math.sin(ry),P=(a,b,h)=>[x+a*s+b*c,y+h,z+a*c-b*s];// a along heading, b lateral
+ const L=5.8*S,Wd=2.7*S,R=.72*S;for(const a of[-L*.32,L*.32])for(const b of[-1,1]){const p=P(a,b*(Wd/2-R*.5),R);K.put(DM.tyre,new THREE.CylinderGeometry(R,R,R*1.0,16),p[0],p[1],p[2],0,ry,Math.PI/2);K.put(DM.frame,new THREE.CylinderGeometry(R*.5,R*.5,R*1.02,10),p[0],p[1],p[2],0,ry,Math.PI/2);}
+ let p=P(0,0,R*1.3);K.box(DM.dkm,Wd*.7,R*.8,L*.9,p[0],p[1],p[2],ry);p=P(L*.36,0,R*2.1);K.box(DM.haul,Wd*.9,R*1.0,L*.2,p[0],p[1],p[2],ry);
+ p=P(-L*.08,0,R*2.6);K.box(DM.haul,Wd,R*1.1,L*.78,p[0],p[1],p[2],ry,-.05);p=P(L*.27,0,R*3.0);K.box(DM.haul,Wd,R*.15,L*.12,p[0],p[1],p[2],ry);
+ if(load){p=P(-L*.1,0,R*3.15);K.put(DM.ore,new THREE.SphereGeometry(Wd*.42,10,6,0,Math.PI*2,0,Math.PI/2),p[0],p[1],p[2],0,ry,0,1,.45,1.6);}
+ p=P(L*.48,0,R*2.3);K.box(DM.dkm,Wd*.6,R*.3,.2*S,p[0],p[1],p[2],ry);p=P(L*.44,Wd*.35,R*3.2);K.cyl(DM.dkm,.06*S,.06*S,R*.8,p[0],p[1],p[2],6);K.box(DM.dkm,.3*S,.15*S,.2*S,p[0],p[1]+R*.4,p[2],ry);}
+function excavator(K,x,y,z,ry,hh,arm=.6){const S=hh/1.7*.55,c=Math.cos(ry),s=Math.sin(ry),P=(a,b,h)=>[x+a*s+b*c,y+h,z+a*c-b*s];
+ for(const b of[-1,1]){const p=P(0,b*3.2*S,1*S);K.box(DM.rub,1.4*S,2*S,8.5*S,p[0],p[1],p[2],ry);}let p=P(0,0,2.3*S);K.cyl(DM.dkm,2.2*S,2.4*S,.7*S,p[0],p[1],p[2],16);
+ p=P(-.8*S,0,4*S);K.box(DM.haul,6.5*S,3*S,7.5*S,p[0],p[1],p[2],ry);p=P(-4.3*S,0,4*S);K.box(DM.dkm,6.3*S,2.6*S,1.5*S,p[0],p[1],p[2],ry);
+ p=P(2.4*S,-2.2*S,5.8*S);K.box(DM.glassD,2*S,2.2*S,2.6*S,p[0],p[1],p[2],ry);
+ const b0=P(2.8*S,.8*S,4.5*S),b1=P(8.5*S,.8*S,9*S),b2=P(12.5*S,.8*S,(9-8*arm)*S);K.pipe(DM.haul,.8*S,b0,b1,8);K.pipe(DM.haul,.6*S,b1,b2,8);K.pipe(DM.frame,.25*S,P(3.5*S,.8*S,3.8*S),P(7*S,.8*S,7.5*S),6);
+ K.box(DM.dkm,3.2*S,2*S,2.4*S,b2[0],b2[1]-1*S,b2[2],ry);}
+function opmModel(L){const s=8,K=KB(),P2=KB(),hh=humanH(),n=5,w=.56,bh=.6,D=n*bh;
+ const X0=.15,X1=6.55,Z0=.15,Z1=7.85;// pit opening
+ // surface pad / haul road around pit
+ K.box(DM.tfBerm,1.3,.03,7.9,7.3,.015,4);K.box(MAT.concrete,1.2,.03,1.8,7.3,.016,1.25);
+ // stepped benches (solid frames, each one bench lower) + floor
+ for(let i=0;i<=n;i++){const a=X0+i*w,b=X1-i*w,c=Z0+i*w,d=Z1-i*w,top=-i*bh,h=D+.06-i*bh,m=DM.rock[i%4],cy=top-h/2;
+  if(i===n){P2.box(DM.ore,b-a,.06,d-c,(a+b)/2,top-.03,(c+d)/2);break;}
+  P2.box(m,b-a,h,w,(a+b)/2,cy,c+w/2);P2.box(m,b-a,h,w,(a+b)/2,cy,d-w/2);P2.box(m,w,h,d-c-2*w,a+w/2,cy,(c+d)/2);P2.box(m,w,h,d-c-2*w,b-w/2,cy,(c+d)/2);
+  P2.box(DM.rockTop,b-a-.02,.012,.04,(a+b)/2,top+.004,c+w-.03);P2.box(DM.rockTop,b-a-.02,.012,.04,(a+b)/2,top+.004,d-w+.03);
+  // safety berm on bench crest
+  P2.box(DM.tfBerm,.03,.03,d-c-2*w,a+w-.04,top+.015,(c+d)/2);P2.box(DM.tfBerm,.03,.03,d-c-2*w,b-w+.04,top+.015,(c+d)/2);}
+ // switchback haul ramps: on bench i+1 strip, alternating sides & directions
+ const rampPts=[];for(let i=0;i<n;i++){const left=i%2===0,x=left?X0+(i+1)*w+w/2:X1-(i+1)*w-w/2,za=Z0+(i+2)*w+.05,zb=Z1-(i+2)*w-.05,len=zb-za,y0=-i*bh,y1=-(i+1)*bh;
+  const dn=i%2===0;// even ramps run north->south, odd south->north
+  const ang=Math.atan2(bh,len);P2.put(DM.rockTop,new THREE.BoxGeometry(w*.92,.05,Math.hypot(len,bh)),x,(y0+y1)/2-.02,(za+zb)/2,dn?ang:-ang,0,0);
+  rampPts.push([x,dn?za:zb,y0],[x,dn?zb:za,y1]);}
+ // entry ramp from surface into bench 1 lives in the first ramp (bench 0 is at grade). rubble
+ let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;for(let k=0;k<70;k++){const i=1+Math.floor(rnd()*n),a=X0+i*w,b=X1-i*w,c=Z0+i*w,d=Z1-i*w;const side=Math.floor(rnd()*4);let x,z;if(side<2){x=a+rnd()*(b-a);z=side?c+.04:d-.04;}else{z=c+rnd()*(d-c);x=side===2?a+.04:b-.04;}
+  const r=.015+rnd()*.03;P2.put(DM.rock[k%4],new THREE.DodecahedronGeometry(r,0),x,-i*bh+r*.4,z,rnd()*3,rnd()*3,0);}
+ // vehicles on ramps and floor
+ rampPts.forEach((q,i)=>{if(i%2)return;const t=.5,x=q[0];const za=q[1],zb=rampPts[i+1]?rampPts[i+1][1]:za;const z=za+(zb-za)*t,y=q[2]+(rampPts[i+1][2]-q[2])*t;haulTruck(P2,x,y+.025,z,za<zb?0:Math.PI,hh,i%4===0);});
+ const fx=(X0+X1)/2,fz=(Z0+Z1)/2;haulTruck(P2,fx-.05,-D,fz+.75,0,hh,0);excavator(P2,fx-.05,-D,fz-.55,0,hh,.5);excavator(P2,X0+2*w+w/2,-2*bh,Z1-2*w-1.0,Math.PI,hh,.3);excavator(P2,X1-3*w-w/2,-3*bh,Z0+3*w+1.0,0,hh,.4);
+ // in-pit hopper + conveyor up the east wall to the crusher
+ P2.box(DM.frame,.3,.25,.3,X1-n*w-.2,-D+.125,fz,0);P2.put(DM.dkm,new THREE.CylinderGeometry(.22,.1,.18,4,1,true),X1-n*w-.2,-D+.33,fz,0,Math.PI/4,0);
+ const cA=[X1-n*w-.05,-D+.28,fz],cB=[X1+.05,.12,fz],cC=[7.15,.95,1.2];
+ for(const [A,B,dst] of[[cA,cB,P2],[cB,cC,K]]){const d=[B[0]-A[0],B[1]-A[1],B[2]-A[2]],l=Math.hypot(...d);dst.pipe(DM.belt,.035,A,B,6);
+  const ry=Math.atan2(d[0],d[2]);for(let t=0;t<=1.001;t+=1/Math.max(2,Math.round(l/.3))){const p=[A[0]+d[0]*t,A[1]+d[1]*t,A[2]+d[2]*t];dst.box(DM.frame,.12,.02,.02,p[0],p[1]+.04,p[2],ry);}
+  dst.pipe(DM.frame,.008,[A[0]-.06*Math.cos(ry),A[1]+.06,A[2]+.06*Math.sin(ry)],[B[0]-.06*Math.cos(ry),B[1]+.06,B[2]+.06*Math.sin(ry)],4);
+  const segs=Math.max(1,Math.round(l/.45));for(let k=1;k<segs;k++){const t=k/segs,p=[A[0]+d[0]*t,A[1]+d[1]*t,A[2]+d[2]*t];const base=dst===P2?-Math.min(n,Math.max(0,Math.floor((X1-p[0])/w)))*bh:0;if(p[1]-base>.03)dst.box(DM.frame,.025,p[1]-base,.025,p[0],(p[1]+base)/2,p[2]);}}
+ // crusher building + truck dump hopper + stockpile conveyor
+ K.box(DM.corr,.7,.8,.6,7.2,.42,1.2);K.box(DM.dkm,.74,.04,.64,7.2,.84,1.2);K.put(DM.dkm,new THREE.CylinderGeometry(.36,.14,.28,4,1,true),7.2,1.0,1.2,0,Math.PI/4,0);
+ for(let i=0;i<3;i++)detWin(K,0,.1,.06,7.0+i*.2,.62,1.505,0);detDoor(K,6.98,1.505,0,.26,.14);
+ K.put(DM.tfBerm,new THREE.BoxGeometry(.5,.05,1.2),7.62,.24,2.15,-.4,0,0);K.box(DM.frame,.5,.48,.12,7.62,.24,1.53);
+ const sA=[7.2,.8,1.5],sB=[7.3,1.1,5.2];{const d=[0,sB[1]-sA[1],sB[2]-sA[2]];K.pipe(DM.belt,.03,sA,sB,6);for(let t=.2;t<1;t+=.2)K.box(DM.frame,.025,sA[1]+d[1]*t,.025,7.3,(sA[1]+d[1]*t)/2,sA[2]+d[2]*t);}
+ K.put(DM.ore,new THREE.ConeGeometry(.6,1.0,20),7.3,.5,6.0);K.put(DM.ore,new THREE.ConeGeometry(.35,.4,14),7.6,.2,7.2);
+ haulTruck(K,7.62,.42,2.35,Math.PI,hh,1);
+ // people for scale (1.7 m)
+ const g=K.done(),pit=P2.done();pit.traverse(m=>{if(m.isMesh)m.renderOrder=-2;});g.add(pit);
+ const mk=new THREE.Mesh(new THREE.PlaneGeometry(X1-X0,Z1-Z0).rotateX(-Math.PI/2),pitMask);mk.position.set((X0+X1)/2,.004,(Z0+Z1)/2);mk.renderOrder=-1;mk.name='pitmask';g.add(mk);
+ for(const [x,z,r] of[[6.85,1.75,0],[7.0,1.8,.6],[7.05,3.2,2],[6.75,4.5,-1.4],[6.8,4.75,1.2]]){const a=astro(Math.floor(x*10));a.scale.setScalar(HUMAN/4);a.position.set(x,.03,z);a.rotation.y=r;g.add(a);}
+ return g;}
+
 function model(t,lvl=1){if(t==='ship')return shipModel();let g;if(DET[t])g=DET[t](lvl);else if(V2.has(t))g=modelV2(t);else if(NEWM[t])g=NEWM[t](lvl);else g=modelNew(t,lvl);
  if(!DET[t]&&B[t].cat==='b'&&t!=='lpad'){const s0=B[t].s0;const fs=mesh(new THREE.BoxGeometry(s0*.96,.03,s0*.96),MAT.concrete,s0/2,.012,s0/2,false);fs.receiveShadow=true;g.add(fs);const ub=mesh(rbox(.12,.1,.08,.01),DM.cab,s0*.9,.065,s0*.08);g.add(ub);g.add(mesh(new THREE.CylinderGeometry(.012,.012,s0*.3,6).rotateZ(Math.PI/2),DM.frame,s0*.75,.03,s0*.08,false));}
- if(lvl>1&&B[t].cat==='b'){const s=B[t].s0;for(let i=1;i<lvl;i++){const x=s*.15+i*.12,z=s*.12;g.add(mesh(new THREE.CylinderGeometry(.012,.012,.45,6),M(0x999999),x,.25,z));g.add(mesh(new THREE.SphereGeometry(.04,8,6),MAT.yellow,x,.5,z,false));}
-  g.children.forEach(c=>{if(c.position.y>.06){c.scale.y*=1+.15*(lvl-1);c.position.y*=1+.15*(lvl-1);}});
-  const s2=B[t].s0,rc=[0,0x9ad0ff,0x66ff99,0xffd166,0xff7aff][lvl-1];g.add(mesh(new THREE.TorusGeometry(s2*.46,.025,6,32).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({color:rc,emissive:rc,emissiveIntensity:.5}),s2/2,.09,s2/2,false));
-  if(lvl>=5){const st=mesh(new THREE.OctahedronGeometry(.09,0),MAT.gold,s2/2,s2*.6+1,s2/2,false);st.name='spin';g.add(st);}}
- if(B[t].cat==='b'){const s=B[t].s0;
+ if(lvl>1&&B[t].cat==='b'){const s=B[t].s0;// v31: upgrades no longer stretch the model vertically (that distorted detailed models and lifted domes/dishes into mid-air)
+  const s2=B[t].s0,rc=[0,0x9ad0ff,0x66ff99,0xffd166,0xff7aff][lvl-1];if(t!=='opm')for(let i=1;i<lvl;i++)g.add(mesh(new THREE.BoxGeometry(.05,.012,.05),new THREE.MeshStandardMaterial({color:rc,roughness:.6}),s2*.06+i*.07,.036,s2*.97,false));
+  }
+ if(B[t].cat==='b'&&t!=='opm'){const s=B[t].s0;
   g.add(mesh(new THREE.BoxGeometry(s*.5,.025,.01),winMat,s/2,.06,s*.476+.002,false));const pool=new THREE.Mesh(new THREE.CircleGeometry(s*.75,20).rotateX(-Math.PI/2),poolMat);pool.position.set(s/2,.015,s/2);g.add(pool);}
  return g;}
 // ---------- state helpers
@@ -1281,7 +1411,7 @@ const LEVELS=[null,
   {t:'Research 2 technologies',v:()=>Object.keys(S.tech||{}).length,need:2},
   {t:'Build a 🛰️ Launch Pad',v:()=>cntB('lpad'),need:1},
   {t:'Grow to 78 colonists',v:()=>S.cols.length,need:78}]},
- {n:'Survey Missions',unlock:['aqua'],perk:'Rovers can survey sites for deposits',goals:[
+ {n:'Survey Missions',unlock:['aqua','opm'],perk:'Rovers can survey sites for deposits',goals:[
   {t:'Survey 3 sites',v:()=>sinceLv('surveys'),need:3},
   {t:'Find an ice deposit',v:()=>(S.sites||[]).some(s=>s.surv&&s.k==='ice')?1:0,need:1},
   {t:'Find an iron or rare deposit',v:()=>(S.sites||[]).some(s=>s.surv&&(s.k==='iron'||s.k==='rare'))?1:0,need:1},
@@ -1528,7 +1658,7 @@ const NEWM={
   g.add(mesh(new THREE.BoxGeometry(.06,.42,.8),MAT.dark,1.66,.21,1,false));for(let i=0;i<4;i++)g.add(mesh(new THREE.BoxGeometry(.02,.4,.8),MAT.steel,1.68,.22,1,false).translateY(0));g.add(mesh(new THREE.BoxGeometry(.5,.03,.9),MAT.yellow,1.95,.02,1,false));
   g.add(mesh(cyl(.01,.01,.5,6),MAT.dark,.4,1.25,.7,false));g.add(mesh(torus(.56,.02,24),winMat,.9,.5,1,false).rotateZ(Math.PI/2));return g;},
  lab:L=>{const g=new THREE.Group();habDome(g,.8,.9,.55);g.add(mesh(rbox(.6,.4,.5,.05),MAT.white,1.45,.2,1.35));g.add(mesh(torus(.31,.02,20),winMat,1.45,.28,1.35,false));
-  const dish=mesh(new THREE.SphereGeometry(.28,16,8,0,Math.PI*2,0,1.1),MAT.white,1.5,1.0,.45);dish.rotation.x=-.9;g.add(dish);g.add(mesh(cyl(.03,.04,.8,8),MAT.steel,1.5,.4,.45));
+  {const K=KB();detDish(K,1.5,.45,.75,.26,-.8,0);g.add(K.done());}
   g.add(mesh(new THREE.SphereGeometry(.04,8,6),MAT.red,.8,.62,.9,false));return g;},
  lpad:L=>{const g=new THREE.Group();g.add(mesh(cyl(.95,1,.12,32),MAT.concrete,1,.04,1));g.add(mesh(torus(.7,.035,32),MAT.yellow,1,.11,1,false));g.add(mesh(torus(.45,.02,32),M(0xff6b35),1,.11,1,false));
   {const tw=lattice(2.6,.24,.16,.016);tw.position.set(1.8,.06,.22);g.add(tw);const cap=mesh(new THREE.BoxGeometry(.3,.06,.3),LATM,1.8,2.69,.22);g.add(cap);for(const[y,sz]of[[1.95,.07],[1.75,-.07]]){const a=latticeH(.62,.07,.09,.01);a.position.set(1.8,y,.22);a.rotation.y=Math.atan2(-(1-.22),(1-1.8))+sz;g.add(a);}g.add(mesh(new THREE.BoxGeometry(.4,.04,.4),MAT.concrete,1.8,.04,.22));}
