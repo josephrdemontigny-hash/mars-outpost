@@ -1346,7 +1346,7 @@ function upBoosts(b){const d=B[b.t],m0=LV[b.lvl-1],m1=LV[Math.min((B[b.t].maxL||
  if(d.bots)bits.push(`🤖 ${Math.round(d.bots*m0)}→${Math.round(d.bots*m1)}`);
  return bits.join(' · ')||'+15% output';}
 function upgrade(b){if(b.lvl>=maxL(b)||b.lvl>=capL(b))return;if(upLock(b)){toast(`🔒 L${b.lvl+1} unlocks at colony Lv ${upLock(b)}`,1);return;}if(b.cons>0||b.upT>0){toast('Still under construction',1);return;}const c=upCost(b),mm=upMat(b);if(!afford(c,mm))return;pay(c,mm);const sp=buildSpec(b.t,b.lvl+1);b.upT=b.upN=sp.T;b.crewN=sp.n;addScaf(objs.get(b.id),b);crewSync();toast(`🏗️ Upgrading ${b.name} to L${b.lvl+1} — needs ${sp.n} builder${sp.n>1?'s':''}, ~${fmtT(sp.T)}`);beep(520,.08,'triangle',.07);renderPanel(true);}
-function finishUp(b){b.upT=0;const prev=b.lvl;b.lvl++;const o=placeObj(b);o.scale.set(1,.25,1);o.userData.grow=.25;
+function finishUp(b){b.upT=0;const prev=b.lvl;b.lvl++;clearGrownPaths(b);const o=placeObj(b);o.scale.set(1,.25,1);o.userData.grow=.25;
  const ring=new THREE.Mesh(new THREE.TorusGeometry(B[b.t].s0*.55,.04,8,32).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.9}));ring.position.set(B[b.t].s0/2,.2,B[b.t].s0/2);o.add(ring);setTimeout(()=>{try{o.remove(ring);}catch(e){}},900);
  const w=o.getObjectByName('warn');if(w)w.visible=!b.door;assign();if(typeof syncBots==='function')syncBots();floatText(`⬆️ L${b.lvl}`);toast(`⬆️ ${b.name} → Level ${b.lvl}! ${upBoosts({t:b.t,lvl:prev})}`);beep(520,.08,'triangle',.07);setTimeout(()=>beep(780,.1,'triangle',.07),90);renderPanel(true);setTimeout(crewSync,0);}
 function bulldoze(b){if(b.t==='ship'){toast('Refuel and launch Starships home instead of bulldozing them',1);return false;}if(b.ship){toast("Can't bulldoze a pad with a ship on it",1);return false;}
@@ -1437,13 +1437,25 @@ function updPrev(){if(moving)return;fpHide();if(!sel||!hover){prev.visible=false
  hover.bx=x;hover.bz=z;
  prev.visible=true;prev.scale.set(d.s,1,d.s);prev.position.set(x+d.s/2,hgt(x+d.s/2,z+d.s/2)+.05,z+d.s/2);let ok;
  if(sel==='dozer'){const b=occ[x]?.[z];ok=!!b||walk(x,z);if(b){prev.scale.set(B[b.t].s,1,B[b.t].s);prev.position.set(b.x+B[b.t].s/2,by(b)+.05,b.z+B[b.t].s/2);}$('info').textContent=b?`Bulldoze ${b.name}`:walk(x,z)?'Drag to remove paths':'';}
- else if(d.cat==='p'){ok=x>=0&&z>=0&&x<N&&z<N&&!occ[x][z]&&!blocked[x][z];$('info').textContent=`${d.n} — free! Drag to paint (two fingers / WASD to pan)`;}
+ else if(d.cat==='p'){const why=pathWhy(x,z,sel);ok=!why;$('info').textContent=why?`🚫 Can't lay ${d.n.toLowerCase()} here — ${why}`:`${d.n} — free! Drag to paint (two fingers / WASD to pan)`;}
  else{const cq=bcost(d),af=S.cr>=cq.c&&S.mat>=cq.m&&(S.parts||0)>=cq.p;ok=free(sel,x,z)&&af&&(!d.site||!!siteNear(x+d.s/2,z+d.s/2,d.site));const adj=ok&&near2({t:sel,x,z}).some(([a,c])=>walk(a,c));$('info').textContent=`${d.n} ${costTxt(d.c,d.m)}${S.cr<d.c?' — not enough credits':S.mat<d.m?' — not enough materials 🧱':!free(sel,x,z)?` — blocked (nothing fits within ${SNAP_R} tiles)`:adj?' — 🚶 near a path':''}${hover.snap?' · 📍 snapped to nearest fit':''}`;}
  if(d.cat==='b'&&x>=0&&z>=0&&x<N&&z<N)$('info').textContent+=' · '+bioTxt(x+d.s/2,z+d.s/2,sel);{const pp=apPreview(sel,x,z,ok);if(pp)$('info').textContent+=` · 🚶 auto footpath ${pp.tiles.filter(([a,c])=>!walk(a,c)).length} tiles (free)`;_apcs=pp?pp.cs:null;}ghostSync(x,z,ok);
  prev.material.color.set(ok?0x33ff55:0xff3333);if((d.cat==='b'||d.cat==='d')&&sel!=='dozer'){prev.visible=false;fpShow(sel,x,z,null,!!ok,hover.fx,hover.fz);}}
+/* v43: tiles a building's grown modules actually cover at its current level (paths may use the rest of the lot) */
+const _btC=new Map();function builtTiles(b){const d=B[b.t],s=d.s,key=[b.lvl,b.r,b.cs,b.x,b.z,b.vmin].join('|');const c=_btC.get(b.id);if(c&&c.k===key)return c.v;const v=new Set();
+ for(let i=0;i<s;i++)for(let j=0;j<s;j++)v.add(TK(b.x+i,b.z+j));const R=RVt(b.t);
+ if(R&&d.cat==='b'&&b.t!=='opm'&&b.t!=='ship'){const keep=MAINB.has(b.t)&&b.t!=='pad'?0:1,lw0=b.lot||{e:R,s:R,w:R,n:R},lw=[lw0.e,lw0.s,lw0.w,lw0.n],q=(b.r||0)%4,lot={e:lw[q%4],s:lw[(1+q)%4],w:lw[(2+q)%4],n:lw[(3+q)%4]},cs=b.cs??((1+q)%4),csL=(cs-q+4)%4;
+  try{const L=Math.max(b.lvl,b.vmin||1),lay=layout(b.t,lot,csL,keep),ph=-q*Math.PI/2,cc=Math.cos(ph),sn=Math.sin(ph),cx=b.x+s/2,cz=b.z+s/2,T=TILE_M;
+   const put=(X,Z)=>{const wx=X*cc+Z*sn,wz=-X*sn+Z*cc;v.add(TK(Math.floor(cx+wx),Math.floor(cz+wz)));};
+   for(const o of lay.mods.concat(lay.links.map(l=>({x:l.x,z:l.z,w:l.ax?2.2:l.g,d:l.ax?l.g:2.2,lv:l.lv})))){if(o.lv>L)continue;const x0=(o.x-o.w/2)/T,x1=(o.x+o.w/2)/T,z0=(o.z-o.d/2)/T,z1=(o.z+o.d/2)/T;
+    for(let X=x0;X<=x1+1e-6;X+=Math.min(.5,(x1-x0)||.5))for(let Z=z0;Z<=z1+1e-6;Z+=Math.min(.5,(z1-z0)||.5))put(X,Z);}}catch(e){}}
+ _btC.set(b.id,{k:key,v});return v;}
+function pathWhy(x,z,tool){if(x<0||z<0||x>=N||z>=N)return 'edge of map';if(blocked[x][z])return 'rough terrain';const o=occ[x][z];if(o)return B[o.t].n;const r=rsv[x]?.[z];
+ if(r){if(tool==='road')return r.name+"'s lot (roads can't enter lots)";if(builtTiles(r).has(TK(x,z)))return r.name;}return '';}
+function clearGrownPaths(b){const ks=[];builtTiles(b).forEach(k=>{if(S.tiles[k]===1){delete S.tiles[k];ks.push(k);}});if(ks.length){apHand(ks);changed();}return ks.length;}
 function paint(x,z){if(x<0||z<0||x>=N||z>=N)return;const k=TK(x,z);
  if(sel==='dozer'){if(S.tiles[k]){delete S.tiles[k];apHand([k]);changed();}return;}
- if(S.tiles[k]||occ[x][z]||blocked[x][z]||rsv[x]?.[z])return;S.tiles[k]=1;apHand([k]);changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
+ if(S.tiles[k]||pathWhy(x,z,'path'))return;S.tiles[k]=1;apHand([k]);changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
 let doorsDirty=false;function changed(){doorsDirty=true;}
 function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=hover.bz;if(lvLocked(sel)){toast(`🔒 ${d.n} unlocks at colony Lv ${lvOf(sel)} · ${LEVELS[lvOf(sel)].n}`);return;}
  if(sel==='dozer'){const b=occ[x]?.[z];if(b)bulldoze(b);}
@@ -1478,7 +1490,7 @@ function strokeAdd(x,z){if(stroke&&stroke.tool==='road'&&!stroke._r){stroke._r=1
 function strokeClear(){strokeMesh.count=0;stroke=null;}
 function strokeCancel(){if(stroke){strokeClear();}painting=false;}
 function strokeCommit(){const st=stroke;strokeClear();painting=false;if(!st||!st.cells.length)return;const done=[];
- st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!occ[x][z]&&!blocked[x][z]&&!rsv[x]?.[z]){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});apHand(done);if(st.tool!=='dozer')setTimeout(apAll,0);
+ st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!pathWhy(x,z,st.tool)){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});apHand(done);if(st.tool!=='dozer')setTimeout(apAll,0);
  if(done.length){changed();lastStroke={tool:st.tool,keys:done};undoSync();beep(st.tool==='dozer'?260:520,.06,'triangle',.05);}}
 function undoStroke(){const l=lastStroke;if(!l)return;l.keys.forEach(k=>{if(l.tool==='dozer'){const[x,z]=k.split(',').map(Number);if(!occ[x]?.[z])S.tiles[k]=1;}else delete S.tiles[k];});changed();lastStroke=null;undoSync();beep(400,.06,'triangle',.05);toast(`↶ Undid last ${l.tool==='dozer'?'bulldoze':'path'} stroke (${l.keys.length} tiles)`);}
 function undoSync(){const u=$('undob');if(u)u.style.display=lastStroke&&(sel==='path'||sel==='road'||sel==='dozer')?'':'none';}
