@@ -445,15 +445,24 @@ function drawBot(x,cx,cy,k){x.save();x.translate(cx,cy);x.scale(k,k);x.fillStyle
  x.fillStyle='#16171a';x.fillRect(-4.5,4,9,2);x.beginPath();x.ellipse(0,-6,3.6,4,0,0,6.3);x.fill();x.fillStyle='#4af';x.fillRect(-2.4,-6.5,4.8,1);x.restore();}
 const ICONS=(()=>{const mk=f=>{const c=document.createElement('canvas');c.width=c.height=36;const x=c.getContext('2d');f(x,18,16,1.6);return c.toDataURL();};return{hv:mk(drawHV),bot:mk(drawBot)};})();
 const hvImg=(k='hv')=>`<img class="hvi" src="${ICONS[k]}" alt="">`;
-function astro(i){const g=new THREE.Group();const p=(geo,mat,x,y,z,sh)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(sh)m.castShadow=true;g.add(m);return m;};
- p(AG.body,AM.suit,0,.2,0,1);p(AG.helm,AM.suit,0,.32,0,1);const v=p(AG.visor,AM.visor,0,.322,.018);p(AG.pack,AM.pack,0,.21,-.055);
- p(new THREE.BoxGeometry(.112,.02,.072),ACC[i%4],0,.24,0);
- const ll=p(AG.limb,AM.boot,-.03,.135,0),lr=p(AG.limb,AM.boot,.03,.135,0),al=p(AG.limb,AM.suit,-.075,.255,0),ar=p(AG.limb,AM.suit,.075,.255,0);
+/* v51: slimmer, finer astronaut — capsule torso, separate helmet + gold visor, life-support pack, gloves/boots, knee/elbow joints (same 1.7 m height) */
+const AG2=(()=>{const C=(r,l,rs=10)=>new THREE.CapsuleGeometry(r,l,3,rs);const leg=mergeG([[C(.017,.05),new THREE.Matrix4().makeTranslation(0,-.035,0)],[new THREE.SphereGeometry(.0165,10,6),new THREE.Matrix4().makeTranslation(0,-.07,.002)],[C(.0145,.05),new THREE.Matrix4().makeTranslation(0,-.1,0)]]);
+ const arm=mergeG([[new THREE.SphereGeometry(.017,10,6),new THREE.Matrix4()],[C(.0118,.045),new THREE.Matrix4().makeTranslation(0,-.033,0)],[new THREE.SphereGeometry(.0115,8,6),new THREE.Matrix4().makeTranslation(0,-.065,0)],[C(.0105,.042),new THREE.Matrix4().makeTranslation(0,-.093,0)]]);
+ const torso=C(.034,.055,14);torso.scale(1.18,1,.78);const belt=new THREE.CylinderGeometry(.041,.041,.011,16);belt.scale(1,1,.8);const band=new THREE.CylinderGeometry(.0415,.0415,.008,16);band.scale(1,1,.8);
+ const head=mergeG([[new THREE.CylinderGeometry(.024,.027,.014,14),new THREE.Matrix4().makeTranslation(0,-.04,0)],[new THREE.SphereGeometry(.039,16,12),new THREE.Matrix4()]]);
+ const visor=new THREE.SphereGeometry(.0395,16,10,-1.05,2.1,1.0,1.05);
+ const pack=mergeG([[new RoundedBoxGeometry(.068,.085,.032,2,.008),new THREE.Matrix4()],[new THREE.CylinderGeometry(.006,.006,.03,8),new THREE.Matrix4().makeTranslation(.024,.045,-.004)],[new THREE.BoxGeometry(.05,.004,.004),new THREE.Matrix4().makeTranslation(0,.0,-.0175)]]);
+ const boot=new RoundedBoxGeometry(.028,.02,.042,2,.007),glove=new THREE.SphereGeometry(.0125,10,8),cuff=new THREE.CylinderGeometry(.016,.016,.008,10);return{leg,arm,torso,belt,band,head,visor,pack,boot,glove,cuff};})();
+function astro(i){const g=new THREE.Group();const p=(geo,mat,x,y,z,sh,par=g)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(sh)m.castShadow=true;par.add(m);return m;};
+ p(AG2.torso,AM.suit,0,.235,0,1);p(AG2.head,AM.suit,0,.345,0,1);p(AG2.visor,AM.visor,0,.347,.003);p(AG2.pack,AM.pack,0,.25,-.043);
+ p(AG2.belt,ACC[i%4],0,.19,0);
+ const ll=p(AG2.leg,AM.suit,-.021,.17,0),lr=p(AG2.leg,AM.suit,.021,.17,0),al=p(AG2.arm,AM.suit,-.05,.288,0),ar=p(AG2.arm,AM.suit,.05,.288,0);
+ for(const l of[ll,lr])p(AG2.boot,AM.boot,0,-.128,.008,0,l);for(const a of[al,ar])p(AG2.glove,AM.boot,0,-.118,0,0,a);
  const bodyM=g.children[0],hv=[];const st=(par,geo,x,y,z)=>{const m=new THREE.Mesh(geo,HVM.strip);m.position.set(x,y,z);m.visible=false;par.add(m);hv.push(m);};
- st(g,HVG.band,0,.175,0);st(g,HVG.band,0,.215,0);for(const l of[al,ar,ll,lr])st(l,HVG.cuff,0,-.06,0);
+ st(g,AG2.band,0,.215,0);st(g,AG2.band,0,.25,0);for(const l of[al,ar])st(l,AG2.cuff,0,-.08,0);for(const l of[ll,lr])st(l,AG2.cuff,0,-.09,0);
  g.userData={ll,lr,al,ar,bodyM,hv,ph:Math.random()*6};return g;}
-function setHV(m,on){const u=m.userData;if(!u.hv||u.hvOn===!!on)return;u.hvOn=!!on;const s=on?HVM.suit:AM.suit;u.bodyM.material=s;u.al.material=s;u.ar.material=s;u.ll.material=on?HVM.suit:AM.boot;u.lr.material=on?HVM.suit:AM.boot;u.hv.forEach(x=>x.visible=!!on);}
-function limbs(u,w){const a=Math.sin(u.ph)*.6*w;u.ll.rotation.x=a;u.lr.rotation.x=-a;u.al.rotation.x=-a;u.ar.rotation.x=a;}
+function setHV(m,on){const u=m.userData;if(!u.hv||u.hvOn===!!on)return;u.hvOn=!!on;const s=on?HVM.suit:AM.suit;u.bodyM.material=s;u.al.material=s;u.ar.material=s;u.ll.material=s;u.lr.material=s;u.hv.forEach(x=>x.visible=!!on);}
+function limbs(u,w){const a=Math.sin(u.ph)*.5*w,b=Math.sin(u.ph)*.38*w;u.ll.rotation.x=a;u.lr.rotation.x=-a;u.al.rotation.x=-b;u.ar.rotation.x=b;u.al.rotation.z=-.08*Math.min(1,w+.4);u.ar.rotation.z=.08*Math.min(1,w+.4);}
 function modelV2(t){const g=new THREE.Group(),s=B[t].s0,h=s/2;
  if(t==='pad'){g.add(mesh(new THREE.BoxGeometry(s*.95,.06,s*.95),M(0x777777),h,.03,h));g.add(mesh(new THREE.CylinderGeometry(.7,.7,.02,24),M(0xffcc33),1,.07,1));
   g.add(mesh(new THREE.CylinderGeometry(.55,.55,.03,24),M(0x777777),1,.08,1));}
@@ -1012,12 +1021,12 @@ function colHap(c){let h=S.hap+c.mood;const hb=c.home&&byId(c.home);if(!hb)h-=30
 
 // ---------- Optimus robots: power-only workers that speed up construction & mining
 let bots=[];const OPT={w:M(0xeeeeec,.35,.1),k:M(0x16171a,.3,.5),v:new THREE.MeshStandardMaterial({color:0x0b0c10,metalness:.6,roughness:.15,emissive:0x3a6aff,emissiveIntensity:.25})};
-function optimus(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const cap=(r,l)=>new THREE.CapsuleGeometry(r,l,4,8);
- const leg=sd=>{const p=new THREE.Group();p.position.set(sd*.035,.2,0);p.add(mesh(cap(.022,.07),OPT.w,0,-.05,0));p.add(mesh(new THREE.SphereGeometry(.024,8,6),OPT.k,0,-.1,0,false));p.add(mesh(cap(.019,.07),OPT.w,0,-.15,0));p.add(mesh(rbox(.04,.02,.06,.008),OPT.k,0,-.195,.01,false));p.name='leg'+(sd>0?'R':'L');return p;};
- const arm=sd=>{const p=new THREE.Group();p.position.set(sd*.075,.33,0);p.add(mesh(new THREE.SphereGeometry(.024,8,6),OPT.w,0,0,0,false));p.add(mesh(cap(.016,.07),OPT.w,0,-.055,0));p.add(mesh(cap(.014,.06),OPT.k,0,-.13,0,false));p.name='arm'+(sd>0?'R':'L');return p;};
- b.add(leg(-1),leg(1),arm(-1),arm(1));b.add(mesh(rbox(.11,.1,.07,.025),OPT.w,0,.3,0));b.add(mesh(rbox(.085,.05,.06,.02),OPT.k,0,.225,0,false));
- b.add(mesh(rbox(.06,.035,.005,.004),OPT.k,0,.32,.036,false));b.add(mesh(cyl(.015,.018,.02,8),OPT.k,0,.36,0,false));
- const h=mesh(new THREE.SphereGeometry(.033,14,10),OPT.w,0,.395,0);h.scale.set(1,1.1,1.05);b.add(h);const v=mesh(new THREE.SphereGeometry(.031,14,10,-.9,1.8,.7,1.3),OPT.v,0,.395,.006,false);v.rotation.y=0;v.scale.set(1,1.1,1.1);b.add(v);
+function optimus(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const cap=(r,l)=>new THREE.CapsuleGeometry(r,l,4,12);
+ const leg=sd=>{const p=new THREE.Group();p.position.set(sd*.027,.2,0);p.add(mesh(cap(.017,.075),OPT.w,0,-.05,0));p.add(mesh(new THREE.SphereGeometry(.018,10,8),OPT.k,0,-.1,0,false));p.add(mesh(cap(.014,.075),OPT.w,0,-.15,0));p.add(mesh(rbox(.03,.018,.055,.007),OPT.k,0,-.195,.01,false));p.name='leg'+(sd>0?'R':'L');return p;};
+ const arm=sd=>{const p=new THREE.Group();p.position.set(sd*.058,.33,0);p.add(mesh(new THREE.SphereGeometry(.019,10,8),OPT.w,0,0,0,false));p.add(mesh(cap(.0125,.075),OPT.w,0,-.055,0));p.add(mesh(cap(.011,.065),OPT.k,0,-.13,0,false));p.name='arm'+(sd>0?'R':'L');return p;};
+ b.add(leg(-1),leg(1),arm(-1),arm(1));b.add(mesh(rbox(.088,.1,.056,.022),OPT.w,0,.3,0));b.add(mesh(rbox(.068,.05,.05,.018),OPT.k,0,.225,0,false));
+ b.add(mesh(rbox(.05,.03,.004,.003),OPT.k,0,.32,.029,false));b.add(mesh(cyl(.015,.018,.02,8),OPT.k,0,.36,0,false));
+ const h=mesh(new THREE.SphereGeometry(.029,18,12),OPT.w,0,.395,0);h.scale.set(1,1.1,1.05);b.add(h);const v=mesh(new THREE.SphereGeometry(.0275,18,12,-.9,1.8,.7,1.3),OPT.v,0,.395,.006,false);v.rotation.y=0;v.scale.set(1,1.1,1.1);b.add(v);
  const cr=mesh(rbox(.09,.06,.07,.01),M(0x9a6a3a,.8),0,.33,.06,false);cr.name='crate';cr.visible=false;b.add(cr);g.name='opt';g.scale.setScalar(.72);return g;}
 function botsWant(){if(!S||S.demo)return 0;let n=S.botsLanded===undefined?2:Math.min(2,S.botsLanded);S.b.forEach(b=>{if(b.t==='robot'&&!(b.cons>0))n+=Math.round(B.robot.bots*LV[b.lvl-1]);});return Math.min(40,n);}
 function botsAt(id,kind){let n=0;for(const t of bots)if(t.st==='work'&&t.job&&t.job.id===id&&t.kind===kind)n++;return n;}
@@ -2172,7 +2181,7 @@ window.__B=B;
 
 function dockSync(){const d=$('dock');if(!d)return;document.documentElement.style.setProperty('--dockH',d.offsetHeight+'px');}
 addEventListener('resize',dockSync);setInterval(dockSync,500);
-Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;
+Object.defineProperty(window,"__bots",{get:()=>bots});window.__optimus=optimus;window.__Wg=W;
 
 window.__R=R;Object.defineProperty(window,'__unloads',{get:()=>unloads});
 window.__inp={get stroke(){return stroke},get gest(){return gest},get last(){return lastStroke},undoStroke,get tab(){return tab},get sel(){return sel},get menuOpen(){return menuOpen}};window.__stats=()=>stats();window.__dlg={renameColony,deleteColony,deleteSlot};window.__bio={bioAt,BIO,bio2};window.__td={TD,tdecoSync,BOUL,mineBoulder,get miners(){return miners}};window.__set={meteorStrike,sendRover,buildRover,reveal,callEarth,saveData,slotInfo,openSaveBox,get saveBlocked(){return saveBlocked}};window.__lv={levelUp,lvGoals,LEVELS,lvLocked,renderLv,celebrate,oldSaveLevel};
