@@ -106,9 +106,9 @@ const ENV=(()=>{const c=document.createElement('canvas');c.width=512;c.height=25
  const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.colorSpace=THREE.SRGBColorSpace;const pm=new THREE.PMREMGenerator(R);const e=pm.fromEquirectangular(t).texture;t.dispose();return e;})();
 scene.environment=ENV;scene.environmentIntensity=.55;
 const SENV=(()=>{const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,256);
- g.addColorStop(0,'#4a6688');g.addColorStop(.25,'#8aa6c6');g.addColorStop(.45,'#e8eef6');g.addColorStop(.5,'#ffffff');g.addColorStop(.54,'#6a7484');g.addColorStop(.64,'#b4bfcc');g.addColorStop(.78,'#4e5664');g.addColorStop(1,'#8a94a2');x.fillStyle=g;x.fillRect(0,0,512,256);
+ g.addColorStop(0,'#8ea6c4');g.addColorStop(.3,'#d8dee6');g.addColorStop(.48,'#ffffff');g.addColorStop(.52,'#c8c0b8');g.addColorStop(.7,'#9a8a80');g.addColorStop(1,'#5a524e');x.fillStyle=g;x.fillRect(0,0,512,256);
  const sg=x.createRadialGradient(150,80,2,150,80,80);sg.addColorStop(0,'rgba(255,255,250,1)');sg.addColorStop(1,'rgba(255,250,240,0)');x.fillStyle=sg;x.fillRect(0,0,512,256);
- for(let i=0;i<6;i++){x.fillStyle='rgba(255,255,255,.5)';x.fillRect(i*85+20,70,14,90);x.fillStyle='rgba(10,12,16,.55)';x.fillRect(i*85+60,40,10,110);}
+ for(let i=0;i<6;i++){x.fillStyle='rgba(255,255,255,.55)';x.fillRect(i*85+20,95,22,60);}
  const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.colorSpace=THREE.SRGBColorSpace;const pm=new THREE.PMREMGenerator(R);const e=pm.fromEquirectangular(t).texture;t.dispose();return e;})();
 const skyTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=256;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'#c99574');g.addColorStop(.6,'#e2b48e');g.addColorStop(1,'#f0caa2');x.fillStyle=g;x.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
 let zoom=9,rot=0,rotT=0,camEl=Math.atan2(64,80);const tgt=new THREE.Vector3(N/2,0,N/2);
@@ -320,15 +320,15 @@ const hexTex=hexMaps.map;
 const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const mk=(fill,line,streak)=>{const c=document.createElement('canvas');c.width=Wd;c.height=H;const x=c.getContext('2d');x.fillStyle=fill;x.fillRect(0,0,Wd,H);
   for(let k=1;k<rings;k++){const y=H-k*H/rings;x.fillStyle=line;x.fillRect(0,y-.75,Wd,1.5);}
-  x.globalAlpha=.35;x.fillStyle=line;x.fillRect(Wd*.5-1,0,1.5,H);x.globalAlpha=1;/* thin vertical stringer */
+  for(let k=0;k<rings;k++){const y=H-(k+.5)*H/rings;} // vertical seam per ring
   return c;};
  const col=new THREE.CanvasTexture(mk('#dfe3e8','rgba(90,96,108,.45)',[185,55]));col.colorSpace=THREE.SRGBColorSpace;
  const rough=new THREE.CanvasTexture(mk('#4d4d4d','rgba(150,150,150,1)',[60,40]));
  const bump=new THREE.CanvasTexture(mk('#808080','rgba(30,30,30,1)',[120,16]));
  [col,rough,bump].forEach(t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;});return{col,rough,bump};})();
-const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0xa4b0c0,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.3,metalness:1,roughness:.17,envMap:SENV,envMapIntensity:1.6}),
+const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0x9eaab8,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.24,envMap:SENV,envMapIntensity:1.9}),
  tile:new THREE.MeshStandardMaterial({color:0x9a9a9a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
- flapS:new THREE.MeshStandardMaterial({color:0x8a98ac,metalness:1,roughness:.2,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
+ flapS:new THREE.MeshStandardMaterial({color:0xaab2bc,metalness:1,roughness:.32,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
  flapT:new THREE.MeshStandardMaterial({color:0x4a4a4a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  bayIn:new THREE.MeshStandardMaterial({color:0x2c2a28,metalness:.6,roughness:.6,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.4}),
  chine:new THREE.MeshStandardMaterial({color:0x2a2b2e,roughness:.7,metalness:.3,envMap:SENV,envMapIntensity:.5}),
@@ -347,29 +347,28 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=.62*SH_K*8,ta=1.05*SH_K/r,dl=2*ta;
  const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),-ps.getZ(i)),rr=Math.max(.02,Math.hypot(ps.getX(i),ps.getZ(i)));uv.setXY(i,a*rr/tile+50,ps.getY(i)/tile*hexMaps.asp+50);}return geo;};
  const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2,Math.PI)),new THREE.Matrix4()]];
- {const cy=H*.9,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
- parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2,Math.PI)),new THREE.Matrix4()]);/* v46: stepped/ragged tile edge — whole tiles jut past the boundary on some rows */{const tw_=1.05*SH_K;let sd=11;const rn=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};for(let y=.05;y<H*.88;y+=tw_*.87){const rr=shipR(y);if(rr<.05)break;for(const side of[-1,1]){const n=rn()<.6?1:rn()<.4?2:0;for(let k=0;k<n;k++){const a=side*(Math.PI/2+(k+.5)*tw_/rr),m4=new THREE.Matrix4().makeRotationY(Math.PI-a).setPosition(Math.sin(a)*(rr+.006),y+tw_*.4,-Math.cos(a)*(rr+.006));parts.push([tuv(new THREE.BoxGeometry(tw_*.98,tw_*.88,.006).applyMatrix4(m4)),new THREE.Matrix4()]);}}}}const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
+ {const cy=H*.93,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
+ parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2,Math.PI)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
  {const ph=Math.PI/2-.55,rw=new THREE.Group();const yT=SH_NOSE*1.02;rw.add(mesh(new THREE.BoxGeometry(.028,yT-.2,.02),SHIPMAT.flapS,0,.1+(yT-.2)/2,0,false));for(let y=.3;y<yT;y+=.35)rw.add(mesh(new THREE.BoxGeometry(.04,.02,.03),SHIPMAT.chine,0,y,0,false));
   rw.position.set(Math.sin(ph)*(r+.012),y0,Math.cos(ph)*(r+.012));rw.rotation.y=ph;g.add(rw);
   for(let i=0;i<9;i++){const a=Math.PI/2-.2-((i*1.7)%1.3),y=.4+i*.47;g.add(mesh(new THREE.BoxGeometry(.035,.025,.006),SHIPMAT.chine,Math.sin(a)*(r+.003),y0+y,Math.cos(a)*(r+.003),false).rotateY(a));}}
- g.add(mesh(new THREE.CylinderGeometry(r*1.012+.004,r*1.012+.006,SH_SK+.16,64,1,true),SHIPMAT.chine,0,y0-SH_SK/2+.08,0,false));
  // chines: raised dark strips along both tile edges, up the barrel and the nose
  for(const sd of[-1,1]){const pts=[];for(let i=0;i<=40;i++){const y=i/40*(H-.18);pts.push(new THREE.Vector3(sd*(shipR(y)+.014),y0+y,-.004));}
   const cv=new THREE.CatmullRomCurve3(pts);const tube=new THREE.TubeGeometry(cv,60,.016,6,false);g.add(mesh(tube,SHIPMAT.chine,0,0,0,false));}
  // flaps (rounded trapezoids, thick, steel leeward face + tiled windward face), hinged on the chine, angled 15° windward
  const flap=(rootY0,rootY1,tipY0,tipY1,span,side,yBase,xHinge,th=.045,lean=0,lee=.42)=>{const P=[[0,rootY0],[span,tipY0],[span,tipY1],[0,rootY1]].map(([a,b])=>new THREE.Vector2(a,b));
   const sh=new THREE.Shape();sh.moveTo(P[0].x,P[0].y);for(let k=1;k<=P.length;k++){const a=P[k-1],b=P[k%P.length],c=P[(k+1)%P.length];const m1=a.clone().lerp(b,.82),m2=b.clone().lerp(c,.18);sh.lineTo(m1.x,m1.y);sh.quadraticCurveTo(b.x,b.y,m2.x,m2.y);}
-  const grp=new THREE.Group();const st=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:th,bevelEnabled:true,bevelThickness:.004,bevelSize:.005,bevelSegments:2,curveSegments:8}),SHIPMAT.flapS);st.position.z=-th/2;st.castShadow=true;grp.add(st);
+  const grp=new THREE.Group();const st=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:th,bevelEnabled:true,bevelThickness:.01,bevelSize:.012,bevelSegments:2,curveSegments:8}),SHIPMAT.flapS);st.position.z=-th/2;st.castShadow=true;grp.add(st);
   const fg=new THREE.ShapeGeometry(sh,8);{const uv=fg.attributes.uv,ps=fg.attributes.position,tile=.62*SH_K*8;for(let i=0;i<uv.count;i++)uv.setXY(i,ps.getX(i)/tile,ps.getY(i)/tile*hexMaps.asp);}
   const tl=new THREE.Mesh(fg,SHIPMAT.flapT);tl.position.z=-th/2-.013;grp.add(tl);
   // hinge aerocover fairing along the root (leeward) + small dark root seal
-  const hl=rootY1-rootY0;const fair=mesh(new THREE.CapsuleGeometry(.014,hl*.8,4,10),SHIPMAT.flapS,.01,(rootY0+rootY1)/2,.035,true);grp.add(fair);
+  const hl=rootY1-rootY0;const fair=mesh(new THREE.CapsuleGeometry(.03,hl*.8,4,10),SHIPMAT.flapS,.01,(rootY0+rootY1)/2,.035,true);grp.add(fair);
   grp.add(mesh(new THREE.BoxGeometry(.02,hl*.95,.06),SHIPMAT.chine,.005,(rootY0+rootY1)/2,-.02,false));
   /* v41: hinge right on the chine at the tile/steel boundary (z≈0), flap canted slightly windward so its tiled face continues the heat shield */grp.position.set(side*(xHinge+.006),y0+yBase,-.004+xHinge*Math.sin(lee));grp.scale.x=side;grp.rotation.order='YXZ';grp.rotation.z=side*lean;grp.rotation.y=side*.17;grp.userData.fb=side*.17;(g.userData.flaps||(g.userData.flaps=[])).push(grp);g.add(grp);return grp;};
  // forward flaps on the nose (38.6–45.8 m), swept back
- /* v40: small, strongly swept/tapered forward flaps high on the nose (real: ~7 m root, ~2.6 m tip chord, ~3 m span) */const fyb=38.8*SH_K,fyt=46.2*SH_K,fL=fyt-fyb,fLean=Math.atan2(shipR(fyb)-shipR(fyt),fL);for(const sd of[-1,1])flap(0,fL,fL*.25,fL*.62,2.0*SH_K,sd,fyb,shipR(fyb+fL*.3)+.004,.1*SH_K,fLean,0);
+ /* v40: small, strongly swept/tapered forward flaps high on the nose (real: ~7 m root, ~2.6 m tip chord, ~3 m span) */const fyb=38.8*SH_K,fyt=46.2*SH_K,fL=fyt-fyb,fLean=Math.atan2(shipR(fyb)-shipR(fyt),fL);for(const sd of[-1,1])flap(0,fL,fL*.04,fL*.38,3.0*SH_K,sd,fyb,shipR(fyb+fL*.3)+.004,.32*SH_K,fLean,0);
  // aft flaps at the base (0.3–14.2 m), ~0.45× diameter
- const ayb=-SH_SK+.012,ayt=14.2*SH_K;/* v40: larger tapered aft flaps (~13.9 m root, ~7 m tip, ~4.3 m span, thicker) */for(const sd of[-1,1])flap(0,ayt-ayb,(ayt-ayb)*.1,(ayt-ayb)*.8,2.9*SH_K,sd,ayb,SH_R+.004,.13*SH_K,0,0);
+ const ayb=-SH_SK+.012,ayt=14.2*SH_K;/* v40: larger tapered aft flaps (~13.9 m root, ~7 m tip, ~4.3 m span, thicker) */for(const sd of[-1,1])flap(0,ayt-ayb,(ayt-ayb)*.03,(ayt-ayb)*.52,4.3*SH_K,sd,ayb,SH_R+.004,.5*SH_K,0,0);
  // header-tank hint: vents + ring band at the nose base, small dome cap ring near the tip
  g.add(mesh(new THREE.TorusGeometry(SH_R+.003,.006,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+SH_NOSE,0,false));
  const hy=H-1.3;for(const sd of[-1,1])g.add(mesh(new THREE.CylinderGeometry(.012,.012,.03,8).rotateX(Math.PI/2),SHIPMAT.chine,sd*shipR(hy)*.55,y0+hy,shipR(hy)*.82,false));
