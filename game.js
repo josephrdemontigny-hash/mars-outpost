@@ -326,7 +326,12 @@ const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const rough=new THREE.CanvasTexture(mk('#4d4d4d','rgba(150,150,150,1)',[60,40]));
  const bump=new THREE.CanvasTexture(mk('#808080','rgba(30,30,30,1)',[120,16]));
  [col,rough,bump].forEach(t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;});return{col,rough,bump};})();
-const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0x9eaab8,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.24,envMap:SENV,envMapIntensity:1.9}),
+/* v48: stainless steel reflects a Mars env — butterscotch sky, bright warm horizon, rust ground */const MSENV=(()=>{const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,256);
+ g.addColorStop(0,'#c0a894');g.addColorStop(.3,'#ead8c4');g.addColorStop(.48,'#fff8ee');g.addColorStop(.52,'#e6cfb8');g.addColorStop(.62,'#c8a68c');g.addColorStop(.8,'#94705c');g.addColorStop(1,'#74584a');x.fillStyle=g;x.fillRect(0,0,512,256);
+ const sg=x.createRadialGradient(150,80,2,150,80,80);sg.addColorStop(0,'rgba(255,250,236,1)');sg.addColorStop(1,'rgba(255,240,220,0)');x.fillStyle=sg;x.fillRect(0,0,512,256);
+ for(let i=0;i<6;i++){x.fillStyle='rgba(255,248,236,.5)';x.fillRect(i*85+20,95,22,60);}
+ const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.colorSpace=THREE.SRGBColorSpace;const pm=new THREE.PMREMGenerator(R);const e=pm.fromEquirectangular(t).texture;t.dispose();return e;})();
+const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0xbcc0c6,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.24,envMap:MSENV,envMapIntensity:1.9}),
  tile:new THREE.MeshStandardMaterial({color:0x9a9a9a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  flapS:new THREE.MeshStandardMaterial({color:0xaab2bc,metalness:1,roughness:.32,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:1.25}),
  flapT:new THREE.MeshStandardMaterial({color:0x4a4a4a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
