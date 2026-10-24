@@ -292,6 +292,9 @@ body.intro #newg{display:none}
 #mtools .cat,#mtools.list .b{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:12px!important;box-shadow:3px 3px 0 #2a1208!important}
 #mtools .cat{font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
 #mtools .cat span .ic,#mtools.list .b .ic .ic{width:36px;height:36px}
+#mtools:not(.list){display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:visible;padding:2px 3px 6px}
+#mtools .cat{flex-direction:row;justify-content:flex-start!important;min-width:0;padding:12px 8px;gap:7px;font-size:10.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden}
+#mtools .cat span .ic{width:30px!important;height:30px!important;flex:none}
 #mtools.list .b .nm{color:#2a1208!important}#mtools.list .b small{color:#5a3018}
 #mtools.list .b.sel{background:#3d8a86!important;color:#fff3d6!important}#mtools.list .b.sel .nm,#mtools.list .b.sel small{color:#fff3d6!important}
 #mtools.list .b.lock{opacity:.55}
@@ -326,20 +329,32 @@ body.tutdim #ctl .tb:not(.tglow),body.tutdim #mtools>:not(.tglow),body.tutdim #m
 #title #setb .ic,#title #howb .ic{width:1.2em;height:1.2em}
 #skipintro{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:999px!important;box-shadow:3px 3px 0 #2a1208!important;font:800 14px "Futura Condensed","Futura","Arial Narrow",system-ui!important;letter-spacing:.14em;text-transform:uppercase;bottom:calc(18px + var(--sab))!important;display:inline-flex;align-items:center;gap:6px}
 
-#ctl .tb span{font-size:clamp(9px,2.6vw,12px)!important;letter-spacing:.02em!important;white-space:nowrap}#title #play{white-space:nowrap!important;font-size:clamp(16px,5.4vw,24px)!important;letter-spacing:.1em!important;padding-left:10px!important;padding-right:10px!important;overflow:hidden}</style>
+#ctl .tb span{font-size:clamp(9px,2.6vw,12px)!important;letter-spacing:.02em!important;white-space:nowrap}#title #play{white-space:nowrap!important;font-size:clamp(16px,5.4vw,24px)!important;letter-spacing:.1em!important;padding-left:10px!important;padding-right:10px!important;overflow:hidden}#setup{display:none}#title.setup #setup{display:flex!important;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;background:rgba(42,18,8,.72);padding:calc(var(--sat,0px) + 14px) 14px calc(var(--sab,0px) + 14px);overflow:auto}#setup .ssc{width:min(380px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;background:#b8461f;border:3px solid #2a1208;border-radius:18px;box-shadow:5px 5px 0 #2a1208;padding:16px 14px}#setup .ssc>*{order:0!important;margin:0!important;width:100%;box-sizing:border-box}#setup #play{order:5!important}#setup #setbk{order:6!important}#setup label{display:block}#setup #diff{display:flex;gap:6px}#setup #diff button{flex:1;min-width:0;font-size:15px!important;letter-spacing:.04em!important;padding-left:4px!important;padding-right:4px!important}#title.setup .card>*:not(h1):not(#setup){display:none!important}#title #howb,#title #setb{white-space:nowrap!important;font-size:clamp(13px,4vw,18px)!important;letter-spacing:.06em!important}#setup .sth{font:900 20px 'Futura Condensed','Futura','Avenir Next Condensed','Arial Narrow',sans-serif;letter-spacing:.24em;color:#f3e0b5;text-align:center;margin-top:2px}#setup #play{white-space:nowrap}#setup #setbk{margin-top:0}#title #newc{white-space:nowrap!important;font-size:clamp(16px,5.4vw,24px)!important;letter-spacing:.1em!important;padding-left:10px!important;padding-right:10px!important}#dock #menu{order:-1;flex-direction:column!important;gap:6px!important;padding:8px 8px 8px!important;border-radius:14px 14px 0 0!important;border:3px solid #2a1208!important;border-bottom:0!important;margin:0 4px -4px;box-shadow:0 -3px 0 rgba(42,18,8,.35)}
+#mhead{display:flex;align-items:center;gap:8px;min-height:38px}
+#mhead #mttl{flex:1;text-align:center;font:800 14px "Futura Condensed","Futura","Arial Narrow",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#f3e0b5;display:flex;align-items:center;justify-content:center;gap:6px}
+#mhead #mttl .ic{width:22px;height:22px}
+#mhead button{flex:0 0 38px;width:38px;height:38px;min-width:0!important;padding:0!important;display:flex;align-items:center;justify-content:center;background:#f3e0b5!important;border:2px solid #2a1208!important;border-radius:10px!important;box-shadow:2px 2px 0 #2a1208!important;cursor:pointer;align-self:center!important;order:0!important}
+#mhead button .ic{width:22px;height:22px}
+#mhead #mback.hide{visibility:hidden}
+#mtools{width:100%;flex:1 1 auto!important}
+#mtools.list{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:min(44vh,372px)!important;padding:2px 3px 6px!important}
+@media(min-width:700px){#mtools.list{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important}}
+#mtools .cat{min-width:0!important}
+body.tutdim #mhead button:not(.tglow){opacity:.45;filter:saturate(.5)}
+</style>
 </head><body>
 <script src="icons.js"></script>
 <div id="ui" style="display:none"><div id="hud"></div>
 <div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="buildb" class="pri tb" title="Build"><svg class="ic" aria-hidden="true"><use href="#i-crane"/></svg><span>Build</span></button><button id="rotb" class="tb ctx" title="Rotate building (R)"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg><span>Rotate</span></button><button id="undob" class="tb ctx" title="Undo last stroke" style="display:none"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>Undo</span></button><button id="dozeb" class="tb" title="Bulldoze (toggle)"><svg class="ic" aria-hidden="true"><use href="#i-dozer"/></svg><span>Bulldoze</span></button><button id="mktb" class="tb" title="Earth: market &amp; supply calls"><svg class="ic" aria-hidden="true"><use href="#i-earthcall"/></svg><span>Earth</span></button><button id="save" class="tb" title="Save"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg><span>Save</span></button></div>
-<div id="menu" class="closed"><button id="mclose" type="button" aria-label="Close">✕</button><div id="mtools"></div></div></div>
+<div id="menu" class="closed"><div id="mhead"><button id="mback" class="back" type="button" aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button><div id="mttl">Build</div><button id="mclose" type="button" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div><div id="mtools"></div></div></div>
 <div id="info"></div><div id="panel"></div><div id="tut"></div><button id="newg" title="Main menu" aria-label="Main menu"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg></button></div><div id="toasts"></div><div id="tip"></div>
 <div id="loading"><div class="lt">MARS</div><div class="lm lsub">A TERRAFORMING GAME</div><div class="lstar">✦</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
 <div id="title"><div class="card">
-<h1>MARS<span>A TERRAFORMING GAME</span></h1>
-<label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
-<label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>¢1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>¢1500 · 320🧱</small></button><button data-d="hard">Hard<small>¢1100 · 280🧱</small></button></div></label>
+<h1>MARS<span>A TERRAFORMING GAME</span></h1><div id="setup"><div class="ssc"><div class="sth">NEW COLONY</div><label>Colony name<div class="row"><input id="cname" maxlength="24"><button id="reroll" title="Random name">🎲</button></div></label>
+<label>Difficulty<div class="row" id="diff"><button data-d="relaxed">Relaxed<small>$1900 · 380🧱</small></button><button data-d="standard" class="on">Standard<small>$1500 · 320🧱</small></button><button data-d="hard">Hard<small>$1100 · 280🧱</small></button></div></label>
 <label class="chk"><input type="checkbox" id="skiptut"> Skip tutorial (veterans)</label>
-<button id="play" class="big">Start new colony</button>
+<button id="play" class="big">Launch</button><button id="setbk" class="alt2">Back</button></div></div>
+<button id="newc" class="big">Start new colony</button>
 <button id="cont" class="big alt" style="display:none"></button><div class="row" id="slotops" style="display:none"><button id="renb">✏️ Rename</button><button id="delb" class="dangerl">🗑️ Delete</button></div><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
 <div id="actc" class="actc" style="display:none"></div>
 <div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
@@ -347,7 +362,7 @@ body.tutdim #ctl .tb:not(.tglow),body.tutdim #mtools>:not(.tglow),body.tutdim #m
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
 • Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
 • 🚀 Ships land on pads with new colonists — only if you have 🏠 housing.<br>
-• Every building costs ¢ credits + 🧱 materials. ⛏️ Mines dig ore, 🏗️ Processors turn it into materials; 🤖 Optimus robots carry ore from mines to processors and help build.<br>
+• Every building costs $ credits + 🧱 materials. ⛏️ Mines dig ore, 🏗️ Processors turn it into materials; 🤖 Optimus robots carry ore from mines to processors and help build.<br>
 • Supply ships land on 🛬 pads every ~1.5 Sols with crew + materials. Order extra materials in the 🌍 Market.<br>
 • ⛽ Fuel plants turn water + power into fuel. Tap a landed Starship, refuel it, load surplus cargo and launch a return flight to sell on Earth.<br>
 • Paths are free and optional — buildings work anywhere; crew and rovers prefer walking on paths.<br>
