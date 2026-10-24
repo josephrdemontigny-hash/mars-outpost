@@ -107,7 +107,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 .tf{display:inline-flex;align-items:center;gap:4px}.tf b{font-weight:600}.tf .bar{width:48px;height:6px;background:#333;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}.tf .bar i{display:block;height:100%;background:linear-gradient(90deg,#3ff3ff,#66ff99)}
 body.intro #toasts{opacity:0}body.intro #ui{opacity:0;pointer-events:none;transition:opacity .4s}#ui{transition:opacity .6s}
 #skipintro{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:60;padding:10px 16px;border-radius:10px;border:2px solid #ffb347;background:rgba(40,20,12,.8);color:#fff;font:600 15px system-ui;cursor:pointer}
-body.intro::after{content:'Tap anywhere to skip';position:fixed;left:0;right:0;top:calc(14px + env(safe-area-inset-top));text-align:center;color:#fff;font:600 13px system-ui;opacity:.75;text-shadow:0 1px 3px #000;pointer-events:none;z-index:59}
+body.intro::after{content:none;display:none;position:fixed;left:0;right:0;top:calc(14px + env(safe-area-inset-top));text-align:center;color:#fff;font:600 13px system-ui;opacity:.75;text-shadow:0 1px 3px #000;pointer-events:none;z-index:59}
 /* v12 colony levels */
 #toasts{top:var(--lvB,48px)!important}
 .r.lv{background:linear-gradient(180deg,#5a1f08,#2a0c03);border:1px solid #ffd166;color:#ffe14a;font-weight:700;cursor:pointer;pointer-events:auto}
@@ -264,11 +264,75 @@ window.marsActivePing=function(){try{var d=day();if(localStorage.getItem('marsAc
 window.marsActiveShow=function(){var el=document.getElementById('actc');if(!el||!navigator.onLine)return;f(B+'get/'+NS+'/active-'+day()).then(function(j){var n=j&&+j.value;if(n>0){el.innerHTML='<b>'+n+'</b> ACTIVE '+(n==1?'COLONY':'COLONIES')+' TODAY';el.style.display='block'}else el.style.display='none'})};
 })();
 </script>
+<style id="ui65">
+/* v65: custom icon set + poster-style HUD, simple bottom bar, top-right home, new tutorial, settings */
+.ic{width:1.25em;height:1.25em;display:inline-block;vertical-align:-.28em;flex:none;overflow:visible}
+#hud{top:0!important;padding-top:calc(var(--sat) + 4px)!important;background:#8f3010!important;border-bottom:2px solid #2a1208;box-shadow:0 2px 0 rgba(243,224,181,.35);padding-right:calc(56px + env(safe-area-inset-right))!important;align-items:center}
+#hud .r{background:#f3e0b5!important;color:#2a1208!important;border:1.5px solid #2a1208;border-radius:999px!important;box-shadow:1.5px 1.5px 0 #2a1208;font-weight:700;display:inline-flex;align-items:center;gap:3px;line-height:1.25}
+#hud .r .ic{width:1.35em;height:1.35em;vertical-align:middle}
+#hud .r.bad{background:#d9622b!important;color:#fff3d6!important}
+#hud .r.lv{background:#e8a33d!important}
+#hud .lvpb{background:#f3e0b5;border:1px solid #2a1208}#hud .lvpb i{background:#3d8a86}
+#hud .tf .bar{background:#d8c59c;border:1px solid #2a1208}#hud .tf .bar i{background:#3d8a86}
+#newg{position:fixed;top:calc(var(--sat) + 5px);right:calc(6px + env(safe-area-inset-right));z-index:6;width:44px;height:44px;border-radius:12px;border:2px solid #2a1208;background:#f3e0b5;box-shadow:2px 2px 0 #2a1208;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;touch-action:manipulation}
+#newg .ic{width:28px;height:28px}#newg:active{transform:translate(2px,2px);box-shadow:none}
+body.intro #newg{display:none}
+#ctl{background:#8f3010!important;border:0!important;border-top:3px solid #f3e0b5!important;border-radius:0!important;box-shadow:0 -2px 0 #2a1208;padding:8px 8px calc(8px + var(--sab))!important;gap:7px!important;flex-wrap:nowrap!important;width:100%!important;max-width:none!important;justify-content:center}
+#ctl .tb{flex:1 1 0;max-width:110px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px 5px!important;min-height:58px;background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:12px!important;box-shadow:3px 3px 0 #2a1208;font:800 11px/1 "Futura Condensed","Futura","Avenir Next Condensed","Arial Narrow",system-ui,sans-serif!important;letter-spacing:.08em;text-transform:uppercase;position:relative}
+#ctl .tb .ic{width:28px;height:28px}
+#ctl .tb:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #2a1208}
+#ctl .tb.pri{flex:1.7 1 0;max-width:170px;background:#3d8a86!important;color:#fff3d6!important;font-size:15px!important;letter-spacing:.14em}
+#ctl .tb.pri .ic{width:32px;height:32px}
+#ctl .tb.pri.on{background:#2a6a66!important}
+#ctl .tb.active{background:#e8a33d!important}
+#ctl .tb small.sv{position:absolute;top:3px;right:5px;font-size:8.5px;opacity:.7;letter-spacing:0}
+#rotb{display:none!important}body.hassel #rotb{display:flex!important}
+#ctl .tb.ctx{background:#e8d29c!important}
+#menu{background:#8f3010!important;border:0!important;border-top:3px solid #f3e0b5!important}
+#mtools .cat,#mtools.list .b{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:12px!important;box-shadow:3px 3px 0 #2a1208!important}
+#mtools .cat{font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+#mtools .cat span .ic,#mtools.list .b .ic .ic{width:36px;height:36px}
+#mtools.list .b .nm{color:#2a1208!important}#mtools.list .b small{color:#5a3018}
+#mtools.list .b.sel{background:#3d8a86!important;color:#fff3d6!important}#mtools.list .b.sel .nm,#mtools.list .b.sel small{color:#fff3d6!important}
+#mtools.list .b.lock{opacity:.55}
+#mtools .back,#mtools.list .tab{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:10px!important;box-shadow:2px 2px 0 #2a1208}
+#mtools.list .tab{font:800 13px "Futura Condensed","Futura","Arial Narrow",sans-serif!important;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+#mclose{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;box-shadow:2px 2px 0 #2a1208}
+/* tutorial */
+body.tuton #tut{display:block!important}
+body.tuton #lvl{display:none!important}body.tuton #info{display:none!important}
+#tut{position:fixed!important;left:calc(8px + env(safe-area-inset-left))!important;right:auto!important;bottom:auto!important;width:min(380px,calc(100vw - 16px))!important;max-height:none!important;z-index:7!important;background:#f3e0b5!important;color:#2a1208!important;border:3px solid #2a1208!important;border-radius:14px!important;box-shadow:4px 4px 0 #2a1208!important;padding:9px 12px 10px!important;font:500 13px/1.35 system-ui,sans-serif!important}
+#tut .tt{display:flex;justify-content:space-between;align-items:center;font:800 10px "Futura Condensed","Futura","Arial Narrow",sans-serif!important;letter-spacing:.2em;color:#3d8a86!important;margin:0 0 3px!important}
+#tut .dots{display:flex;gap:4px}#tut .dots i{width:9px;height:9px;border-radius:50%;border:1.5px solid #2a1208;background:transparent}#tut .dots i.d{background:#3d8a86}#tut .dots i.c{background:#e8a33d}
+#tut .th{font:900 17px/1.1 "Futura Condensed","Futura","Avenir Next Condensed","Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#8f3010}
+#tut .say{display:flex;align-items:center;gap:8px;margin:7px 0 3px;font-size:17px;font-weight:700;line-height:1.2}
+#tut .say .ic{width:30px;height:30px}#tut .say b{color:#2a6a66}
+#tut .sub{font-size:12.5px;color:#5a3018;margin:0 0 2px 38px}
+#tut .why{font-size:12px;color:#6a4028;margin-top:5px;border-top:1.5px dashed rgba(42,18,8,.35);padding-top:5px}
+#tut #tutskip{margin-top:6px;background:transparent!important;border:1.5px solid #2a1208!important;color:#2a1208!important;border-radius:999px!important;font:700 11px system-ui!important;padding:3px 10px!important}
+@keyframes tglow{0%,100%{box-shadow:3px 3px 0 #2a1208,0 0 0 3px #fff3d6,0 0 0 6px #3fd0c8,0 0 14px 6px rgba(63,208,200,.75)}50%{box-shadow:3px 3px 0 #2a1208,0 0 0 3px #fff3d6,0 0 0 9px #3fd0c8,0 0 26px 12px rgba(63,208,200,.95)}}
+.tglow{animation:tglow 1.05s ease-in-out infinite!important;z-index:8!important;opacity:1!important;filter:none!important}
+#ctl .tb.tglow,#mtools .tglow{transform:scale(1.04)}
+body.tutdim #ctl .tb:not(.tglow),body.tutdim #mtools>:not(.tglow),body.tutdim #mclose:not(.tglow){opacity:.45;filter:saturate(.5)}
+#pup.tglow{position:relative}
+/* settings (title) */
+#settings{display:none;position:fixed;inset:0;z-index:80;background:rgba(42,18,8,.6);align-items:center;justify-content:center;padding:20px}
+#settings .sc{width:min(360px,100%);background:#f3e0b5;color:#2a1208;border:3px solid #2a1208;border-radius:16px;box-shadow:5px 5px 0 #2a1208;padding:16px;display:flex;flex-direction:column;gap:12px}
+#settings .sh{font:900 22px "Futura Condensed","Futura","Avenir Next Condensed","Arial Narrow",sans-serif;letter-spacing:.22em;color:#8f3010;text-align:center}
+#settings .srow{display:flex;align-items:center;gap:10px;width:100%;background:#fff3d6;border:2px solid #2a1208;border-radius:12px;padding:10px 12px;font:600 15px system-ui;color:#2a1208;box-shadow:2px 2px 0 #2a1208;text-align:left;cursor:pointer}
+#settings .srow .ic{width:28px;height:28px}#settings #mute.off{background:#e8d29c}
+#settings .vol{flex-wrap:wrap;flex-direction:row!important;cursor:default}#settings .vol span{flex:1;color:#2a1208!important;font:600 15px system-ui!important;letter-spacing:0!important;text-transform:none!important;text-align:left;margin:0!important}#settings .vol b{color:#2a6a66}#settings .srow span{color:#2a1208;font:600 15px system-ui;letter-spacing:0;text-transform:none}#settings .vol input{width:100%;accent-color:#3d8a86;height:28px}
+#settings .sdone{background:#3d8a86;color:#fff3d6;border:2px solid #2a1208;border-radius:999px;padding:11px;font:800 15px "Futura Condensed","Futura","Arial Narrow",sans-serif;letter-spacing:.2em;box-shadow:3px 3px 0 #2a1208;cursor:pointer}
+#title #setb .ic,#title #howb .ic{width:1.2em;height:1.2em}
+#skipintro{background:#f3e0b5!important;color:#2a1208!important;border:2px solid #2a1208!important;border-radius:999px!important;box-shadow:3px 3px 0 #2a1208!important;font:800 14px "Futura Condensed","Futura","Arial Narrow",system-ui!important;letter-spacing:.14em;text-transform:uppercase;bottom:calc(18px + var(--sab))!important;display:inline-flex;align-items:center;gap:6px}
+
+#ctl .tb span{font-size:clamp(9px,2.6vw,12px)!important;letter-spacing:.02em!important;white-space:nowrap}</style>
 </head><body>
+<script src="icons.js"></script>
 <div id="ui" style="display:none"><div id="hud"></div>
-<div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="dozeb" title="Bulldoze (toggle)">🚜</button><button id="undob" title="Undo last stroke" style="display:none">↶</button><button id="rotb" title="Rotate building (R)">🔄</button><button id="rotL">⟲</button><button id="rotR">⟳</button><button id="mute2">🔊</button><button id="save">💾</button><button id="mktb">🌍</button><button id="buildb" class="pri">🏗️ Build</button><button id="newg">🏠</button></div>
+<div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button></div><div id="dock"><div id="ctl"><button id="buildb" class="pri tb" title="Build"><svg class="ic" aria-hidden="true"><use href="#i-crane"/></svg><span>Build</span></button><button id="rotb" class="tb ctx" title="Rotate building (R)"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg><span>Rotate</span></button><button id="undob" class="tb ctx" title="Undo last stroke" style="display:none"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>Undo</span></button><button id="dozeb" class="tb" title="Bulldoze (toggle)"><svg class="ic" aria-hidden="true"><use href="#i-dozer"/></svg><span>Bulldoze</span></button><button id="mktb" class="tb" title="Earth: market &amp; supply calls"><svg class="ic" aria-hidden="true"><use href="#i-earthcall"/></svg><span>Earth</span></button><button id="save" class="tb" title="Save"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg><span>Save</span></button></div>
 <div id="menu" class="closed"><button id="mclose" type="button" aria-label="Close">✕</button><div id="mtools"></div></div></div>
-<div id="info"></div><div id="panel"></div><div id="tut"></div></div><div id="toasts"></div><div id="tip"></div>
+<div id="info"></div><div id="panel"></div><div id="tut"></div><button id="newg" title="Main menu" aria-label="Main menu"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg></button></div><div id="toasts"></div><div id="tip"></div>
 <div id="loading"><div class="lt">MARS</div><div class="lm lsub">A TERRAFORMING GAME</div><div class="lstar">✦</div><div class="bar"><i id="lbar"></i></div><div class="lm" id="lmsg">LOADING ASSETS...</div></div>
 <div id="title"><div class="card">
 <h1>MARS<span>A TERRAFORMING GAME</span></h1>
@@ -279,7 +343,7 @@ window.marsActiveShow=function(){var el=document.getElementById('actc');if(!el||
 <button id="cont" class="big alt" style="display:none"></button><div class="row" id="slotops" style="display:none"><button id="renb">✏️ Rename</button><button id="delb" class="dangerl">🗑️ Delete</button></div><div id="loaderr" style="display:none"></div><button id="savesb" class="alt2">💾 Saves · backups · import</button>
 <div id="actc" class="actc" style="display:none"></div>
 <div class="ins">INSERT COIN · © 2026 RED PLANET SOFT</div>
-<div class="row"><button id="howb">❓ How to play</button><button id="mute">🔊</button></div>
+<div class="row"><button id="howb">❓ How to play</button><button id="setb"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg> Settings</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
 • Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
 • 🚀 Ships land on pads with new colonists — only if you have 🏠 housing.<br>
@@ -289,7 +353,7 @@ window.marsActiveShow=function(){var el=document.getElementById('actc');if(!el||
 • Paths are free and optional — buildings work anywhere; crew and rovers prefer walking on paths.<br>
 • Tap a building to rename / upgrade it, tap an astronaut to meet them.<br>• 🌷 Decorations near paths make colonists happier. Buildings light up at night.<br>
 • Bigger buildings (Waste, Medical, Entertainment, Security…) unlock as your population grows.<br>
-<b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E or ⟲⟳ rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
+<b>Controls:</b> drag / WASD pan · wheel / pinch zoom · Q/E rotate 90° · pick a tool then tap/drag the map · two-finger drag pans on touch · <b>press &amp; hold</b> a building to move it · right-click / Esc cancel.</div>
 </div></div>
 <script type="module" src="game.js"></script>
 <script>
@@ -309,4 +373,4 @@ window.marsActiveShow=function(){var el=document.getElementById('actc');if(!el||
  let dp=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;const d=show('📲 <span><b>Install MARS</b> as an app — plays offline</span><button class="go">Install</button>');if(d)d.querySelector('.go').onclick=async()=>{dp.prompt();const r=await dp.userChoice;dp=null;finish();};});
  addEventListener('appinstalled',finish);
 })();
-</script></body></html>
+</script><div id="settings"><div class="sc"><div class="sh">SETTINGS</div><button id="mute" class="srow"></button><label class="srow vol"><svg class="ic" aria-hidden="true"><use href="#i-sound"/></svg><span>Volume <b id="volv">80%</b></span><input type="range" id="vol" min="0" max="100" step="5" value="80"></label><button id="setx" class="sdone">Done</button></div></div></body></html>
