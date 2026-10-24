@@ -164,7 +164,7 @@ function terrLOD(){const tx=tgt.x*CS,tz=tgt.z*CS,CSZ=(NW+60)/8;TCH.forEach(c=>{c
 const HUMAN=3.2; // v22b: one shared scale (tile units) for every colonist/robot figure everywhere
 const grid=new THREE.GridHelper(N,N,0x3a1608,0x3a1608);grid.position.set(N/2,0.05,N/2);grid.material.opacity=0;grid.material.transparent=true;grid.material.depthWrite=false;W.add(grid);
 const grid4=new THREE.GridHelper(N,N/4,0x2a0e04,0x2a0e04);grid4.position.set(N/2,0.06,N/2);grid4.material.opacity=0;grid4.material.transparent=true;grid4.material.depthWrite=false;W.add(grid4);grid.visible=grid4.visible=false;
-function doneSync(){const db=document.getElementById('donebar');if(!db)return;const gm=typeof ghostMode==='function'&&ghostMode(),pu=typeof placeUndo!=='undefined'&&placeUndo&&performance.now()-placeUndo.t<5000;if(typeof placeUndo!=='undefined'&&placeUndo&&!pu)placeUndo=null;db.classList.toggle('gm',gm||!!pu);{const P=document.getElementById('placeb'),Rb=document.getElementById('prot'),U=document.getElementById('pundo'),D=document.getElementById('doneb');if(P){const sh=gm?'':'none';if(P.style.display!==sh)P.style.display=sh;const rs=gm&&!moving?'':'none';if(Rb.style.display!==rs)Rb.style.display=rs;P.classList.toggle('dis',gm&&!ghostOk());const us=pu?'':'none';if(U.style.display!==us)U.style.display=us;const dl=gm?'✕ Cancel':'✕ Done';if(D.textContent!==dl)D.textContent=dl;}}const on=(gm||pu||(typeof sel!=='undefined'&&!!sel))&&!!S&&!S.demo&&!(typeof menuOpen!=='undefined'&&menuOpen&&innerWidth>=700&&false);if(!on){if(db.style.display!=='none')db.style.display='none';return;}
+function doneSync(){const db=document.getElementById('donebar');if(!db)return;const gm=typeof ghostMode==='function'&&ghostMode(),pu=typeof placeUndo!=='undefined'&&placeUndo&&performance.now()-placeUndo.t<5000;if(typeof placeUndo!=='undefined'&&placeUndo&&!pu)placeUndo=null;db.classList.toggle('gm',gm);{const P=document.getElementById('placeb'),Rb=document.getElementById('prot'),U=document.getElementById('pundo'),D=document.getElementById('doneb');if(P){const sh=gm?'':'none';if(P.style.display!==sh)P.style.display=sh;const rs=gm&&!moving?'':'none';if(Rb.style.display!==rs)Rb.style.display=rs;P.classList.toggle('dis',gm&&!ghostOk());U.classList.toggle('on',!!pu&&!gm&&!(typeof menuOpen!=='undefined'&&menuOpen)&&performance.now()-placeUndo.t<4600);const dl=gm?'✕ Cancel':'✕ Done';if(D.textContent!==dl)D.textContent=dl;}}const on=(gm||(typeof sel!=='undefined'&&!!sel))&&!!S&&!S.demo&&!(typeof menuOpen!=='undefined'&&menuOpen&&innerWidth>=700&&false);if(!on){if(db.style.display!=='none')db.style.display='none';{const H=document.getElementById('phint');if(H&&H.style.display!=='none')H.style.display='none';}return;}
  const nm=sel==='dozer'?'🚜 Bulldozing':sel==='path'?'🚶 Laying paths':sel==='road'?'🛣️ Laying roads':moving?`Moving ${moving.b.name}`:!sel?'Placed':B[sel]?`${B[sel].ic||''} Placing ${B[sel].n}`:String(sel);const L=document.getElementById('donel');if(L.textContent!==nm)L.textContent=nm;const dk=document.getElementById('dock'),mn=document.getElementById('menu');let bot=(dk?dk.offsetHeight:70)+12+(gm?26:0);if(mn&&!mn.classList.contains('closed')&&getComputedStyle(mn).display!=='none'&&innerWidth<700)bot=Math.max(bot,innerHeight-mn.getBoundingClientRect().top+10);db.style.bottom=`calc(env(safe-area-inset-bottom,0px) + ${bot}px)`;{const H=document.getElementById('phint');if(H){const show=gm;if(show){const ok=ghostOk();const t=!ok?(moving?'BLOCKED · DRAG TO A CLEAR SPOT':'BLOCKED · DRAG TO A CLEAR SPOT'):moving?'DRAG TO MOVE · TAP PLACE TO MOVE HERE':'DRAG TO MOVE · TAP PLACE TO BUILD';if(H.textContent!==t)H.textContent=t;H.classList.toggle('bad',!ok);H.style.bottom=`calc(env(safe-area-inset-bottom,0px) + ${bot+(db.offsetHeight||56)+6}px)`;}const ds=show?'block':'none';if(H.style.display!==ds)H.style.display=ds;}}if(db.style.display!=='flex')db.style.display='flex';}
 let gridA=0,gridT0=performance.now();requestAnimationFrame(function gl(){requestAnimationFrame(gl);doneSync();if(typeof tapStart!=='undefined'&&tapStart&&!lineTool()){tapStart=null;reticle.visible=false;}if(typeof reticle!=='undefined'&&reticle.visible&&!lineTool())reticle.visible=false;if(typeof undoSync==='function'&&typeof lastStroke!=='undefined')undoSync();if(typeof sel!=='undefined'&&!sel&&document.body.classList.contains('placing'))document.body.classList.remove('placing');const now=performance.now(),dt=Math.min(.1,(now-gridT0)/1000);gridT0=now;const on=(typeof menuOpen!=='undefined'&&menuOpen)||(typeof sel!=='undefined'&&!!sel)||(typeof moving!=='undefined'&&!!moving);gridA+=((on?1:0)-gridA)*Math.min(1,dt*6);
  grid.visible=grid4.visible=gridA>.02;if(gridA>.02&&typeof cam!=='undefined'){const a=new THREE.Vector3(tgt.x*CS,0,tgt.z*CS).project(cam),b2=new THREE.Vector3((tgt.x+1)*CS,0,tgt.z*CS).project(cam);const px=Math.hypot((a.x-b2.x)*innerWidth/2,(a.y-b2.y)*innerHeight/2);const f1=Math.max(0,Math.min(1,(px-5)/7)),f4=Math.max(.35,Math.min(1,(px*4-8)/12));grid.material.opacity=.13*gridA*f1;grid.visible=f1>.02;grid4.material.opacity=.30*gridA*f4;}});
@@ -415,14 +415,18 @@ function dustRing(x,z,n=28){n=Math.min(n,130-puffs.length);for(let i=0;i<n;i++){
  m.position.set(x+Math.cos(a)*3.2,.6,z+Math.sin(a)*3.2);m.userData.v=new THREE.Vector3(Math.cos(a)*v,.12+Math.random()*.25,Math.sin(a)*v).multiplyScalar(4);m.userData.life=m.userData.L0=2.6;W.add(m);puffs.push(m);}}
 // v65: landing imprint — one multiply-blended scorch decal per landing spot (never stacks; reused per building)
 const SCORCH=new Map();const scorchG=new THREE.PlaneGeometry(1,1);
-const scorchTex=(()=>{/* v69: colour decal — soft burn, footpad divots, displaced lighter dust ring, short radial scuffs */const Z=512,c=document.createElement('canvas');c.width=c.height=Z;const x=c.getContext('2d');x.translate(Z/2,Z/2);
- let sd=7;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
- const ring=(r0,r1,col,a)=>{const g=x.createRadialGradient(0,0,r0,0,0,r1);g.addColorStop(0,`rgba(${col},0)`);g.addColorStop(.45,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);x.fillStyle=g;x.beginPath();x.arc(0,0,r1,0,7);x.fill();};
- ring(120,250,'232,170,118',.42);
- x.filter='blur(2px)';for(let i=0;i<26;i++){const a=rnd()*6.283,r0=96+rnd()*20,r1=r0+28+rnd()*48,lt=rnd()<.6;x.strokeStyle=lt?`rgba(236,180,130,${.22+rnd()*.15})`:`rgba(60,30,18,${.18+rnd()*.12})`;x.lineWidth=2+rnd()*3;x.beginPath();x.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);x.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);x.stroke();}
- x.filter='blur(6px)';{const g=x.createRadialGradient(0,0,0,0,0,118);g.addColorStop(0,'rgba(34,18,10,.78)');g.addColorStop(.6,'rgba(48,26,14,.5)');g.addColorStop(1,'rgba(60,32,18,0)');x.fillStyle=g;x.beginPath();x.arc(0,0,118,0,7);x.fill();}
- x.filter='blur(1.2px)';for(let i=0;i<6;i++){const a=i/6*6.283+.3,r=74;x.save();x.translate(Math.cos(a)*r,Math.sin(a)*r);x.rotate(a);x.fillStyle='rgba(238,186,140,.55)';x.beginPath();x.ellipse(6,0,9,12,0,0,7);x.fill();x.fillStyle='rgba(22,12,8,.9)';x.beginPath();x.ellipse(0,0,8,11,0,0,7);x.fill();x.restore();}
- x.filter='none';for(let i=0;i<90;i++){const a=rnd()*6.283,r=rnd()**.5*230,s=1+rnd()*3;x.fillStyle=rnd()<.5?'rgba(40,20,12,.25)':'rgba(240,190,140,.25)';x.beginPath();x.arc(Math.cos(a)*r,Math.sin(a)*r,s,0,7);x.fill();}
+const scorchTex=(()=>{/* v70: natural mark — soft blotchy scorch fading into regolith, faint dust displacement, shallow footpad dents (no rays, no black) */const Z=512,c=document.createElement('canvas');c.width=c.height=Z;const x=c.getContext('2d');x.translate(Z/2,Z/2);
+ let sd=11;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+ const blob=(cx,cy,r,col,a)=>{const g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();};
+ x.filter='blur(10px)';for(let i=0;i<22;i++){const a=rnd()*6.283,r=150+rnd()*70;blob(Math.cos(a)*r,Math.sin(a)*r*.96,40+rnd()*45,'226,160,108',.10+rnd()*.08);}
+ for(let i=0;i<18;i++){const a=rnd()*6.283,r=rnd()**.7*95;blob(Math.cos(a)*r,Math.sin(a)*r,60+rnd()*50,'92,48,26',.10+rnd()*.07);}
+ blob(0,0,150,'80,40,20',.5);blob(0,0,80,'66,34,18',.3);
+ x.filter='blur(2.5px)';for(let i=0;i<6;i++){const a=i/6*6.283+.3,r=74;x.save();x.translate(Math.cos(a)*r,Math.sin(a)*r);x.rotate(a);
+  x.fillStyle='rgba(232,176,128,.30)';x.beginPath();x.ellipse(7,0,10,13,0,0,7);x.fill();
+  x.fillStyle='rgba(90,48,28,.6)';x.beginPath();x.ellipse(-1,0,8,11,0,0,7);x.fill();
+  x.fillStyle='rgba(120,66,38,.28)';x.beginPath();x.ellipse(-3,0,5,7,0,0,7);x.fill();x.restore();}
+ x.filter='blur(.8px)';for(let i=0;i<140;i++){const a=rnd()*6.283,r=60+rnd()**.6*170,sz=.8+rnd()*2;x.fillStyle=rnd()<.5?'rgba(90,48,28,.16)':'rgba(236,184,136,.18)';x.beginPath();x.arc(Math.cos(a)*r,Math.sin(a)*r,sz,0,7);x.fill();}
+ x.filter='none';
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
 const scorchMat=new THREE.MeshBasicMaterial({map:scorchTex,transparent:true,opacity:1,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4,toneMapped:false,fog:false});
 function scorch(b,y,fade){if(!b)return;let m=SCORCH.get(b.id);if(!m){m=new THREE.Mesh(scorchG,scorchMat.clone());m.rotation.x=-Math.PI/2;m.renderOrder=1;m.matrixAutoUpdate=false;W.add(m);SCORCH.set(b.id,m);m.material.opacity=fade?0:1;}
@@ -1349,8 +1353,8 @@ function consPatch(mat,U,frame){mat.onBeforeCompile=s=>{Object.assign(s.uniforms
  s.fragmentShader=s.fragmentShader.replace('#include <common>',CS_F).replace('void main() {','void main() {\n'+(frame?CS_FRAME:CS_SOLID));};mat.customProgramCacheKey=()=>frame?'consF68':'consS68';mat.needsUpdate=true;return mat;}
 const C_cv=new THREE.Vector3(),C_cv2=new THREE.Vector3();
 function consInit(o,b,up){const u=o.userData;if(u.cs)return u.cs;const d=B[b.t],s0=d.s0;o.updateWorldMatrix(true,true);
- const box=new THREE.Box3(),tb=new THREE.Box3(),solids=[],dets=[];
- o.traverse(m=>{if(m===o||m.name==='cbar'||m.name==='scaf'||m.userData.cx)return;if(m.isSprite){if(!up){m.userData.v0=m.visible;m.visible=false;dets.push(m);}return;}if(!m.isMesh||!m.geometry)return;
+ const box=new THREE.Box3(),tb=new THREE.Box3(),solids=[],dets=[],crops=[],isF=!up&&d.food>0;
+ o.traverse(m=>{if(isF&&m.isMesh&&CROPM.has(m.material)){m.userData.v0=m.visible;m.visible=false;crops.push(m);return;}if(m===o||m.name==='cbar'||m.name==='scaf'||m.userData.cx)return;if(m.isSprite){if(!up){m.userData.v0=m.visible;m.visible=false;dets.push(m);}return;}if(!m.isMesh||!m.geometry)return;
   const mats=Array.isArray(m.material)?m.material:[m.material];const det=mats.some(x=>DETM.has(x)||x.transparent);if(!m.geometry.boundingBox)m.geometry.computeBoundingBox();tb.copy(m.geometry.boundingBox).applyMatrix4(m.matrixWorld);
   if(det){if(!up){m.userData.v0=m.visible;m.visible=false;m.userData.dy=tb.min.y;dets.push(m);}return;}box.union(tb);m.userData.sz=tb.max.y-tb.min.y+(tb.max.x-tb.min.x);solids.push(m);});
  o.getWorldPosition(C_cv);const ws=new THREE.Vector3();o.getWorldScale(ws);const y0=C_cv.y,H=Math.max(box.isEmpty()?.2:box.max.y-y0,.05),Hl=H/ws.y;
@@ -1371,7 +1375,7 @@ function consInit(o,b,up){const u=o.userData;if(u.cs)return u.cs;const d=B[b.t],
  const c=bc(b),src=S.b.filter(q=>q!==b&&(q.t==='ship'||q.t==='pad'||q.t==='lpad'||q.t==='wtank'||q.t==='battery')&&!(q.cons>0)).sort((p,q)=>Math.hypot(bc(p).x-c.x,bc(p).z-c.z)-Math.hypot(bc(q).x-c.x,bc(q).z-c.z))[0];
  const sx=src?Math.sign(bc(src).x-c.x)||1:1,sz=src?Math.sign(bc(src).z-c.z)||1:1,hf=d.s/2+.75;const pw=new THREE.Vector3(c.x+sx*hf,0,c.z+sz*hf);
  const pl=o.worldToLocal(W.localToWorld(pw.clone()));const pile=new THREE.InstancedMesh(CONS.box,CONS.crateM,8);pile.userData.cx=1;pile.castShadow=true;G.add(pile);
- const cs={U,cl,frames,fm,solids,dets,G,slab,sc,poles,lv,lo,hi,pile,pl,y0,H,Hl,s0,up:!!up,lastH:-1,
+ const cs={U,cl,frames,fm,solids,dets,crops,G,slab,sc,poles,lv,lo,hi,pile,pl,y0,H,Hl,s0,up:!!up,lastH:-1,
   pileS:(sx>0?(sz>0?2:1):(sz>0?3:0)),pileW:pw,lastN:-1};u.cs=cs;consPile(cs,8);return cs;}
 const C_m4=new THREE.Matrix4(),C_q=new THREE.Quaternion(),C_s3=new THREE.Vector3(),C_p3=new THREE.Vector3();
 function consPile(cs,n){if(n===cs.lastN)return;cs.lastN=n;const k=cs.s0*.11;for(let i=0;i<8;i++){const L=i<4?0:i<7?1:2,j=i<4?i:i<7?i-4:0;C_p3.set(cs.pl.x+((j%2)-.5)*k*1.05*(L?0.9:1),k*(L+.5),cs.pl.z+((j>>1)-.5)*k*1.05);C_q.setFromAxisAngle(C_s3.set(0,1,0),i*.37);C_m4.compose(C_p3,C_q,C_s3.set(k,k*.9,k));cs.pile.setMatrixAt(i,C_m4);}cs.pile.count=n;cs.pile.instanceMatrix.needsUpdate=true;}
@@ -1389,10 +1393,14 @@ function consUpdate(o,b,p,dt){const cs=consInit(o,b,b.upT>0&&!(b.cons>0));const 
  consPile(cs,p>.95?0:Math.max(1,Math.ceil(8*(1-p))));
  if(p<.1&&Math.random()<dt*1.2){const c=bc(b),s=B[b.t].s;dust(c.x+(Math.random()-.5)*s,c.z+(Math.random()-.5)*s,0,2);}return cs;}
 function consEnd(o,b,puff){const cs=o&&o.userData.cs;if(cs){cs.solids.forEach(m=>{if(m.userData.m0){m.material=m.userData.m0;delete m.userData.m0;m.castShadow=!!m.userData.cs0;}});cs.frames.forEach(f=>f.parent&&f.parent.remove(f));cs.dets.forEach(m=>{m.visible=m.userData.v0!==false;});
+  cs.crops.forEach(m=>{m.visible=m.userData.v0!==false;if(puff&&b&&!S.demo){const m0=m.material,mc=m0.clone();mc.color.set(0x6b4a2a);m.material=mc;m.userData.sy=m.scale.y;m.scale.y=m.userData.sy*.04;GROW.push({m,m0,mc,t:0});}});
   o.remove(cs.G);cs.cl.forEach(x=>x.dispose());cs.fm&&cs.fm.dispose();cs.sc.dispose();cs.pile.dispose();delete o.userData.cs;}
  if(puff&&b&&!S.demo){const c=bc(b),s=B[b.t].s;dust(c.x,c.z,0,Math.min(22,8+s*4));}}
 const consP=b=>b.cons>0?Math.max(0,Math.min(1,1-b.cons/(b.consN||CONS_T))):b.upT>0?Math.max(0,Math.min(1,1-b.upT/(b.upN||1))):1;
-function tickCons(rdt){S.b.forEach(b=>{const o=objs.get(b.id);if(!o)return;const u=o.userData;
+/* v70: farm crops sprout after the dome is finished — brown seedlings stretch up and green over ~4 s */
+const CROPM=new Set([DM.plant,DM.plant2,MAT.green,MAT.leaf]);let GROW=[];const GC=new THREE.Color();
+function tickGrow(dt){if(!GROW.length)return;GROW=GROW.filter(g=>{g.t+=dt/4;const k=Math.min(1,g.t),e=1-(1-k)**3;g.m.scale.y=g.m.userData.sy*(.04+.96*e);GC.set(0x6b4a2a).lerp(g.m0.color,C_sm(.15,1,k));g.mc.color.copy(GC);if(k>=1){g.m.material=g.m0;g.mc.dispose();g.m.scale.y=g.m.userData.sy;return false;}return true;});}
+function tickCons(rdt){tickGrow(rdt);S.b.forEach(b=>{const o=objs.get(b.id);if(!o)return;const u=o.userData;
  if(u.cfin!==undefined){u.cfin=Math.min(1,u.cfin+rdt/2.4);const cs=consUpdate(o,b,u.cfin,rdt);if(u.cfin>=1){delete u.cfin;consEnd(o,b,true);}return;}
  if(isSite(b)){if(u.cs&&u.cs.up!==(b.upT>0&&!(b.cons>0))){consEnd(o,b);}consUpdate(o,b,consP(b),rdt);}else if(u.cs)consEnd(o,b,false);});tickSparks(rdt);}
 // ---- spark pool (one draw call for all welders)
@@ -1467,6 +1475,36 @@ function menu(){document.body.classList.toggle('hassel',!!sel&&!!B[sel]&&B[sel].
 let lastLock='';
 function clock(){const p=dayPhase(S.t),D=TUNE.DAY_SPLIT;let h=p<D?6+p/D*14:20+(p-D)/(1-D)*10;h%=24;const hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10;return`${p<D?'☀️':'🌙'} ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;}
 function terraPct(){const pop=S.cols.length,bots=(S.bots||[]).length,late=S.b.filter(b=>['reactor','mega','ent','bigfarm','refin'].includes(b.t)&&!(b.cons>0)).length;return Math.min(100,Math.round(pop*1.1+bots*.8+late*4+(S.tf||0)));}
+/* v70: tap any HUD pill for a retro tooltip */
+let stipK=null,hudSt=null,hudKeys=[];const hudEl=k=>{const n=hudKeys.indexOf(k);return n<0?null:document.querySelector(`#hud .r[data-n="${n}"]`);};const pr=v=>v==null||isNaN(v)?'':` (${v>=0?'+':''}${(+v).toFixed(1)}/s)`;
+const STIP={'⭐':['Colony level','Your outpost rank. Each level unlocks buildings and perks.',()=>`Lv ${S.lvl||1} · ${LEVELS[S.lvl||1]?.n||''}`,'Tick off the goals in the task panel (top right).'],
+ '🏴':['Colony name','What Earth calls your outpost.',()=>S.name,'Rename it in ⚙️ Settings on the main menu.'],
+ '💰':['Credits','Money for every building, upgrade and Earth order.',()=>'$'+Math.floor(S.cr),'Sell surplus cargo via 🌍 Call Home; level rewards and supply drops add more.'],
+ '👩‍🚀':['Colonists / beds','People living here vs. beds in Habitats.',st=>`${st.pop} / ${st.house}`,'Build more 🏠 Habitats — new crew only stay if there is room.'],
+ '⚡':['Power','Output vs. what buildings draw. Short power = brown-outs.',st=>`${Math.round(st.pw)} made / ${Math.round(st.pu)} used`,'Add ☀️ Solar Arrays (day) and 🔋 Batteries for the night.'],
+ '🔋':['Battery charge','Stored energy that runs the colony after sunset.',()=>'',"Build more Battery Farms; solar surplus charges them."],
+ '🍞':['Food','Crew eat a little every minute; zero food hurts morale fast.',st=>Math.floor(S.food)+pr(st.food),'Build and upgrade 🌱 Farm Domes (they need ⚡ and 💧).'],
+ '💧':['Water','Drunk by crew and crops.',st=>`${Math.floor(S.wat)} / ${st.wcap}`+pr(st.wat),'🧊 Ice Extractors melt more; 💧 Water Tanks raise the cap.'],
+ '🧱':['Materials','Building blocks for construction and upgrades.',()=>Math.floor(S.mat),'Mine ore ⛏️ + refine it in a 🏗️ Processor, or order 🧱 from Earth.'],
+ '⛽':['Fuel','Propellant for return flights to Earth.',st=>`${Math.floor(S.fuel)} / ${st.fcap}`+pr(st.fuel),'Fuel plants turn water + power into fuel; tank farms store more.'],
+ '😊':['Happiness','Colony morale — low morale slows work and growth.',()=>Math.round(S.hap)+'%','Raise it with parks and décor near paths, steady food and roomy homes.'],
+ 'crew':['Builders free / total','Crew available for construction right now.',()=>`${Math.max(0,S.crewFree??0)} / ${S.crewPool??0}`,'More colonists = more builders. Robots help too.'],
+ 'bot':['Optimus robots','Haul ore and help build.',()=>(S.bots||[]).length,'Build a Robot Factory to make more.'],
+ '🌍':['Terraforming','How far Mars is along to becoming habitable.',()=>terraPct()+'%','Grow the population and build late-game industry.'],
+ '📅':['Sol & time','Martian day count and local time. Solar sleeps at night.',()=>`Sol ${Math.floor(S.t/DAY+1)} · ${clock()}`,'Time passes on its own — plan batteries for night.'],
+ '🔬':['Research','Points to spend on technology.',()=>Math.floor(S.rp),'Build and staff Labs.'],'⚙️':['Parts','Advanced components for big builds.',()=>Math.floor(S.parts),'Build a Factory.'],
+ '⛏️':['Ore','Raw rock from mines.',()=>Math.floor(S.ore),'Mines dig it; Processors turn it into 🧱.'],'💎':['Rare minerals','Valuable finds to sell on Earth.',()=>Math.floor(S.rare),'Survey deposits with rovers.'],
+ '🛸':['Flights','Ships on their way to or from Earth.',()=>S.flights.length+' en route','Launch return flights from a landed Starship.'],
+ '♻️':['Sanitation','Waste handling for a bigger crowd.',st=>Math.round(st.clean*100)+'%','Build a Waste plant.'],'🩺':['Health','Medical cover for the colony.',st=>Math.round(st.health*100)+'%','Build Medical bays.'],
+ '🎭':['Fun','Leisure keeps morale up.',st=>Math.round(st.fun*100)+'%','Build Entertainment.'],'🛡️':['Safety','Security for a large city.',st=>Math.round(st.safe*100)+'%','Build Security posts.'],
+ '🏚️':['Homeless','Colonists without a bed.',()=>'','Build more Habitats now.'],'💼':['Jobless','Colonists without work.',()=>'','Build workplaces (farms, mines, labs…).'],'🌪️':['Dust storm','Solar output is cut while it lasts.',()=>'active','Batteries and reactors ride it out.']};
+function stipSync(){let t=$('stip');if(!stipK){if(t)t.style.display='none';return;}const D=STIP[stipK],el=hudEl(stipK);if(!D||!el||!hudSt){stipK=null;if(t)t.style.display='none';return;}
+ if(!t){t=document.createElement('div');t.id='stip';document.body.appendChild(t);t.addEventListener('pointerdown',e=>e.stopPropagation());}
+ const ic=stipK==='crew'?hvImg():stipK==='bot'?hvImg('bot'):stipK;let v='';try{v=D[2](hudSt);}catch(e){}
+ const h=`<div class="sth">${icoS(ic)}<b>${D[0]}</b>${v!==''?`<span class="stv">${v}</span>`:''}</div><div class="std">${D[1]}</div><div class="sti">▲ ${D[3]}</div>`;if(t._h!==h){t._h=h;t.innerHTML=h;}t.style.display='block';
+ const r=el.getBoundingClientRect(),w=t.offsetWidth,sl=8;let x=Math.max(sl,Math.min(innerWidth-w-sl,r.left+r.width/2-w/2));t.style.left=x+'px';t.style.top=(r.bottom+8)+'px';t.style.setProperty('--ax',(r.left+r.width/2-x)+'px');}
+{const H=$('hud');const stop=e=>e.stopPropagation();H.addEventListener('pointerdown',e=>{e.stopPropagation();const p=e.target.closest('.r');if(!p)return;const k=hudKeys[+p.dataset.n];if(!k||!STIP[k])return;stipK=stipK===k?null:k;beep(stipK?760:520,.03,'triangle',.03);document.querySelectorAll('#hud .r.on').forEach(q=>q.classList.remove('on'));if(stipK)p.classList.add('on');stipSync();});['pointerup','click','touchstart','touchend','mousedown'].forEach(n=>H.addEventListener(n,stop));
+ document.addEventListener('pointerdown',e=>{if(stipK&&!e.target.closest('#hud')&&!e.target.closest('#stip')){stipK=null;stipSync();document.querySelectorAll('#hud .r.on').forEach(q=>q.classList.remove('on'));}},true);}
 function hud(st){if(S.demo)return;const f=v=>(v>=0?'+':'')+v.toFixed(1);const pop=st.pop,hl=S.cols.filter(c=>!c.home).length,un=S.cols.filter(c=>!c.work).length;const tf=terraPct();
  const nar=innerWidth<560,k=v=>v>=10000?(v/1000).toFixed(0)+'k':v>=1000?(v/1000).toFixed(1)+'k':Math.floor(v);
  const items=nar?[['💰',k(S.cr)],['👩‍🚀',`${pop}/${st.house}`],['⚡',`${Math.round(st.pw)}/${Math.round(st.pu)}`,st.pw<st.pu],['🍞',k(S.food),S.food<5&&st.food<0],
@@ -1478,7 +1516,7 @@ function hud(st){if(S.demo)return;const f=v=>(v>=0?'+':'')+v.toFixed(1);const po
  if(pop>=10&&(!nar||st.clean<.7))items.push(['♻️',Math.round(st.clean*100)+'%',st.clean<.7]);if(pop>=20&&(!nar||st.health<.7))items.push(['🩺',Math.round(st.health*100)+'%',st.health<.7]);
  if(pop>=25&&!nar)items.push(['🎭',Math.round(st.fun*100)+'%']);if(pop>=55&&(!nar||st.safe<.7))items.push(['🛡️',Math.round(st.safe*100)+'%',st.safe<.7]);
  if(hl)items.push(['🏚️',nar?hl:hl+' homeless',1]);if(un>2&&!nar)items.push(['💼',un+' jobless']);items.push(['📅',nar?`S${Math.floor(S.t/DAY+1)} ${clock()}`:`Sol ${Math.floor(S.t/DAY+1)} ${clock()}`]);
- $('hud').innerHTML=icoS(items.map(([i,v,b])=>`<span class="r${b?' bad':''}${i==='🏴'?' nm':''}${i==='⭐'?' lv':''}">${i} ${v}</span>`).join(''));
+ const hc=hvImg(),hb=hvImg('bot');hudKeys=[];$('hud').innerHTML=icoS(items.map(([i,v,b],n)=>{const dk=i===hc?'crew':i===hb?'bot':(typeof i==='string'&&i.length<6?i:'');hudKeys[n]=dk;return`<span class="r${b?' bad':''}${i==='🏴'?' nm':''}${i==='⭐'?' lv':''}${dk&&dk===stipK?' on':''}" data-n="${n}">${i} ${v}</span>`;}).join(''));hudSt=st;stipSync();
  const l=''+(S.lvl||1);if(l!==lastLock){lastLock=l;menu();}renderLv();}
 // ---------- info panels
 let panel=null,panelHover=false;$('panel').onpointerenter=()=>panelHover=true;$('panel').onpointerleave=()=>panelHover=false;const ring=new THREE.Mesh(new THREE.RingGeometry(.55,.62,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.9,depthTest:false}));ring.renderOrder=8;ring.visible=false;W.add(ring);
@@ -1693,7 +1731,7 @@ function clearGrownDecos(b){const bt=builtTiles(b),gone=[];S.b.filter(q=>B[q.t].
 function clearGrownPaths(b){const ks=[];builtTiles(b).forEach(k=>{if(S.tiles[k]===1){delete S.tiles[k];ks.push(k);}});if(ks.length){apHand(ks);changed();}return ks.length;}
 function paint(x,z){if(x<0||z<0||x>=N||z>=N)return;const k=TK(x,z);
  if(sel==='dozer'){if(S.tiles[k]){delete S.tiles[k];apHand([k]);changed();}return;}
- if(S.tiles[k]||pathWhy(x,z,'path'))return;S.tiles[k]=1;apHand([k]);changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
+ if(S.tiles[k]||pathWhy(x,z,'path'))return;S.tiles[k]=1;if(S.tut&&TUT[S.tut.step]?.path)S.tut.pn=(S.tut.pn||0)+1;apHand([k]);changed();const n=performance.now();if(n-(paint.bt||0)>70){paint.bt=n;beep(300+Math.random()*80,.025,'triangle',.03);}}
 let doorsDirty=false;function changed(){doorsDirty=true;}
 function click(){if(!sel||!hover)return;updPrev();const d=B[sel],x=hover.bx,z=hover.bz;if(lvLocked(sel)){toast(`🔒 ${d.n} unlocks at colony Lv ${lvOf(sel)} · ${LEVELS[lvOf(sel)].n}`);return;}
  if(sel==='dozer'){const b=occ[x]?.[z];if(b)bulldoze(b);}
@@ -1731,11 +1769,11 @@ function strokeAdd(x,z){if(stroke&&stroke.tool==='road'&&!stroke._r){stroke._r=1
 function strokeClear(){strokeMesh.count=0;stroke=null;}
 function strokeCancel(){if(stroke){strokeClear();}painting=false;}
 function strokeCommit(){const st=stroke;strokeClear();painting=false;if(!st||!st.cells.length)return;const done=[];
- st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!pathWhy(x,z,st.tool)){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});apHand(done);if(st.tool!=='dozer')setTimeout(apAll,0);
+ st.cells.forEach(([x,z])=>{const k=TK(x,z);if(st.tool==='dozer'){if(S.tiles[k]){delete S.tiles[k];done.push(k);}}else if(!S.tiles[k]&&!pathWhy(x,z,st.tool)){S.tiles[k]=st.tool==='road'?2:1;done.push(k);}});apHand(done);if(st.tool!=='dozer'&&S.tut&&TUT[S.tut.step]?.path)S.tut.pn=(S.tut.pn||0)+done.length;if(st.tool!=='dozer')setTimeout(apAll,0);
  if(done.length){changed();lastStroke={tool:st.tool,keys:done};undoSync();beep(st.tool==='dozer'?260:520,.06,'triangle',.05);}}
 function undoStroke(){const l=lastStroke;if(!l)return;l.keys.forEach(k=>{if(l.tool==='dozer'){const[x,z]=k.split(',').map(Number);if(!occ[x]?.[z])S.tiles[k]=1;}else delete S.tiles[k];});changed();lastStroke=null;undoSync();beep(400,.06,'triangle',.05);toast(`↶ Undid last ${l.tool==='dozer'?'bulldoze':'path'} stroke (${l.keys.length} tiles)`);}
 function undoSync(){const u=$('undob');if(u)u.style.display=lastStroke&&(sel==='path'||sel==='road'||sel==='dozer')?'':'none';}
-function dozeSync(){const d=$('dozeb');if(d)d.classList.toggle('active',sel==='dozer');document.body.classList.toggle('dozing',sel==='dozer');}
+function dozeSync(){const d=$('dozeb');if(d)d.classList.toggle('active',sel==='dozer');{const p=$('pathb');if(p)p.classList.toggle('active',sel==='path');}document.body.classList.toggle('dozing',sel==='dozer');}
 R.domElement.addEventListener('pointerdown',e=>{ac();ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(e.button===2){sel=null;menu();updPrev();dozeSync();return;}
  clearTimeout(lp);
  if(ptrs.size>=2){if(gDrag){gDrag=null;}gest=true;strokeCancel();reticle.visible=false;const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);gp0=[{...a},{...b}];gl=[{x:a.x,y:a.y},{x:b.x,y:b.y}];gmode=null;gd0=pinch0;gy0=(a.y+b.y)/2;tw0=Math.atan2(b.y-a.y,b.x-a.x);mid0={x:(a.x+b.x)/2,y:(a.y+b.y)/2};moved=99;painting=false;stroke=null;tapStart=null;drag=null;clearTimeout(lp);return;}
@@ -1787,7 +1825,7 @@ $('rotb').onclick=()=>rotateAct();
 const SK='marsOutpost37',SV=37,SLOTS=['marsOutpost37.old','marsOutpost37.bak0','marsOutpost37.bak1','marsOutpost37.bak2']; // v37: fresh slot — true-scale growth system needs a clean colony
 try{if(!localStorage.getItem('marsV22wipe')){['marsOutpost','marsOutpost.old','marsOutpost.bak0','marsOutpost.bak1','marsOutpost.bak2'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('marsV22wipe','1');}}catch(e){}
 let saveBlocked=false,lastSaved=0,lastBak=0,saveErrT=0;
-const SAVE_KEYS=['cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen',
+const SAVE_KEYS=['lvTapped','cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen',
  'bots','rovers','rovId','sites','fog','tech','rp','parts','partsMade','scouts','surveys','techN','births','oreDug','roverWater','storms','storm','nextStorm','nightPow','outRuns','lastMeteor','town','tutBonus','safeT','tf','atm','opm2','lv10','lv36','store'];
 function saveData(){const d={v:SV,N,saved:Date.now()};SAVE_KEYS.forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});
  d.b=S.b.map(({id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin,cs,ap,apU})=>({cs,ap,apU,id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin}));d.pop=S.cols.length;return d;}
@@ -1840,8 +1878,9 @@ window.__mSave=()=>save();
 function closeSaveBox(){const o=$('savebox');if(o)o.style.display='none';}
 function loadFail(e){console.error('load failed',e);saveBlocked=true;showTitle();const m=$('loaderr');if(m){m.style.display='block';m.innerHTML=`⚠️ Your saved colony couldn't be loaded (${String(e&&e.message||e).slice(0,80)}). It has <b>not</b> been touched — open <b>💾 Saves</b> to export it or restore a backup.`;}}
 
-$('mktb').onclick=()=>openM();$('save').onclick=()=>{save();openSaveBox(true);};$('newg').onclick=()=>{save();showTitle();};
-$('doneb').onclick=e=>{e.stopPropagation();if(moving){moving.x=moving.b.x;moving.z=moving.b.z;moving.ok=true;moving.snap=0;endMove();beep(500,.05,'square',.04);return;}const wasDoze=sel==='dozer';sel=null;document.body.classList.remove('placing');if(typeof tapStart!=='undefined'){tapStart=null;}updPrev();menu();if(wasDoze)dozeSync();beep(500,.05,'square',.04);};$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
+$('mktb').onclick=()=>openM();$('pathb').onclick=()=>{const on=sel!=='path';closePanel();if(menuOpen)setMenu(false);sel=on?'path':null;gridLines.visible=on;document.body.classList.toggle('placing',on);beep(on?720:500,.05);if(on&&!(S&&S.tut))toast('🚶 Drag on the ground to draw a pathway · tap PATHWAYS again to stop',0);menu();updPrev();dozeSync();};
+$('ssave').onclick=()=>{save();toast('✅ Saved');};$('newg').onclick=()=>{save();showTitle();};
+$('doneb').onclick=e=>{e.stopPropagation();if(moving){moving.x=moving.b.x;moving.z=moving.b.z;moving.ok=true;moving.snap=0;endMove();beep(500,.05,'square',.04);return;}const wasDoze=sel==='dozer';sel=null;document.body.classList.remove('placing');if(typeof tapStart!=='undefined'){tapStart=null;}updPrev();menu();if(wasDoze)dozeSync();beep(500,.05,'square',.04);};$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(!menuOpen&&S&&S.tut&&TUT[S.tut.step]?.k)tab='b';if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);camUp();});
 // ---------- ships
 function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const base=by(b)+.36,cx=bc(b).x,cz=bc(b).z;
@@ -2247,12 +2286,12 @@ function specParts(g,spec){if(spec==='family'){g.add(mesh(dome(.14,14),glass,.18
 
 // ---------- level UI: HUD chip, checklist, celebration
 let lvOpen=null;
-function lvEl(){let e=document.getElementById('lvl');if(!e){e=document.createElement('div');e.id='lvl';$('ui').appendChild(e);e.onclick=ev=>{if(ev.target.closest('.lvh')){lvOpen=!lvOpen;S.lvOpen=lvOpen;renderLv(true);beep(700,.04,'triangle');}};}return e;}
+function lvEl(){let e=document.getElementById('lvl');if(!e){e=document.createElement('div');e.id='lvl';$('ui').appendChild(e);e.onclick=ev=>{if(ev.target.closest('.lvh')){if(!S.lvTapped){S.lvTapped=1;lvKey='';}lvOpen=!lvOpen;S.lvOpen=lvOpen;renderLv(true);beep(700,.04,'triangle');}};}return e;}
 let lvKey='';
 function renderLv(force){if(!S||S.demo)return;const e=lvEl();if(lvOpen===null)lvOpen=S.lvOpen??innerWidth>700;const gs=lvGoals(),p=lvPct(gs),lv=S.lvl||1,L=LEVELS[lv];
- const done=lv>=LVMAX&&S.eraDone===LVMAX;const key=lv+'|'+lvOpen+'|'+gs.map(g=>g.v).join()+done;if(key===lvKey&&!force){lvPos();return;}lvKey=key;
- e.className=lvOpen?'open':'';document.body.classList.toggle('lvopen',!!lvOpen);
- e.innerHTML=`<div class="lvh"><span class="lvn">LV ${lv}</span><span class="lvt">${done?'Settlement charter granted':L.n}</span><span class="lvc">${gs.filter(g=>g.ok).length}/${gs.length} ${lvOpen?'▾':'▸'}</span></div><div class="lvbar"><i style="width:${done?100:p}%"></i></div>`+
+ const done=lv>=LVMAX&&S.eraDone===LVMAX;const key=lv+'|'+lvOpen+'|'+gs.map(g=>g.v).join()+done+!S.tut+!!S.lvTapped;if(key===lvKey&&!force){lvPos();return;}lvKey=key;
+ const pul=!S.tut&&!S.lvTapped;e.className=(lvOpen?'open':'')+(pul?' tpulse':'');document.body.classList.toggle('lvopen',!!lvOpen);
+ e.innerHTML=`<div class="lvh"><span class="lvn">LV ${lv}</span><span class="lvt">${done?'Settlement charter granted':L.n}</span><span class="lvc">${gs.filter(g=>g.ok).length}/${gs.length} ${lvOpen?'▾':'▸'}</span></div><div class="lvbar"><i style="width:${done?100:p}%"></i></div>${pul?'<div class="lvhint">TAP FOR TASKS</div>':''}`+
  (lvOpen?`<div class="lvb">${gs.map(g=>`<div class="g${g.ok?' ok':''}"><span>${g.ok?'✅':'⬜'}</span><span class="gt">${g.t}</span><span class="gv">${g.need>1?`${g.v}/${g.need}`:''}</span></div>`).join('')}
  <div class="lvf">${done?'🏁 More eras coming: City → Terraforming':lv<LVMAX?`Next: <b>Lv ${lv+1} · ${LEVELS[lv+1].n}</b> — ${lvUnlockTxt(lv+1).join(', ')||'new challenges'}`:'Final Outpost level — complete it to finish the era'}</div></div>`:'');lvPos();}
 function lvPos(){const e=document.getElementById('lvl');if(!e)return;const hb=$('hud').getBoundingClientRect().bottom;let top=hb+6;const ph=innerWidth<=700;
@@ -2273,39 +2312,44 @@ function celebrate(lv,era){S.lvlFx=1;const L=LEVELS[lv];let o=document.getElemen
   x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));x.restore();});requestAnimationFrame(step);};step();}
 
 const TUT=[
- {t:'Welcome to Mars',why:'Your Starship just touched down. The crew is riding the cargo lift to the ground.',done:()=>(!S.crewPending&&S.tut.t>3)||S.tut.t>9},
- {t:'Build a home',k:'hab',built:1,why:'Your crew is living in the cramped ship. Give them a Habitat.'},
- {t:'Grow food',k:'farm',why:'Ration packs run out. A Farm Dome keeps everyone fed.'},
- {t:'Find water',k:'ice',why:'Farms and people drink a lot. An Ice Extractor melts buried ice.'},
- {t:'Make power',k:'solar',why:'Farms and extractors need electricity. Solar Arrays make it by day.'},
- {t:'Store power',k:'battery',why:'Solar sleeps at night. A Battery Farm keeps the lights on.',leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +$300');}},
- {t:'Upgrade the farm',up:'farm',why:'One small dome won\'t feed a colony. Bigger buildings do more.',done:()=>S.b.some(b=>b.t==='farm'&&(b.lvl>=2||b.upT>0))},
+ {t:'Welcome to Mars',info:'The top bar is your colony at a glance: 💰 credits and 🧱 materials pay for building, 👩‍🚀 crew / beds, ⚡ power used / made, 🍞 food and 💧 water stocks.',done:()=>(!S.crewPending&&S.tut.t>3)||S.tut.t>9},
+ {t:'Build a home',k:'hab',info:'A Habitat sleeps 6 and runs on its own roof solar, so it needs no grid. $120 + 40 🧱.'},
+ {t:'Lay a footpath',path:1,info:'While builders raise the Habitat: paths are free, crew and rovers walk faster on them, and décor beside a path lifts happiness.',done:()=>(S.tut.pn||0)>=6},
+ {t:'Feed the crew',k:'farm',info:'Every colonist eats a little each minute. A Farm Dome grows +1.2 🍞 but draws 1 ⚡ and some 💧.'},
+ {t:'Tap the ice',k:'ice',info:'While the farm goes up: Mars hides ice under the dust. An Ice Extractor melts +2 💧 for crops and crew.'},
+ {t:'Make power',k:'solar',info:'Farms and extractors draw ⚡. When use beats output, buildings brown out. Solar Arrays only work in daylight.'},
+ {t:'Store power',k:'battery',info:'Batteries charge in the sun and keep the colony running through the night.',leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +$300');}},
+ {t:'Upgrade the Habitat',up:'hab',info:'Upgrades add beds and output. Money comes from 🌍 Earth: sell surplus cargo there, and supply ships land with crew and 🧱 about every 1.5 Sols.',done:()=>S.b.some(b=>b.t==='hab'&&(b.lvl>=2||b.upT>0))},
 ];
-for(const s of TUT)if(!s.done&&s.k)s.done=s.built?()=>S.b.some(b=>b.t===s.k&&!(b.cons>0)):()=>has(s.k);
+for(const s of TUT)s.why=s.info;
+for(const s of TUT)if(!s.done&&s.k)s.done=()=>S.b.some(b=>b.t===s.k);/* v70: placing advances — builders work while the next step runs */
 function tutWants(k){if(!S||!S.tut)return false;const st=TUT[S.tut.step];return !!st&&st.k===k;}
 const tutArrow=(()=>{const g=new THREE.Group();const c=mesh(new THREE.ConeGeometry(.22,.45,12),new THREE.MeshStandardMaterial({color:0x3fd0c8,emissive:0x3fd0c8,emissiveIntensity:.9}),0,0,0,false);c.rotation.x=Math.PI;g.add(c);g.scale.setScalar(4);g.visible=false;W.add(g);return g;})();
 let tutRT=0;
-function tutTick(dt){const T=S.tut;T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
- if(st.k&&sel===st.k&&S.b.some(b=>b.t===st.k)){$('doneb').click();}if(st.done()){if(st.leave)st.leave();T.step++;T.t=0;beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}renderTut(true);return;}
+function tutTick(dt){const T=S.tut;if(!T.v){T.v=70;T.step=[0,1,3,4,5,6,7][T.step]??T.step;}T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
+ if(st.k&&sel===st.k&&S.b.some(b=>b.t===st.k)){$('doneb').click();}if(st.done()){if(st.leave)st.leave();if(st.path&&sel==='path'){sel=null;menu();updPrev();}T.step++;T.t=0;beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}renderTut(true);return;}
  const n=performance.now();if(n-tutRT>150){tutRT=n;renderTut();}}
 function tutClear(){document.querySelectorAll('.tglow').forEach(e=>e.classList.remove('tglow'));document.body.classList.remove('tutdim');}
 function endTut(){S.tut=null;$('tut').style.display='none';tutArrow.visible=false;tutClear();document.body.classList.remove('tuton');S.b.filter(b=>b.t==='pad').forEach(b=>b.timer=Math.min(b.timer,TUNE.FIRST_SHIP_AFTER));menu();
  if(!S.tutBonus){S.tutBonus=1;S.mat+=120;S.cr+=200;}toast(`🎉 Tutorial complete! Bonus +120 🧱 +$200. Follow the ⭐ level goals to grow your colony.`);toast('🏠 Build more Habitats — arriving crew only stay if there is room.');}
 // what to press next for the current step: {say, sel (element to glow), arrow (building to point at)}
 function tutCue(st){const ph=innerWidth<700,pl=document.body.classList.contains('placing');
+ const site=S.b.find(b=>b.cons>0&&B[b.t]&&B[b.t].cat==='b'),bsub=site?`👷 ${B[site.t].n} under construction${site._crew?'':' · waiting for crew'}`:null;
+ if(st.path){if(sel==='path')return{ic:'🚶',say:'Drag across the ground to paint a path',sub:`${Math.min(6,S.tut.pn||0)} / 6 tiles${bsub?' · '+bsub:''}`};
+  return{ic:'🚶',say:'Tap <b>PATHWAYS</b>, then drag across the ground',sub:bsub,sel:'#pathb'};}
  if(st.k){const d=B[st.k],site=S.b.find(b=>b.t===st.k&&b.cons>0);
-  if(site)return{ic:'👷',say:`Builders are working on your <b>${d.n}</b>`,sub:site._crew?'Wait for it to finish — it takes about 30 seconds.':'Waiting for a free crew member…',arrow:site};
-  if(sel===st.k)return{ic:'👆',say:hover&&hover.ok?`Tap <b>✓ Place</b> to build the <b>${d.n}</b>`:`Drag the outline to a green spot`,sub:'Drag the outline to move it · drag the ground, pinch or twist to look around.',sel:hover&&hover.ok?'#placeb':null};
-  if(!menuOpen||pl)return{ic:'🏗️',say:'Tap <b>BUILD</b>',sel:'#buildb'};
-  if(!tab)return{ic:'🏗️',say:'Tap <b>Buildings</b>',sel:'#mtools .cat[data-cat="b"]'};
-  if(tab!=='b')return{ic:'👆',say:'Tap the <b>back arrow</b>',sel:'#mback'};
-  return{ic:bIc(st.k),say:`Tap <b>${d.n}</b>`,sel:`#mtools .b[data-k="${st.k}"]`,scroll:1};}
- if(st.up){const f=S.b.find(b=>b.t===st.up);if(!f)return{say:'Build a Farm Dome first'};
-  if(f.cons>0)return{ic:'👷',say:'Wait for the <b>Farm Dome</b> to finish',arrow:f};
+  if(sel===st.k)return{ic:'👆',say:hover&&hover.ok?`Tap <b>✓ PLACE</b> to build the <b>${d.n}</b>`:`Drag the outline to a green spot`,sub:bsub,sel:hover&&hover.ok?'#placeb':null};
+  const say=`Tap <b>BUILD</b>, then select <b>${d.n}</b>`;
+  if(!menuOpen||pl)return{ic:bIc(st.k),say,sub:bsub,sel:'#buildb'};
+  if(!tab)return{ic:bIc(st.k),say,sub:bsub,sel:'#mtools .cat[data-cat="b"]'};
+  if(tab!=='b')return{ic:bIc(st.k),say,sel:'#mback'};
+  return{ic:bIc(st.k),say,sub:bsub,sel:`#mtools .b[data-k="${st.k}"]`,scroll:1};}
+ if(st.up){const nm=B[st.up].n,f=S.b.filter(b=>b.t===st.up).sort((a,c)=>(a.cons>0)-(c.cons>0))[0];if(!f)return{say:`Build a ${nm} first`};
+  if(f.cons>0)return{ic:'👷',say:`Wait for the <b>${nm}</b> to finish`,arrow:f};
   if(panel&&panel.b===f)return{ic:'⬆️',say:'Tap <b>Upgrade</b>',sel:'#pup'};
   if(menuOpen&&!pl)return{ic:'👆',say:'Close the build menu',sel:'#mclose'};
-  return{ic:'👆',say:'Tap your <b>Farm Dome</b>',sub:'Follow the arrow.',arrow:f};}
- return{ic:'🚀',say:'Watch the crew come down',sub:'Pinch to zoom, drag to look around.'};}
+  return{ic:'👆',say:`Tap your <b>${nm}</b>, then <b>Upgrade</b>`,arrow:f};}
+return{ic:'🚀',say:'Watch the crew come down',sub:'Pinch to zoom, drag to look around.'};}
 let tutKey='',tutView=null,tutViewT=0;
 function renderTut(force){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.display='none';tutArrow.visible=false;tutClear();document.body.classList.remove('tuton');return;}const st=TUT[T.step];if(!st)return;
  document.body.classList.add('tuton');el.style.display='block';const c=tutCue(st);if(tutView!=null&&performance.now()-tutViewT>12000)tutView=null;const key=T.step+'|'+c.say+'|'+(c.sub||'')+'|'+tutView;
@@ -2313,14 +2357,14 @@ function renderTut(force){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.d
   const tv=tutView!=null&&tutView!==T.step&&TUT[tutView]?tutView:null,vs=tv!=null?TUT[tv]:st,vi=tv!=null?tv:T.step;
   const dots2=TUT.map((_,i)=>`<i data-i="${i}" class="${i<T.step?'d':i===T.step?'c':''}${i===vi?' v':''}"></i>`).join('');
   const nav=`<button class="tnav" id="tprev" ${vi<=0?'disabled':''}>‹</button><button class="tnav" id="tnext" ${vi>=T.step?'disabled':''}>›</button>`;
-  if(tv!=null){const rv=vs.k?`Tap <b>BUILD</b> → <b>Buildings</b> → <b>${B[vs.k].n}</b>, drag the outline to a green spot, then tap <b>✓ PLACE</b>.`:vs.up?`Tap your <b>Farm Dome</b>, then <b>Upgrade</b>.`:vs.why;
-   el.innerHTML=`<div class="tt"><span>REVIEW · STEP ${tv+1} OF ${TUT.length}</span><span class="dots">${dots2}</span></div><div class="th">${vs.t} ${tv<T.step?'✓':''}</div><div class="say"><span>${rv}</span></div><div class="why">${vs.why}</div><div class="tnr">${nav}<button id="tcur">Back to current step ›</button></div>`;}
-  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1} OF ${TUT.length}</span><span class="dots">${dots2}</span></div><div class="th">${st.t}</div><div class="say">${c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button></div>`;
+  if(tv!=null){const rv=vs.k?`Tap <b>BUILD</b>, then select <b>${B[vs.k].n}</b>`:vs.path?`Tap <b>PATHWAYS</b>, then drag across the ground`:vs.up?`Tap your <b>${B[vs.up].n}</b>, then <b>Upgrade</b>`:'Watch the crew ride the lift down';
+   el.innerHTML=`<div class="tt"><span>REVIEW ${tv+1}/${TUT.length} · <span class="th">${vs.t}${tv<T.step?' ✓':''}</span></span><span class="dots">${dots2}</span></div><div class="say"><span>${rv}</span></div><div class="why">${vs.why}</div><div class="tnr">${nav}<button id="tcur">Back to current ›</button></div>`;}
+  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1}/${TUT.length} · <span class="th">${st.t}</span></span><span class="dots">${dots2}</span></div><div class="say">${c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub&&st.path?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button></div>`;
   const go=i=>{tutView=Math.max(0,Math.min(T.step,i));tutViewT=performance.now();if(tutView===T.step)tutView=null;renderTut(true);};
   const pv=$('tprev'),nx=$('tnext'),cu=$('tcur');if(pv)pv.onclick=e=>{e.stopPropagation();go(vi-1);};if(nx)nx.onclick=e=>{e.stopPropagation();go(vi+1);};if(cu)cu.onclick=e=>{e.stopPropagation();go(T.step);};
   el.querySelectorAll('.dots i').forEach(d=>d.onclick=e=>{e.stopPropagation();const i=+d.dataset.i;if(i<=T.step)go(i);});
   if(!el._sw){el._sw=1;let sx=null;el.addEventListener('pointerdown',e=>{sx=[e.clientX,e.clientY];},true);el.addEventListener('pointerup',e=>{if(!sx)return;const dx=e.clientX-sx[0],dy=e.clientY-sx[1];sx=null;const T2=S.tut;if(!T2||Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.5)return;const cv=tutView!=null?tutView:T2.step;tutView=Math.max(0,Math.min(T2.step,cv+(dx<0?1:-1)));tutViewT=performance.now();if(tutView===T2.step)tutView=null;renderTut(true);},true);}
-  if($('tutskip'))$('tutskip').onclick=()=>{if(T.step<=5){S.mat+=150;S.cr+=300;}endTut();};}
+  if($('tutskip'))$('tutskip').onclick=()=>{if(T.step<=6){S.mat+=150;S.cr+=300;}endTut();};}
  const tg=c.sel?document.querySelector(c.sel):null;document.querySelectorAll('.tglow').forEach(e=>{if(e!==tg)e.classList.remove('tglow');});
  if(tg&&!tg.classList.contains('tglow')){tg.classList.add('tglow');if(c.scroll)tg.scrollIntoView({block:'nearest',behavior:'smooth'});}
  document.body.classList.toggle('tutdim',!!tg);
@@ -2424,26 +2468,32 @@ function startInner(load,skipTut){speed=1;{const p=document.querySelector('#ctl 
   if(p[0]!==b.x||p[1]!==b.z){b.x=p[0];b.z=p[1];}for(let i=0;i<s;i++)for(let j=0;j<s;j++)delete S.tiles[TK(b.x+i,b.z+j)];}const nb=addB(b.t,b.x,b.z,1,b);['cons','consN','crewN','upT','upN','frostT','spec','hb','auto','call','cool','rich','siteId','rareK','vmin','cs','ap','apU'].forEach(k=>{if(b[k]!=null)nb[k]=b[k];});if(nb.vmin>nb.lvl&&!nb.spec)placeObj(nb);if(nb.cons>0&&!nb.consN){const sp=buildSpec(nb.t,1);nb.consN=sp.T;nb.crewN=sp.n;nb.cons=Math.max(1,nb.cons/CONS_T*sp.T);}if(nb.upT>0)addScaf(objs.get(nb.id),nb);if(nb.spec)placeObj(nb);const o=objs.get(nb.id);if(nb.cons>0&&o){delete o.userData.grow;o.scale.y=1;}});if(d.migrated){seedCols(d.migratedPop);toast('🆕 Save upgraded! Your map grew — connect buildings with 🚶 paths',1);S.cr+=0;}
   else toast(d.grow40?'🗺️ Mars just got much bigger — the map is now 1024×1024 and new land opens every colony level':d.grown?'🗺️ Your colony map is now 4× bigger — room to expand!':`Welcome back to ${S.name}, Commander`);
   if(d.up4)toast(`🆕 Big update! Roads became free paths, light poles were removed (buildings are lit now), and you got +${300+S.b.length*6} 🧱 materials`,1);S.mkt=S.mkt||{mat:1,ore:1,rare:1};S.mktPrev=S.mktPrev||{...S.mkt};S.flights=S.flights||[];if(d.up6)toast('🤖 Welcome to MARS! Two Optimus robots joined your colony — build an 🤖 Optimus Bay for more',1);}
- else{S=fresh(selDiff,($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
+ else{S=fresh('standard',($('cname').value||'').trim().slice(0,24)||'Olympus Base');rebuildOcc();S.t=DAY*.03;
   SHIP_SPOTS.slice(0,TUNE.START_SHIPS).forEach(([x,z],i)=>{const b=addB('ship',x,z,1);b.name=['Heart of Gold','Serenity','Red Dawn','Endurance','Tranquility'][i]||('Starship '+(i+1));objs.get(b.id).userData.land={t:-i*2.6,P:INTROL};});if(!S.demo)startIntro();
-  S.crewPending=TUNE.START_CREW;if(skipTut){S.mat+=150;S.cr+=300;toast('Tutorial skipped — good luck, Commander!');}else{S.tut={step:0,t:0};}
+  S.crewPending=TUNE.START_CREW;if(skipTut){S.mat+=150;S.cr+=300;toast('Tutorial skipped — good luck, Commander!');}else{S.tut={step:0,t:0,v:70};}
   toast(`🚀 Starship inbound to ${S.name}…`);}
  if(!S.demo&&S.lvl==null){S.lvl=oldSaveLevel();lvSnap();if(S.lvl===2)queueWave();if(S.lvl>2)S.waveQueued=1;if(load)toast(`⭐ Colony levels are here! ${S.name} starts at Lv ${S.lvl} · ${LEVELS[S.lvl].n} — tap the ⭐ badge for goals`,1);}
  if(S.demo)S.lvl=LVMAX;initSettle();if(S.storm)stormFx(1);lvOpen=null;lvKey='';
  refreshDoors();assign();syncTrucks();lastLock='';sel=null;tab='b';menu();$('title').style.display='none';$('ui').style.display='';rot=rotT=0;{const p=S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship');const c=p?bc(p):{x:N/2,z:N/2};tgt.set(c.x,0,c.z);}zoom=(load?9:7)*(innerWidth<innerHeight?1.7:1);camUp();renderTut();beep(600,.1,'triangle',.07);}
 const NAMES=['Olympus Base','Red Rock Station','Valles Hub','Dusty Acres','Phobos View','Jezero Junction','Rusty Ridge','Crater Cove','Tharsis Town','Ares Landing','Hellas Haven','Elon Gulch'];
 let selDiff='standard';
-function showTitle(){window.marsActiveShow&&setTimeout(marsActiveShow,0);$('ui').style.display='none';$('title').style.display='flex';$('title').classList.remove('setup');$('cname').value=NAMES[Math.random()*NAMES.length|0];
- let sv=localStorage.getItem(SK),d0=null;try{d0=sv&&JSON.parse(sv);}catch(e){sv=null;}if(sv){const d=d0;const sol=d.v>=3?Math.floor(d.t/DAY+1):Math.floor(d.t/30+1);$('cont').style.display='';$('slotops').style.display='';$('cont').innerHTML=`Continue: <b>${d.name||'Colony'}</b><small>Sol ${sol} · ${d.cols?d.cols.length:d.pop} colonists · ${DIFF[d.diff||'standard'].n}${d.v>=3?'':' · will be upgraded'}</small>`;}else{$('cont').style.display='none';$('slotops').style.display='none';if((window.__pwa||{}).STAND){const m=$('loaderr');if(m&&!saveBlocked){m.style.display='block';m.innerHTML='📲 Welcome to the MARS app! Have a colony in Safari? Copy its save code there (💾 Saves), then tap <b>💾 Saves</b> below → <b>Paste &amp; import</b>.';}}}
+function showTitle(){window.marsActiveShow&&setTimeout(marsActiveShow,0);$('ui').style.display='none';$('title').style.display='flex';$('title').classList.remove('setup');$('cname').value='';nameSync();swClose();
+ let sv=localStorage.getItem(SK),d0=null;try{d0=sv&&JSON.parse(sv);}catch(e){sv=null;}if(sv){const d=d0;const sol=d.v>=3?Math.floor(d.t/DAY+1):Math.floor(d.t/30+1);$('contw').style.display='';$('srename').style.display='';$('cont').innerHTML=`Continue: <b>${d.name||'Colony'}</b><small>Sol ${sol} · ${d.cols?d.cols.length:d.pop} colonists · ${DIFF[d.diff||'standard'].n}${d.v>=3?'':' · will be upgraded'}</small>`;}else{$('contw').style.display='none';$('srename').style.display='none';if((window.__pwa||{}).STAND){const m=$('loaderr');if(m&&!saveBlocked){m.style.display='block';m.innerHTML='📲 Welcome to the MARS app! Have a colony in Safari? Copy its save code there (💾 Saves), then open <b>⚙️ Settings → 💾 Saves</b> → <b>Paste &amp; import</b>.';}}}
  demo();zoom=8;tgt.set(49*4+SH,0,48*4+SH);camUp();}
-document.querySelectorAll('#diff button').forEach(b=>b.onclick=()=>{selDiff=b.dataset.d;beep(700,.04);document.querySelectorAll('#diff button').forEach(x=>x.classList.toggle('on',x===b));});
-$('reroll').onclick=()=>{$('cname').value=NAMES[Math.random()*NAMES.length|0];beep(800,.04);};
+function nameSync(){const p=$('play');if(p)p.disabled=!($('cname').value||'').trim();}$('cname').addEventListener('input',nameSync);
+$('reroll').onclick=()=>{$('cname').value=NAMES[Math.random()*NAMES.length|0];nameSync();beep(800,.04);};
+/* v70: swipe the colony card left to reveal Delete */
+let swX=0,swOpen=false;function swSet(x,anim){const c=$('cont'),w=$('contw');w.classList.toggle('drag',!anim);c.style.transform=x?`translateX(${x}px)`:'';swX=x;}function swClose(){swOpen=false;if($('cont'))swSet(0,1);}
+{const w=$('contw');let p0=null,moved=false;w.addEventListener('pointerdown',e=>{if(e.target.closest('#cdel'))return;p0={x:e.clientX,y:e.clientY,b:swOpen?-96:0,id:e.pointerId};moved=false;});
+ w.addEventListener('pointermove',e=>{if(!p0||e.pointerId!==p0.id)return;const dx=e.clientX-p0.x;if(!moved&&Math.abs(dx)>8&&Math.abs(dx)>Math.abs(e.clientY-p0.y)){moved=true;try{w.setPointerCapture(e.pointerId);}catch(_){}}if(moved)swSet(Math.max(-110,Math.min(0,p0.b+dx)),0);});
+ const up=e=>{if(!p0)return;const was=moved;p0=null;if(!was)return;swOpen=swX<-48;swSet(swOpen?-96:0,1);w._sup=performance.now();};w.addEventListener('pointerup',up);w.addEventListener('pointercancel',up);
+ $('cdel').onclick=async()=>{beep(300,.05);await deleteColony();swClose();};}
 const muteUI=()=>{const m=$('mute');if(m){m.innerHTML=ICO(muted?'mute':'sound')+`<span>Sound: <b>${muted?'OFF':'ON'}</b></span>`;m.classList.toggle('off',muted);}const v=$('vol');if(v){v.value=Math.round(VOL*100);v.disabled=muted;const o=$('volv');if(o)o.textContent=Math.round(VOL*100)+'%';}};
 $('mute').onclick=()=>{muted=!muted;localStorage.setItem('marsMute',muted?'1':'0');muteUI();beep(700,.05);};
 {const v=$('vol');if(v){v.oninput=()=>{VOL=v.value/100;localStorage.setItem('marsVol',String(VOL));muteUI();};v.onchange=()=>beep(700,.06);}}
-$('setb').onclick=()=>{$('settings').style.display='flex';muteUI();beep(650,.03);};$('setx').onclick=()=>{$('settings').style.display='none';beep(500,.03);};$('settings').onclick=e=>{if(e.target.id==='settings')$('settings').style.display='none';};muteUI();
+$('setb').onclick=()=>{$('ssave').style.display=inGameNow()?'':'none';$('settings').style.display='flex';muteUI();beep(650,.03);};$('setx').onclick=()=>{$('settings').style.display='none';beep(500,.03);};$('settings').onclick=e=>{if(e.target.id==='settings')$('settings').style.display='none';};muteUI();
 $('howb').onclick=()=>{$('how').style.display=$('how').style.display==='block'?'none':'block';beep(700,.04);};
-$('newc').onclick=()=>{$('title').classList.add('setup');$('title').scrollTop=0;beep(660,.05,'triangle',.04);};$('setbk').onclick=()=>{$('title').classList.remove('setup');};$('play').onclick=()=>{$('play').blur();const cur=slotInfo(SK);if(cur&&!cur.bad&&!saveBlocked){if(!confirm(`Start a NEW colony?\n\n"${cur.name}" (Sol ${cur.sol}, ${cur.pop} colonists) will be moved to a backup slot — you can restore it from 💾 Saves.`))return;}if(cur&&localStorage.getItem(SK)){try{localStorage.setItem('marsOutpost.old',localStorage.getItem(SK));}catch(e){}}start(false,$('skiptut').checked);};$('savesb').onclick=()=>openSaveBox(false);$('renb').onclick=()=>renameColony();$('delb').onclick=()=>deleteColony();$('cont').onclick=()=>start(true);
+$('newc').onclick=()=>{$('title').classList.add('setup');$('title').scrollTop=0;beep(660,.05,'triangle',.04);};$('setbk').onclick=()=>{$('title').classList.remove('setup');};$('play').onclick=()=>{$('play').blur();const cur=slotInfo(SK);if(cur&&!cur.bad&&!saveBlocked){if(!confirm(`Start a NEW colony?\n\n"${cur.name}" (Sol ${cur.sol}, ${cur.pop} colonists) will be moved to a backup slot — you can restore it from 💾 Saves.`))return;}if(cur&&localStorage.getItem(SK)){try{localStorage.setItem('marsOutpost.old',localStorage.getItem(SK));}catch(e){}}start(false,$('skiptut').checked);};$('savesb').onclick=()=>{$('settings').style.display='none';openSaveBox(inGameNow());};$('cont').onclick=()=>{if(performance.now()-($('contw')._sup||0)<350)return;if(swOpen){swClose();return;}start(true);};$('srename').onclick=()=>{$('settings').style.display='none';renameColony();};
 camUp();showTitle();requestAnimationFrame(loop);
 Object.assign(window,{__S:()=>S,__cam:cam,__THREE:THREE,__agents:agents,__trucks:()=>trucks,__start:start,__sel:k=>{sel=k;menu();},__hgt:hgt,__zoom:(z,x,c)=>{zoom=z;tgt.set(x,0,c);camUp();}});
 
