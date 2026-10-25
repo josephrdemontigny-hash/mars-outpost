@@ -384,6 +384,10 @@ body.tutdim #mhead button:not(.tglow){opacity:.45;filter:saturate(.5)}
 #stip .stv{margin-left:auto;font:700 12px system-ui;color:#2a6a66;text-transform:none;letter-spacing:0;white-space:nowrap}#stip .std{margin-top:3px}#stip .sti{margin-top:4px;padding-top:4px;border-top:1.5px dashed rgba(42,18,8,.35);color:#2a6a66;font-weight:600}
 #lvl.tpulse{animation:tglow 1.05s ease-in-out infinite}#lvl .lvhint{font:800 9px 'Futura Condensed','Futura','Arial Narrow',sans-serif;letter-spacing:.22em;color:#3fd0c8;text-align:center;padding:2px 0 3px;animation:lvblink 1.05s steps(2) infinite}
 #play:disabled{opacity:.45;filter:saturate(.4);cursor:not-allowed}
+/* v73.1: framed button card — even 12px outer inset, 14px gap under the poster, single cream line, even internal rhythm */
+#title .card{width:calc(min(560px,100vw) - 24px)!important;margin:14px auto calc(12px + env(safe-area-inset-bottom))!important;padding:16px 14px!important;gap:12px!important;border-radius:6px!important;box-shadow:inset 0 0 0 3px var(--cream),3px 3px 0 rgba(42,18,8,.35)!important;max-height:calc(100dvh - var(--sat,0px) - 150px)!important}
+#title .card>*{margin-top:0!important;margin-bottom:0!important}#title .actc{margin:0 auto!important}#title .ins{display:none!important}
+@media(max-height:740px){#title .card{gap:9px!important;padding:12px 12px!important;margin-top:10px!important}}
 </style>
 </head><body>
 <script src="icons.js"></script>
@@ -399,7 +403,6 @@ body.tutdim #mhead button:not(.tglow){opacity:.45;filter:saturate(.5)}
 <div id="contw" style="display:none"><button id="cdel" tabindex="-1">🗑️<span>Delete</span></button><button id="cont" class="big alt"></button></div>
 <button id="newc" class="big">Start new colony</button><div id="loaderr" style="display:none"></div>
 <div id="actc" class="actc" style="display:none"></div>
-<div class="ins">© 2026 RED PLANET SOFT</div>
 <div class="row"><button id="howb">❓ How to play</button><button id="setb"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg> Settings</button></div>
 <div id="how"><b>Goal:</b> grow your outpost from a single pad to a thriving city.<br>
 • Build ☀️ power, 🌱 food and 🧊 water to keep colonists alive and happy.<br>
