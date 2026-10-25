@@ -1483,7 +1483,9 @@ function menu(){document.body.classList.toggle('hassel',!!sel&&!!B[sel]&&B[sel].
  gridLines.visible=!!sel;}
 let lastLock='';
 function clock(){const p=dayPhase(S.t),D=TUNE.DAY_SPLIT;let h=p<D?6+p/D*14:20+(p-D)/(1-D)*10;h%=24;const hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10;return`${p<D?'☀️':'🌙'} ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;}
-function terraPct(){const pop=S.cols.length,bots=(S.bots||[]).length,late=S.b.filter(b=>['reactor','mega','ent','bigfarm','refin'].includes(b.t)&&!(b.cons>0)).length;return Math.min(100,Math.round(pop*1.1+bots*.8+late*4+(S.tf||0)));}
+/* v71: slow curve — crew/robots give a capped trickle (~1% by Lv 3), late industry adds a few % each, the bulk comes from Terraformer (opm) runtime in S.tf */
+const TFW={reactor:1.2,mega:2,refin:.8,bigfarm:.6,ent:.3};function terraPct(){const pop=S.cols.length,bots=(S.bots||[]).length;let late=0;for(const b of S.b)if(TFW[b.t]&&!(b.cons>0))late+=TFW[b.t];const v=6*(1-Math.exp(-pop/50))+2*(1-Math.exp(-bots/20))+Math.min(30,late)+(S.tf||0);return Math.min(100,Math.round(v*10)/10);}
+const tfTxt=v=>v<10?v.toFixed(1):String(Math.round(v));
 /* v70: tap any HUD pill for a retro tooltip */
 let stipK=null,hudSt=null,hudKeys=[];const hudEl=k=>{const n=hudKeys.indexOf(k);return n<0?null:document.querySelector(`#hud .r[data-n="${n}"]`);};const pr=v=>v==null||isNaN(v)?'':` (${v>=0?'+':''}${(+v).toFixed(1)}/s)`;
 const STIP={'⭐':['Colony level','Your outpost rank. Each level unlocks buildings and perks.',()=>`Lv ${S.lvl||1} · ${LEVELS[S.lvl||1]?.n||''}`,'Tick off the goals in the task panel (top right).'],
@@ -1499,7 +1501,7 @@ const STIP={'⭐':['Colony level','Your outpost rank. Each level unlocks buildin
  '😊':['Happiness','Colony morale — low morale slows work and growth.',()=>Math.round(S.hap)+'%','Raise it with parks and décor near paths, steady food and roomy homes.'],
  'crew':['Builders free / total','Crew available for construction right now.',()=>`${Math.max(0,S.crewFree??0)} / ${S.crewPool??0}`,'More colonists = more builders. Robots help too.'],
  'bot':['Optimus robots','Haul ore and help build.',()=>(S.bots||[]).length,'Build a Robot Factory to make more.'],
- '🌍':['Terraforming','How far Mars is along to becoming habitable.',()=>terraPct()+'%','Grow the population and build late-game industry.'],
+ '🌍':['Terraforming','How far Mars is along to becoming habitable.',()=>tfTxt(terraPct())+'%','Grow the population and build late-game industry.'],
  '📅':['Sol & time','Martian day count and local time. Solar sleeps at night.',()=>`Sol ${Math.floor(S.t/DAY+1)} · ${clock()}`,'Time passes on its own — plan batteries for night.'],
  '🔬':['Research','Points to spend on technology.',()=>Math.floor(S.rp),'Build and staff Labs.'],'⚙️':['Parts','Advanced components for big builds.',()=>Math.floor(S.parts),'Build a Factory.'],
  '⛏️':['Ore','Raw rock from mines.',()=>Math.floor(S.ore),'Mines dig it; Processors turn it into 🧱.'],'💎':['Rare minerals','Valuable finds to sell on Earth.',()=>Math.floor(S.rare),'Survey deposits with rovers.'],
@@ -1519,7 +1521,7 @@ function hud(st){if(S.demo)return;const f=v=>(v>=0?'+':'')+v.toFixed(1);const po
  const items=nar?[['💰',k(S.cr)],['👩‍🚀',`${pop}/${st.house}`],['⚡',`${Math.round(st.pw)}/${Math.round(st.pu)}`,st.pw<st.pu],['🍞',k(S.food),S.food<5&&st.food<0],
  ['💧',k(S.wat),S.wat<5&&st.wat<0],['🧱',k(S.mat),S.mat<20],['⛽',k(S.fuel)],['😊',Math.round(S.hap)+'%',S.hap<40]]:[['🏴',S.name],['💰',Math.floor(S.cr)],['👩‍🚀',`${pop}/${st.house}`],['⚡',`${st.pw}/${st.pu}`,st.pw<st.pu],['🍞',`${Math.floor(S.food)} (${f(st.food)})`,S.food<5&&st.food<0],
  ['💧',`${Math.floor(S.wat)}/${st.wcap} (${f(st.wat)})`,S.wat<5&&st.wat<0],['🧱',Math.floor(S.mat),S.mat<20],['⛽',`${Math.floor(S.fuel)}/${st.fcap}`,S.fuel>=st.fcap&&st.fuel>0],['😊',Math.round(S.hap)+'%',S.hap<40]];
- items.unshift(lvChip());if(S.rp>0||cntB('lab'))items.push(['🔬',Math.floor(S.rp)]);if(S.parts>0||cntB('factory'))items.push(['⚙️',Math.floor(S.parts)]);if(S.storm)items.push(['🌪️','storm',true]);items.push([hvImg(),`${Math.max(0,S.crewFree??0)}/${S.crewPool??0}`,S.crewFree===0&&S.b.some(b=>isSite(b)&&!b._crew)]);if((S.bots||[]).length)items.push([hvImg('bot'),S.bots.length]);items.push(['🌍',`<span class="tf">${tf}%<span class="bar"><i style="width:${tf}%"></i></span></span>`]);
+ items.unshift(lvChip());if(S.rp>0||cntB('lab'))items.push(['🔬',Math.floor(S.rp)]);if(S.parts>0||cntB('factory'))items.push(['⚙️',Math.floor(S.parts)]);if(S.storm)items.push(['🌪️','storm',true]);items.push([hvImg(),`${Math.max(0,S.crewFree??0)}/${S.crewPool??0}`,S.crewFree===0&&S.b.some(b=>isSite(b)&&!b._crew)]);if((S.bots||[]).length)items.push([hvImg('bot'),S.bots.length]);items.push(['🌍',`<span class="tf">${tfTxt(tf)}%<span class="bar"><i style="width:${tf}%"></i></span></span>`]);
  if(st.bcap)items.splice(4,0,['🔋',Math.round(S.bat/st.bcap*100)+'%'+(st.batUse?' ⬇':''),S.bat<1&&st.batUse===0&&st.raw<st.pu]);if(S.ore>=1||S.b.some(b=>b.t==='mine'))items.push(['⛏️',Math.floor(S.ore)]);if(S.rare>0)items.push(['💎',Math.floor(S.rare)]);
  if(S.flights.length)items.push(['🛸',S.flights.length+' en route']);
  if(pop>=10&&(!nar||st.clean<.7))items.push(['♻️',Math.round(st.clean*100)+'%',st.clean<.7]);if(pop>=20&&(!nar||st.health<.7))items.push(['🩺',Math.round(st.health*100)+'%',st.health<.7]);
