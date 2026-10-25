@@ -114,7 +114,7 @@ const skyTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=2
 let zoom=9,rot=0,rotT=0,camEl=Math.atan2(64,80);const EL0=camEl;const tgt=new THREE.Vector3(N/2,0,N/2);
 const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,400);
 function camUp(){const a=innerWidth/innerHeight;cam.left=-zoom*a;cam.right=zoom*a;cam.top=zoom;cam.bottom=-zoom;cam.updateProjectionMatrix();
- const ang=Math.PI/4+rot,tw=tgt.clone().multiplyScalar(CS);{const tn=Math.max(.3,Math.tan(camEl)),D=Math.max(102.4,zoom/tn+30),ce=Math.cos(camEl);cam.far=D+zoom/tn+260;cam.updateProjectionMatrix();if(scene.fog){scene.fog.near=D+Math.max(0,zoom/tn*.2)+(zoom<30?40:0);scene.fog.far=D+zoom/tn*1.05+(zoom<30?98:30);}typeof terrLOD==='function'&&TCH.length&&terrLOD();cam.position.set(tw.x+Math.sin(ang)*ce*D,tw.y+Math.sin(camEl)*D,tw.z+Math.cos(ang)*ce*D);}cam.lookAt(tw);}
+ const ang=Math.PI/4+rot,tw=tgt.clone().multiplyScalar(CS);{const tn=Math.max(.3,Math.tan(camEl)),D=Math.max(102.4,zoom/tn+30),ce=Math.cos(camEl);cam.far=D+zoom/tn+1100;cam.updateProjectionMatrix();if(scene.fog){scene.fog.near=D+Math.max(0,zoom/tn*.2)+(zoom<30?40:0);scene.fog.far=D+zoom/tn*1.05+(zoom<30?98:30);}typeof terrLOD==='function'&&TCH.length&&terrLOD();cam.position.set(tw.x+Math.sin(ang)*ce*D,tw.y+Math.sin(camEl)*D,tw.z+Math.cos(ang)*ce*D);}cam.lookAt(tw);}
 const hemi=new THREE.HemisphereLight(0xffe6cc,0x8a4a2e,1.18);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1e0,2.6);sun.castShadow=true;sun.shadow.mapSize.set(matchMedia('(pointer:coarse)').matches?1024:2048,matchMedia('(pointer:coarse)').matches?1024:2048);sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;sun.shadow.radius=3;scene.add(sun,sun.target);
 // ---------- terrain
@@ -161,6 +161,18 @@ const TCH=[];function tgeo(x0,z0,sz,seg,dy,skirt){const tg=new THREE.PlaneGeomet
  const C=8,T0=-30,CSZ=(NW+60)/C;for(let i=0;i<C;i++)for(let j=0;j<C;j++){const x0=T0+i*CSZ,z0=T0+j*CSZ,hi=new THREE.Mesh(tgeo(x0,z0,CSZ,40,0),gm),lo=new THREE.Mesh(tgeo(x0,z0,CSZ,10,.002),gm);hi.receiveShadow=lo.receiveShadow=true;lo.visible=false;scene.add(hi,lo);TCH.push({hi,lo,cx:x0+CSZ/2,cz:z0+CSZ/2});}
  const sk=new THREE.Mesh(tgeo(-700,-700,NW+1400,90,0,1),gm);sk.receiveShadow=false;scene.add(sk);}
 function terrLOD(){const tx=tgt.x*CS,tz=tgt.z*CS,CSZ=(NW+60)/8;TCH.forEach(c=>{const d=Math.max(Math.abs(c.cx-tx),Math.abs(c.cz-tz))-CSZ/2;const h=zoom<40&&d<zoom*1.8+8;c.hi.visible=h;c.lo.visible=!h;});}
+
+/* v72: distant horizon — low-poly hills, mesas and crater rims, merged into 2 meshes (near/far ring), tinted toward the sky haze each frame */
+const HZN=(()=>{const Rn=mulberry(9127),cx=NW/2,out=[];
+ const mk=(r0,r1,n,mix)=>{const gs=[];for(let i=0;i<n;i++){const a=i/n*6.283+Rn()*.25,d=r0+Rn()*(r1-r0),x=cx+Math.cos(a)*d,z=cx+Math.sin(a)*d,t=Rn();let g;
+   if(t<.45){g=new THREE.ConeGeometry(18+Rn()*40,6+Rn()*16,5+Math.floor(Rn()*3),1);g.translate(0,g.parameters.height/2-1,0);}
+   else if(t<.75){const w=26+Rn()*50;g=new THREE.CylinderGeometry(w*.7,w,6+Rn()*12,7,1);g.translate(0,g.parameters.height/2-1,0);}
+   else{g=new THREE.TorusGeometry(20+Rn()*26,3+Rn()*3,3,12);g.rotateX(Math.PI/2);g.scale(1,.9,1);}
+   g=g.toNonIndexed();g.rotateY(Rn()*6.28);g.scale(1,1,.7+Rn()*.6);g.translate(x,-.5,z);const p=g.attributes.position,c=[];
+   for(let k=0;k<p.count;k++){const sh=.82+(p.getY(k)/22)*.25+Rn()*.05;c.push(.62*sh,.36*sh,.25*sh);}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.deleteAttribute('uv');g.deleteAttribute('normal');gs.push(g);}
+  const P=[],Cc=[];gs.forEach(g=>{P.push(...g.attributes.position.array);Cc.push(...g.attributes.color.array);g.dispose();});const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.Float32BufferAttribute(P,3));G.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));const m=new THREE.MeshBasicMaterial({vertexColors:true,fog:false,color:0xffffff});const me=new THREE.Mesh(G,m);me.userData.mix=mix;me.renderOrder=-1;scene.add(me);out.push(me);};
+ mk(520,700,46,.42);mk(760,980,40,.66);const base=new THREE.Color(0xffffff);
+ return{tint(sky){out.forEach(me=>me.material.color.copy(base).lerp(sky,me.userData.mix));}};})();
 const HUMAN=3.2; // v22b: one shared scale (tile units) for every colonist/robot figure everywhere
 const grid=new THREE.GridHelper(N,N,0x3a1608,0x3a1608);grid.position.set(N/2,0.05,N/2);grid.material.opacity=0;grid.material.transparent=true;grid.material.depthWrite=false;W.add(grid);
 const grid4=new THREE.GridHelper(N,N/4,0x2a0e04,0x2a0e04);grid4.position.set(N/2,0.06,N/2);grid4.material.opacity=0;grid4.material.transparent=true;grid4.material.depthWrite=false;W.add(grid4);grid.visible=grid4.visible=false;
@@ -2076,10 +2088,10 @@ const SITEK={ice:{ic:'🧊',n:'Ice deposit',c:0x7fe0ff},iron:{ic:'🔩',n:'Iron 
 const CENTER={x:184+SH,z:184+SH};
 // ---------- fog of war
 const fogC=document.createElement('canvas');fogC.width=fogC.height=1024;const fogX=fogC.getContext('2d');const fogTex=new THREE.CanvasTexture(fogC);fogTex.colorSpace=THREE.SRGBColorSpace;
-const fogMesh=new THREE.Mesh(new THREE.PlaneGeometry(2*N,2*N).rotateX(-Math.PI/2).translate(N/2,.035,N/2),new THREE.MeshBasicMaterial({map:fogTex,fog:true,transparent:true,depthWrite:false}));fogMesh.renderOrder=2;W.add(fogMesh);{const m=new THREE.MeshBasicMaterial({color:0x1c0802,transparent:true,opacity:.62,depthWrite:false,fog:true});const L=-N/2,H=1.5*N,F=8*N;[[ -F,-F,L,F],[H,-F,F,F],[L,-F,H,L],[L,H,H,F]].forEach(([x0,z0,x1,z1])=>{const g=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0).rotateX(-Math.PI/2).translate((x0+x1)/2,.035,(z0+z1)/2),m);g.renderOrder=2;W.add(g);fogMesh.userData.out=(fogMesh.userData.out||[]).concat(g);});}
-function drawFog(){const k=fogC.width/(2*N);fogX.setTransform(1,0,0,1,N/2*k,N/2*k);fogX.globalCompositeOperation='source-over';fogX.clearRect(-N,-N,4*N,4*N);fogX.fillStyle='rgba(28,8,2,.62)';fogX.fillRect(-N,-N,4*N,4*N);
- fogX.globalCompositeOperation='destination-out';(S.fog||[]).forEach(f=>{const g=fogX.createRadialGradient(f.x*k,f.z*k,f.r*k*.8,f.x*k,f.z*k,f.r*k*.9);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');fogX.fillStyle=g;fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.9,0,7);fogX.fill();});
- /* v40: bright survey rim on the frontier (only where fog remains) */fogX.globalCompositeOperation='source-atop';fogX.strokeStyle='rgba(236,186,140,.38)';fogX.lineWidth=Math.max(1.5,fogC.width/300);fogX.filter='blur(2px)';(S.fog||[]).forEach(f=>{fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.87,0,7);fogX.stroke();});fogX.filter='none';
+const fogMesh=new THREE.Mesh(new THREE.PlaneGeometry(2*N,2*N).rotateX(-Math.PI/2).translate(N/2,.035,N/2),new THREE.MeshBasicMaterial({map:fogTex,fog:true,transparent:true,depthWrite:false}));fogMesh.renderOrder=2;W.add(fogMesh);{const m=new THREE.MeshBasicMaterial({color:0xd6966c,transparent:true,opacity:.09,depthWrite:false,fog:true});const L=-N/2,H=1.5*N,F=8*N;[[ -F,-F,L,F],[H,-F,F,F],[L,-F,H,L],[L,H,H,F]].forEach(([x0,z0,x1,z1])=>{const g=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0).rotateX(-Math.PI/2).translate((x0+x1)/2,.035,(z0+z1)/2),m);g.renderOrder=2;W.add(g);fogMesh.userData.out=(fogMesh.userData.out||[]).concat(g);});}
+function drawFog(){const k=fogC.width/(2*N);fogX.setTransform(1,0,0,1,N/2*k,N/2*k);fogX.globalCompositeOperation='source-over';fogX.clearRect(-N,-N,4*N,4*N);fogX.fillStyle='rgba(214,150,108,.09)';fogX.fillRect(-N,-N,4*N,4*N);
+ fogX.globalCompositeOperation='destination-out';(S.fog||[]).forEach(f=>{const g=fogX.createRadialGradient(f.x*k,f.z*k,f.r*k*.62,f.x*k,f.z*k,f.r*k*.9);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');fogX.fillStyle=g;fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.9,0,7);fogX.fill();});
+ /* v40: bright survey rim on the frontier (only where fog remains) */fogX.globalCompositeOperation='source-atop';fogX.strokeStyle='rgba(236,186,140,.07)';fogX.lineWidth=Math.max(1.5,fogC.width/300);fogX.filter='blur(2px)';(S.fog||[]).forEach(f=>{fogX.beginPath();fogX.arc(f.x*k,f.z*k,f.r*k*.87,0,7);fogX.stroke();});fogX.filter='none';
  fogTex.needsUpdate=true;fogMesh.visible=!S.demo;(fogMesh.userData.out||[]).forEach(g=>g.visible=true);}
 const explored=(x,z)=>(S.fog||[]).some(f=>Math.hypot(x-f.x,z-f.z)<f.r*.85);
 window.__drawFog=()=>drawFog();
@@ -2323,14 +2335,14 @@ function celebrate(lv,era){S.lvlFx=1;const L=LEVELS[lv];let o=document.getElemen
   x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));x.restore();});requestAnimationFrame(step);};step();}
 
 const TUT=[
- {t:'Welcome to Mars',info:'The top bar is your colony at a glance: 💰 credits and 🧱 materials pay for building, 👩‍🚀 crew / beds, ⚡ power used / made, 🍞 food and 💧 water stocks.',done:()=>(!S.crewPending&&S.tut.t>3)||S.tut.t>9},
- {t:'Build a home',k:'hab',info:'A Habitat sleeps 6 and runs on its own roof solar, so it needs no grid. $120 + 40 🧱.'},
- {t:'Lay a footpath',path:1,info:'While builders raise the Habitat: paths are free, crew and rovers walk faster on them, and décor beside a path lifts happiness.',done:()=>(S.tut.pn||0)>=6},
- {t:'Feed the crew',k:'farm',info:'Every colonist eats a little each minute. A Farm Dome grows +1.2 🍞 but draws 1 ⚡ and some 💧.'},
- {t:'Tap the ice',k:'ice',info:'While the farm goes up: Mars hides ice under the dust. An Ice Extractor melts +2 💧 for crops and crew.'},
- {t:'Make power',k:'solar',info:'Farms and extractors draw ⚡. When use beats output, buildings brown out. Solar Arrays only work in daylight.'},
- {t:'Store power',k:'battery',info:'Batteries charge in the sun and keep the colony running through the night.',leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +$300');}},
- {t:'Upgrade the Habitat',up:'hab',info:'Upgrades add beds and output. Money comes from 🌍 Earth: sell surplus cargo there, and supply ships land with crew and 🧱 about every 1.5 Sols.',done:()=>S.b.some(b=>b.t==='hab'&&(b.lvl>=2||b.upT>0))},
+ {t:'Welcome to Mars',story:"Touchdown. As the dust settles, the crew gets a first look at the red horizon they'll call home.",info:'Top bar: 💰 credits, 🧱 materials, 👩\u200d🚀 crew/beds, ⚡ power, 🍞 food, 💧 water.',done:()=>(!S.crewPending&&S.tut.t>3)||S.tut.t>9},
+ {t:'Build a home',story:'The crew is tired of their cramped quarters aboard the ship. They need a real home on Mars.',k:'hab',info:'Sleeps 6, self-powered by roof solar · $120 + 40 🧱'},
+ {t:'Lay a footpath',story:'Fine red dust clings to every boot and creeps into every seal. A packed path will keep it out of the new home.',path:1,info:'Paths are free; crew and rovers walk faster on them.',done:()=>(S.tut.pn||0)>=6},
+ {t:'Feed the crew',story:'The ration packs from Earth are running low. Fresh food has to come from Martian soil now.',k:'farm',info:'+1.2 🍞 · uses 1 ⚡ and a little 💧'},
+ {t:'Tap the ice',story:'The scanners show something glittering under the dust: buried ice. Water means drinking, crops and life.',k:'ice',info:'+2 💧 for crops and crew'},
+ {t:'Make power',story:'The Sun sets fast on Mars, and the night is long and cold. The colony needs its own power.',k:'solar',info:'Daylight only; keep ⚡ output above use.'},
+ {t:'Store power',story:"The old-timers' warning: dust storms can blot out the Sun for days. Store the daylight while it lasts.",k:'battery',info:'Charges by day, runs the colony at night.',leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +$300');}},
+ {t:'Upgrade the Habitat',story:'The colony is alive, and more ships are coming. Make room for new faces, then build a future here.',up:'hab',info:'Upgrades add beds. Then tap the level panel (top right) for your next tasks.',done:()=>S.b.some(b=>b.t==='hab'&&(b.lvl>=2||b.upT>0))},
 ];
 for(const s of TUT)s.why=s.info;
 for(const s of TUT)if(!s.done&&s.k)s.done=()=>S.b.some(b=>b.t===s.k);/* v70: placing advances — builders work while the next step runs */
@@ -2369,8 +2381,8 @@ function renderTut(force){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.d
   const dots2=TUT.map((_,i)=>`<i data-i="${i}" class="${i<T.step?'d':i===T.step?'c':''}${i===vi?' v':''}"></i>`).join('');
   const nav=`<button class="tnav" id="tprev" ${vi<=0?'disabled':''}>‹</button><button class="tnav" id="tnext" ${vi>=T.step?'disabled':''}>›</button>`;
   if(tv!=null){const rv=vs.k?`Tap <b>BUILD</b>, then select <b>${B[vs.k].n}</b>`:vs.path?`Tap <b>BUILD</b>, then select <b>Footpath</b>`:vs.up?`Tap your <b>${B[vs.up].n}</b>, then <b>Upgrade</b>`:'Watch the crew ride the lift down';
-   el.innerHTML=`<div class="tt"><span>REVIEW ${tv+1}/${TUT.length} · <span class="th">${vs.t}${tv<T.step?' ✓':''}</span></span><span class="dots">${dots2}</span></div><div class="say"><span>${rv}</span></div><div class="why">${vs.why}</div><div class="tnr">${nav}<button id="tcur">Back to current ›</button></div>`;}
-  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1}/${TUT.length} · <span class="th">${st.t}</span></span><span class="dots">${dots2}</span></div><div class="say">${c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub&&st.path?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button></div>`;
+   el.innerHTML=`<div class="tt"><span>REVIEW ${tv+1}/${TUT.length} · <span class="th">${vs.t}${tv<T.step?' ✓':''}</span></span><span class="dots">${dots2}</span></div>${vs.story?`<div class="story">${vs.story}</div>`:''}<div class="say"><span>${rv}</span></div><div class="why">${vs.why}</div><div class="tnr">${nav}<button id="tcur">Back to current ›</button></div>`;}
+  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1}/${TUT.length} · <span class="th">${st.t}</span></span><span class="dots">${dots2}</span></div>${st.story?`<div class="story">${st.story}</div>`:''}<div class="say">${c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button></div>`;
   const go=i=>{tutView=Math.max(0,Math.min(T.step,i));tutViewT=performance.now();if(tutView===T.step)tutView=null;renderTut(true);};
   const pv=$('tprev'),nx=$('tnext'),cu=$('tcur');if(pv)pv.onclick=e=>{e.stopPropagation();go(vi-1);};if(nx)nx.onclick=e=>{e.stopPropagation();go(vi+1);};if(cu)cu.onclick=e=>{e.stopPropagation();go(T.step);};
   el.querySelectorAll('.dots i').forEach(d=>d.onclick=e=>{e.stopPropagation();const i=+d.dataset.i;if(i<=T.step)go(i);});
@@ -2402,7 +2414,7 @@ function sim(dt){S.t+=dt;if(!S.demo)for(const b of S.b)if(b.t==='opm'&&!(b.cons>
 // ---------- day / night
 function dayNight(){const t=S?S.t:0,p=dayPhase(t),k=dayK(t),D=TUNE.DAY_SPLIT;
  sun.intensity=.35+1.25*k;hemi.intensity=.42+.48*k;const sky=SKY_N.clone().lerp(SKY_DUSK,Math.min(1,k*2)).lerp(SKY_D,Math.max(0,k*2-1));
- if(k>.55){scene.background=skyTex;}else{if(!scene.background||!scene.background.isColor)scene.background=new THREE.Color();scene.background.copy(sky);}scene.fog.color.copy(sky);sun.color.setHex(0xfff0dd).lerp(new THREE.Color(0x9aa4d8),(1-k)*.7);
+ if(k>.55){scene.background=skyTex;}else{if(!scene.background||!scene.background.isColor)scene.background=new THREE.Color();scene.background.copy(sky);}scene.fog.color.copy(sky);HZN.tint(sky);sun.color.setHex(0xfff0dd).lerp(new THREE.Color(0x9aa4d8),(1-k)*.7);
  const ang=p<D?(p/D)*Math.PI:Math.PI+(p-D)/(1-D)*Math.PI;const e=Math.sin(ang);SUNANG=ang;DAYK=k;
  const dir=new THREE.Vector3(Math.cos(ang)*.8,Math.max(.45,e)+.2,.45).normalize();sun.position.copy(tgt).multiplyScalar(CS).addScaledVector(dir,45);sun.target.position.copy(tgt).multiplyScalar(CS);
  const n=1-k;const sc=sun.shadow.camera,w=Math.min(60,zoom*2.2);if(sc.right!==w){sc.left=-w;sc.right=w;sc.top=w;sc.bottom=-w;sc.far=120;sc.updateProjectionMatrix();}
