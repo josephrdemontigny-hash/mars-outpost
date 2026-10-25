@@ -439,19 +439,21 @@ function scorch(b,y,fade){if(!b)return;let m=SCORCH.get(b.id);if(!m){m=new THREE
  const c=bc(b),pad=b.t!=='ship',d=pad?B[b.t].s*3.2:Math.max(3,B.ship.s*1.7);m.position.set(c.x,(y??(pad?by(b)+.36:0))+.015,c.z);m.rotation.z=(b.id*1.7)%6.283;m.scale.set(d,d,1);m.updateMatrix();b.scorch=1;}
 function scorchFade(dt){SCORCH.forEach(m=>{const o=m.material.opacity;if(o<1)m.material.opacity=Math.min(1,o+dt*.4);});}
 function scorchSync(){SCORCH.forEach((m,id)=>{if(!byId(id)){W.remove(m);m.material.dispose();SCORCH.delete(id);}});if(S&&!S.demo)S.b.forEach(b=>{if(b.t==='ship'&&!b.scorch){const o=objs.get(b.id);if(o&&!o.userData.land)b.scorch=1;}if(b.scorch&&!SCORCH.has(b.id))scorch(b);});}
-function tickPuffs(dt){scorchFade(dt);puffs=puffs.filter(m=>{m.userData.life-=dt;m.position.addScaledVector(m.userData.v,dt);m.userData.v.multiplyScalar(1-dt*1.5);const L0=m.userData.L0||1.6;m.scale.setScalar((m.isSprite?.75:1)*4*(1+(L0-m.userData.life)*1.5));
+function tickPuffs(dt){scorchFade(dt);if(typeof autoTick!=='undefined'&&S&&!S.demo)autoTick(dt);if(typeof tutRingTick!=='undefined')tutRingTick();if(typeof padFadeTick!=='undefined')padFadeTick(dt);puffs=puffs.filter(m=>{m.userData.life-=dt;m.position.addScaledVector(m.userData.v,dt);m.userData.v.multiplyScalar(1-dt*1.5);const L0=m.userData.L0||1.6;m.scale.setScalar((m.isSprite?.75:1)*4*(1+(L0-m.userData.life)*1.5));
  m.material.opacity=Math.max(0,m.userData.life/L0*.7);if(m.userData.life<=0){W.remove(m);m.material.dispose();return false;}return true;});}
 // ship pose: y = bottom height, tilt 0 upright .. PI/2 horizontal
 const _tv=new THREE.Vector3();
 function tileSign(m){if(m.userData.ts)return m.userData.ts;const g=m.userData.g,o=m.rotation.x;m.rotation.x=Math.PI/2;m.updateMatrixWorld(true);_tv.set(0,0,-1).transformDirection(g.matrixWorld);m.rotation.x=o;m.userData.ts=_tv.y<0?1:-1;return m.userData.ts;}
-function pose(m,y,tilt){const g=m.userData.g;m.rotation.x=tilt*(tilt?tileSign(m):1);g.position.y=0;m.position.y=y+(SH_H/2+SH_SK)*Math.cos(tilt)+(SH_R+.05)*Math.sin(tilt);}
+function pose(m,y,tilt){const g=m.userData.g;m.rotation.x=tilt*(tilt?tileSign(m):1);g.position.y=0;m.position.y=y+(SH_H/2+SH_SK)*Math.cos(tilt)+(SH_R+.05)*Math.sin(tilt);
+ if(m.userData.pz0===undefined)m.userData.pz0=m.position.z;const sn=Math.sin(tilt)*(tilt?tileSign(m):1);m.position.z=m.userData.pz0-sn*SH_H*.28;}
 // Starship landing profile (like the real thing): belly-flop falling horizontal (tiles down) with flap corrections,
 // high-altitude relight + flip through vertical with a small overshoot, then a slow powered vertical descent.
-const PADL={T:11,Y0:72,YF:30},INTROL={T:17,Y0:150,YF:54};
-const hm=(u,p0,p1,m0,m1)=>{const u2=u*u,u3=u2*u;return(2*u3-3*u2+1)*p0+(u3-2*u2+u)*m0+(-2*u3+3*u2)*p1+(u3-u2)*m1;};function landPose(m,t,P=PADL){const T=P.T,tb=T*.42,tf=Math.min(2.6,T*.2),td=T-tb-tf;let y,tilt,fire=false,ph;
- if(t<tb){const u=t/tb;y=hm(u,P.Y0,P.YF+3,(P.YF+3-P.Y0)*1.25,-3/tf*tb);tilt=Math.PI/2+Math.sin(t*1.7)*.035+Math.sin(t*4.3)*.012;ph=0;}
- else if(t<tb+tf){const u=(t-tb)/tf;y=P.YF+3-3*u;const c1=1.9,c3=c1+1,e=1+c3*Math.pow(u-1,3)+c1*Math.pow(u-1,2);tilt=Math.PI/2*(1-e);fire=true;ph=1;}
- else{const u=Math.min(1,(t-tb-tf)/td);y=Math.max(0,hm(u,P.YF,0,-3/tf*td,0));tilt=(1-u)*(1-u)*Math.sin((t-tb-tf)*2.2)*.012;fire=u<1;ph=2;}
+const PADL={T:11,Y0:72,YF:30,FA:11},INTROL={T:17,Y0:150,YF:54,FA:11};/* v74: FA = flip altitude, ~2 ship heights */
+const hm=(u,p0,p1,m0,m1)=>{const u2=u*u,u3=u2*u;return(2*u3-3*u2+1)*p0+(u3-2*u2+u)*m0+(-2*u3+3*u2)*p1+(u3-u2)*m1;};function landPose(m,t,P=PADL){/* v74: continuous belly-flop — horizontal belly-first fall with flap wobble, engines light ~2 ship-heights up, one eased swing upright (base swings under, never stops), slow final descent with a small over-rotation and settle */
+ const T=P.T,FA=P.FA||P.YF,tf=1.8,tb=T*.55,td=T-tb-tf,y2=FA*.45,v2=1.2,v1=2*(FA-y2)/tf-v2;let y,tilt,fire=false,ph;
+ if(t<tb){const u=t/tb;y=hm(u,P.Y0,FA,(FA-P.Y0)*1.25,-v1*tb);tilt=Math.PI/2+Math.sin(t*1.7)*.045+Math.sin(t*4.3)*.016+Math.sin(t*9.1)*.006;fire=t>tb-.25;ph=0;}
+ else if(t<tb+tf){const s=t-tb,u=s/tf;y=FA-v1*s+.5*(v1-v2)/tf*s*s;const e=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;tilt=Math.PI/2*(1-e)-.06*e*e*e+(1-e)*Math.sin(t*4.3)*.016;fire=true;ph=1;}
+ else{const s=t-tb-tf,u=Math.min(1,s/td);y=Math.max(0,hm(u,y2,0,-v2*td,0));tilt=-.06*Math.exp(-2.6*s)*Math.cos(s*2.4);if(u>=1)tilt=0;fire=u<1;ph=2;}
  pose(m,y,tilt);const fl=m.getObjectByName('flame'),f2=m.getObjectByName('flame2');setFire(m,fire);
  const big=ph===1?1.8:ph===2?1.2+.6*(y/P.YF):1;const w=Math.min(1.1,big);if(fl.userData.y0===undefined){fl.userData.y0=fl.position.y+.8;f2.userData.y0=f2.position.y+.55;}const fk=Math.sin(t*23)*.5+Math.sin(t*37+1)*.3+Math.sin(t*51+2)*.2;const sy=(1.2+fk*.15)*big,sy2=(1.12+fk*.1)*big;fl.scale.set(w,sy,w);fl.position.y=fl.userData.y0-.8*sy;f2.scale.set(w,sy2,w);f2.position.y=f2.userData.y0-.55*sy2;
  const fls=m.userData.g.userData.flaps||[];fls.forEach((f,i)=>{const tw=ph===0?Math.sin(t*(5+i*1.3)+i)*.22+Math.sin(t*11+i*2)*.06:ph===1?.35*(i<2?1:-1):0;f.rotation.y=f.userData.fb+tw*Math.sign(f.userData.fb||1);});
@@ -652,7 +654,8 @@ const DET={
   K.put(DM.rub,new THREE.BoxGeometry(.06,.012,.5),.6,.3,.33,.9,-.75,0);K.box(DM.cab,.12,.1,.1,.18,.05,.82);K.pipe(DM.cable,.004,[.18,.01,.82],[.42,.01,.55]);
   const w=new THREE.Mesh(new THREE.TorusGeometry(.1,.015,6,20),DM.dkm);w.position.set(.42,.98,.42);w.name='spin';K.add(w);
   const pile=new THREE.Mesh(new THREE.DodecahedronGeometry(.16,1),M(0x7a3a1c,.95));pile.position.set(.8,.08,.8);pile.scale.y=.55;K.add(pile);return K.done();},
- pad:L=>{const K=KB();K.box(MAT.concrete,1.94,.06,1.94,1,.03,1);K.cyl(MAT.concrete,.82,.84,.04,1,.08,1,64);K.tor(DM.warnY,.7,.018,1,.1,1,96);K.tor(DM.warnY,.4,.01,1,.1,1,64);
+ pad:L=>{if(_base&&L<=1){/* v74: blast-cleared regolith pad made by the first landing */const K=KB();K.cyl(DM.rego,1.02,1.08,.03,1,.015,1,40);K.cyl(DM.rego2,.78,.8,.012,1,.034,1,40);for(let i=0;i<12;i++){const a=i/12*Math.PI*2;K.box(DM.acA,.16,.006,.035,1+Math.sin(a)*.96,.034,1+Math.cos(a)*.96,a);}for(let i=0;i<4;i++){const a=i/4*Math.PI*2+Math.PI/4;K.box(DM.acB,.05,.05,.05,1+Math.sin(a)*1.04,.04,1+Math.cos(a)*1.04,a);}return K.done();}
+  const K=KB();K.box(MAT.concrete,1.94,.06,1.94,1,.03,1);K.cyl(MAT.concrete,.82,.84,.04,1,.08,1,64);K.tor(DM.warnY,.7,.018,1,.1,1,96);K.tor(DM.warnY,.4,.01,1,.1,1,64);
   K.box(DM.warnY,.5,.004,.05,1,.101,1);K.box(DM.warnY,.05,.004,.5,1,.101,1);for(let i=0;i<16;i++){const a=i/16*Math.PI*2;K.box(DM.led,.03,.008,.03,1+Math.sin(a)*.78,.1,1+Math.cos(a)*.78);}
   for(let i=0;i<8;i++){const a=i/8*Math.PI*2+Math.PI/8;const x=1+Math.sin(a)*.93,z=1+Math.cos(a)*.93;K.box(MAT.concrete,.42,.16,.05,x,.11,z,a,-.35);}
   for(const[x,z]of[[.08,.08],[1.92,.08],[.08,1.92],[1.92,1.92]])K.box(DM.dkm,.08,.05,.08,x,.085,z);return K.done();},
@@ -863,7 +866,7 @@ function gItem(K,k,x,z,u,ax,s0){const w=u*.82,cx=Math.max(0,Math.min(s0,x)),cz=M
 const TILE_M=1.7/(.35*HUMAN);const MAINB=new Set(['hab','solar','farm','battery','wtank','mine','proc','robot','pad','tfarm','lab']);
 const coreK=()=>1;let _lot=null,_rot=0,_cs=1;const GMESH=new Set();
 // [long, short] footprint in metres, pressurised flag
-DM.acA=DM.frame.clone();DM.acA.name='DM.acA';DM.acB=DM.frame.clone();DM.acB.name='DM.acB';
+DM.rego=new THREE.MeshStandardMaterial({color:0xc98a62,roughness:1});DM.rego2=new THREE.MeshStandardMaterial({color:0xd29a72,roughness:1});DM.acA=DM.frame.clone();DM.acA.name='DM.acA';DM.acB=DM.frame.clone();DM.acB.name='DM.acB';
 const MODS={ghdome:[8.4,7,1],tunnel:[10,4.8,1],habmod:[10.4,4.6,1],habtall:[7.8,6.8,1],pvrow:[8.4,2.6],megapack:[7.6,2],vtank:[3.6,3.6],htank:[14,3.8],sphere:[6.6,6.6],
  hall:[10,7],workshop:[7.6,6.4],hangar:[13,10],silo:[4.4,4.4],stack:[2.2,2.2],crane:[6,2.6],conv:[9,1.6],drill:[4.4,4.4],ore:[6,6],dish:[5.6,5.6],labmod:[10.4,4.6,1],cont:[6.4,2.8],tower:[4.4,4.4],radiator:[6.2,2.4]};
 const PLANS={ // [L1 starter, L10 landmark, ...fill cycle in order]
@@ -935,7 +938,7 @@ function growth(g,t,L,keep){const R=RVt(t);if(!R)return;const d=B[t],s=d.s,s0=d.
   else if(k==='tunnel'){Bx(Kb,MAT.concrete,10,.45,4.8,0,.22,0);Hz(Kb,GHG,2.3,9.6,0,.45,0,1,0);for(let a=-4.8;a<=4.81;a+=1.6)Hz(Ks,DM.frame,2.34,.1,a,.45,0,1,1);for(const b of[-1.4,0,1.4]){Bx(Ks,DM.soil,8.8,.3,.8,0,.6,b);for(let a=-4.2;a<=4.21;a+=.5){const[X,Z]=W(a*sg,b),[x,z]=loc(X,Z),j=Math.sin(a*5.1+b*2.3);Kb.put((Math.round(a*2)&1)?DM.plant:DM.plant2,LEAFG,x,(.9+j*.06)*u,z,j,a,0,u*(1+.2*j),u,u*(1+.2*j));}}
    Bx(Kb,MAT.white,.3,2.5,1.8,4.85,1.25,0);door(5,0);}
   else if(k==='habmod'||k==='labmod'){for(const a of[-3.2,0,3.2])Bx(Ks,MAT.concrete,.7,.55,3.6,a,.27,0);Hz(Kb,MAT.white,2.25,9.2,0,2.45,0);for(const a of[-4.6,4.6])Hz(Ks,DM.frame,2.32,.2,a,2.45,0);/* v56 stepped end cap + ribs at the far end, */Hz(Kb,MAT.white,2.05,.3,-4.82,2.45,0);Hz(Kb,MAT.white,1.6,.25,-5.08,2.45,0);Hz(Ks,DM.frame,1.05,.18,-5.28,2.45,0);for(let q=0;q<8;q++){const t=q/8*Math.PI*2;Bx(Ks,DM.frame,.5,.06,.06,-4.95,2.45+Math.sin(t)*1.82,Math.cos(t)*1.82);}
-   for(const b of[-2.22,2.22]){Bx(Ks,DM.glassD,6,.55,.12,0,2.9,b);for(const y of[2.6,3.2])Bx(Ks,DM.acA,6.1,.04,.15,0,y,b);for(let a=-3;a<=3.01;a+=1)Bx(Ks,DM.frame,.04,.6,.15,a,2.9,b);}for(const a of[-1.6,1.6])Hz(Ks,DM.acA,2.27,.05,a,2.45,0);Pp(Ks,DM.frame,.05,-4.4,.75,1.95,4.2,.75,1.95);Pp(Ks,DM.dkm,.035,-4.4,.9,1.98,4.2,.9,1.98);vent(-3.4,4.62,-.6);ant(3.6,4.6,-.7);door(4.66,0,.45);/* v71 portholes + exhaust */for(const b of[-2.12,2.12])for(const a of[-3.4,-1.7,1.7,3.4]){Hz(Ks,DM.acB,.36,.1,a,1.7,b,0,0,1);Hz(Ks,DM.glassD,.27,.14,a,1.7,b,0,0,1);}if(k==='habmod'){Cy(Ks,DM.dkm,.16,.2,.9,-4.1,4.9,.9,10);Cy(Ks,DM.acB,.22,.22,.08,-4.1,5.36,.9,10);wsp(-4.1,5.5,.9,'puff',1.3);}Bx(Ks,DM.frame,1.4,.45,1.6,5.15,.22,0);
+   /* v74: window strip dropped — portholes moved up to mid-height, evenly spaced */for(const b of[-2.2,2.2])Bx(Ks,DM.acA,7.2,.05,.13,0,3.55,b);for(const a of[-1.6,1.6])Hz(Ks,DM.acA,2.27,.05,a,2.45,0);Pp(Ks,DM.frame,.05,-4.4,.75,1.95,4.2,.75,1.95);Pp(Ks,DM.dkm,.035,-4.4,.9,1.98,4.2,.9,1.98);vent(-3.4,4.62,-.6);ant(3.6,4.6,-.7);door(4.66,0,.45);/* v71 portholes + exhaust */for(const b of[-2.2,2.2])for(const a of[-3,-1,1,3]){Hz(Ks,DM.acB,.4,.1,a,2.75,b,0,0,1);Hz(Ks,DM.glassD,.3,.14,a,2.75,b,0,0,1);}if(k==='habmod'){Cy(Ks,DM.dkm,.16,.2,.9,-4.1,4.9,.9,10);Cy(Ks,DM.acB,.22,.22,.08,-4.1,5.36,.9,10);wsp(-4.1,5.5,.9,'puff',1.3);}Bx(Ks,DM.frame,1.4,.45,1.6,5.15,.22,0);
    if(k==='habmod'){for(const a of[-2.2,2.2]){Bx(Ks,DM.frame,.1,.5,.1,a,4.85,0);}Bx(Kb,DM.pv,6.4,.08,2.6,0,5.15,0);}else{Bx(Kb,MAT.blue,9.2,.35,4.62,0,1.2,0);Pp(Ks,DM.frame,.05,-2,4.6,0,-2,6.6,0);Sp(Kb,MAT.white,.6,-2,6.6,0);Cy(Kb,MAT.white,.7,.7,.5,2,4.85,0);}}
   else if(k==='habtall'){Cy(Kb,MAT.white,3.3,3.3,7.4,-.4,3.7,0,28);Sp(Kb,MAT.white,3.3,-.4,7.4,0,Math.PI/2);for(const y of[2.2,5.4]){Cy(Ks,DM.glassD,3.33,3.33,.6,-.4,y,0,28);for(const dy of[-.32,.32])Cy(Ks,DM.frame,3.35,3.35,.04,-.4,y+dy,0,28);for(let q=0;q<16;q++){const t=q/16*Math.PI*2;Bx(Ks,DM.frame,.05,.6,.05,-.4+Math.cos(t)*3.34,y,Math.sin(t)*3.34);}}for(const y of[.9,3.8,6.6])Cy(Ks,DM.acA,3.31,3.31,.03,-.4,y,0,28);ladB(-.4,-3.38,0,7.4);vent(-1.6,10.2,0);ant(.6,10.4,.4,2.2);Bx(Kb,MAT.white,1.6,2.6,2.2,3.3,1.3,0);for(const b of[-1.1,1.1])Bx(Ks,DM.frame,1.7,.04,.04,3.3,2.62,b);door(4.12,0);}
   else if(k==='pvrow'){const[x,z]=loc(o.x,o.z),lx=(!!ax)!==odd,tl=-.42*sg;Kb.put(DM.pv||MAT.panel,new THREE.BoxGeometry((lx?8.2:2.2)*u,.06*u,(lx?2.2:8.2)*u),x,1.3*u,z,lx?tl:0,0,lx?0:tl);for(const a of[-3.3,-1.1,1.1,3.3]){Bx(Ks,DM.frame,.07,1.25,.07,a,.62,0);Bx(Ks,MAT.concrete,.3,.08,.3,a,.04,0);}Pp(Ks,DM.frame,.02,-3.3,.3,0,-1.1,1.1,0);Pp(Ks,DM.frame,.02,1.1,1.1,0,3.3,.3,0);Bx(Ks,DM.acA,8.2,.1,.1,0,1.25,0);}
@@ -976,7 +979,7 @@ function model(t,lvl=1){if(t==='ship')return shipModel();const L10=lvl;if(MAINB.
 // ---------- state helpers
 let occ=[],occV=0;const objs=new Map();let uid=1,cid=1;const D4=[[1,0],[-1,0],[0,1],[0,-1]];
 const TK=(x,z)=>x+','+z;const tile=(x,z)=>S.tiles[TK(x,z)]||0;const walk=(x,z)=>tile(x,z)>0;const isRoad=()=>false;
-let rsv=[];function rebuildOcc(){occ=Array.from({length:N},()=>Array(N).fill(null));S.b.forEach(b=>{for(let i=0;i<B[b.t].s;i++)for(let j=0;j<B[b.t].s;j++)if(occ[b.x+i])occ[b.x+i][b.z+j]=b;});
+let _base=false;let rsv=[];function rebuildOcc(){occ=Array.from({length:N},()=>Array(N).fill(null));[...S.b.filter(b=>b.base),...S.b.filter(b=>!b.base)].forEach(b=>{for(let i=0;i<B[b.t].s;i++)for(let j=0;j<B[b.t].s;j++)if(occ[b.x+i])occ[b.x+i][b.z+j]=b;});
  rsv=Array.from({length:N},()=>Array(N).fill(null));const ch=[];S.b.forEach(b=>{const R=RVt(b.t);if(!R){b.lot=null;return;}const s=B[b.t].s,l={e:0,s:0,w:0,n:0};
   const okT=(x,z)=>x>=0&&z>=0&&x<N&&z<N&&(!occ[x][z]||occ[x][z]===b)&&!rsv[x][z]&&!blocked[x][z];
   for(let k=1;k<=R;k++){let st=0;if(l.e===k-1){const x=b.x+s-1+k;let ok=1;for(let z=b.z-l.n;z<b.z+s+l.s&&ok;z++)ok=okT(x,z);if(ok)l.e=k;}
@@ -1008,11 +1011,11 @@ const isDeco=t=>B[t].cat==='d';
 function defName(t){let n=1;const used=new Set(S.b.filter(b=>b.t===t).map(b=>b.name));while(used.has(B[t].n+' '+n))n++;return B[t].n+' '+n;}
 function rmObj(o){if(!o)return;const P=o.parent&&o.parent.userData.pv?o.parent:o;if(P.parent)P.parent.remove(P);if(o.userData.doorG)W.remove(o.userData.doorG);}
 function pivotPos(b,P,y){const d=B[b.t];P.position.set(b.x+d.s/2,y??by(b),b.z+d.s/2);}
-function placeObj(b){const old=objs.get(b.id);if(old)rmObj(old);_lot=b.lot||null;_rot=b.r||0;_cs=b.cs??((1+(b.r||0))%4);const o=model(b.t,Math.max(b.lvl,b.vmin||1));_lot=null;_rot=0;_cs=1;o.userData.bt=b.t;if(b.t==='ship'){const rk=o.getObjectByName('rk');if(rk){if(b.hd==null)b.hd=((b.id*2.399)%1.6)-.8;rk.rotation.y=Math.PI/4+.85+b.hd;}}if(b.spec)specParts(o,b.spec);details(o,b);if(b.paint&&paintable(b.t))paintObj(o,b.paint);o.traverse(m=>{const q=m.geometry?.parameters;if(m.isMesh&&q&&((q.radiusTop!==undefined&&Math.max(q.radiusTop,q.radiusBottom)<.035)||(q.width!==undefined&&Math.min(q.width,q.depth??1)<.035)))m.castShadow=false;});{const d=B[b.t],P=new THREE.Group();P.userData.pv=1;P.add(o);o.position.set(-d.s0/2,0,-d.s0/2);P.scale.setScalar(d.s/d.s0);P.rotation.y=-(b.r||0)*Math.PI/2;pivotPos(b,P);W.add(P);}objs.set(b.id,o);
+function placeObj(b){const old=objs.get(b.id);if(old)rmObj(old);_lot=b.lot||null;_base=!!b.base;_rot=b.r||0;_cs=b.cs??((1+(b.r||0))%4);const o=model(b.t,Math.max(b.lvl,b.vmin||1));_lot=null;_base=false;_rot=0;_cs=1;o.userData.bt=b.t;if(b.t==='ship'){const rk=o.getObjectByName('rk');if(rk){if(b.hd==null)b.hd=((b.id*2.399)%1.6)-.8;rk.rotation.y=Math.PI/4+.85+b.hd;}}if(b.spec)specParts(o,b.spec);details(o,b);if(b.paint&&paintable(b.t))paintObj(o,b.paint);o.traverse(m=>{const q=m.geometry?.parameters;if(m.isMesh&&q&&((q.radiusTop!==undefined&&Math.max(q.radiusTop,q.radiusBottom)<.035)||(q.width!==undefined&&Math.min(q.width,q.depth??1)<.035)))m.castShadow=false;});{const d=B[b.t],P=new THREE.Group();P.userData.pv=1;P.add(o);o.position.set(-d.s0/2,0,-d.s0/2);P.scale.setScalar(d.s/d.s0);P.rotation.y=-(b.r||0)*Math.PI/2;pivotPos(b,P);W.add(P);}objs.set(b.id,o);
  if(!isDeco(b.t)&&b.t!=='ship'){const w=new THREE.Sprite(warnMat);w.scale.set(.45,.45,.45);w.position.set(B[b.t].s0/2,1.1+B[b.t].s0*.3,B[b.t].s0/2);w.renderOrder=9;w.name='warn';w.visible=false;o.add(w);}
  doorModel(b);return o;}
-function addB(t,x,z,silent,extra={}){const b={t,x,z,r:extra.r||0,cs:extra.cs,id:extra.id||uid++,lvl:extra.lvl||1,name:extra.name||null,wave:extra.wave||0,ship:null,timer:extra.timer,hold:extra.hold,stock:extra.stock||0};if(paintable(t)){const pv=extra.paint??(S&&S.livery);if(pv)b.paint=pv;}uid=Math.max(uid,b.id+1);if(!b.name)b.name=defName(t);
- S.b.push(b);rebuildOcc();if(t==='pad'&&b.timer==null)b.timer=S.b.filter(q=>q.t==='pad').length>1?shipInterval(b):TUNE.FIRST_SHIP_AFTER;const o=placeObj(b);if(!silent){o.scale.set(1,.01,1);o.userData.grow=0;}refreshDoors();return b;}
+function addB(t,x,z,silent,extra={}){const b={t,x,z,r:extra.r||0,cs:extra.cs,id:extra.id||uid++,lvl:extra.lvl||1,name:extra.name||null,wave:extra.wave||0,ship:null,timer:extra.timer,hold:extra.hold,stock:extra.stock||0};if(extra.base)b.base=extra.base;if(paintable(t)){const pv=extra.paint??(S&&S.livery);if(pv)b.paint=pv;}uid=Math.max(uid,b.id+1);if(!b.name)b.name=defName(t);
+ S.b.push(b);rebuildOcc();if(t==='hab'&&S&&S.tut&&!S.tutAuto&&!S.demo)setTimeout(()=>tutPadPath(b),0);if(t==='pad'&&b.timer==null)b.timer=S.b.filter(q=>q.t==='pad').length>1?shipInterval(b):TUNE.FIRST_SHIP_AFTER;const o=placeObj(b);if(!silent){o.scale.set(1,.01,1);o.userData.grow=0;}refreshDoors();return b;}
 function delB(b){S.b=S.b.filter(x=>x!==b);const o=objs.get(b.id);rmObj(o);objs.delete(b.id);if(b.ship)W.remove(b.ship.F||b.ship.m);
  S.cols.forEach(c=>{if(c.home===b.id)c.home=null;if(c.work===b.id)c.work=null;});agents.forEach(a=>{if(a.at===b.id||a.dest===b.id){a.st='in';a.at=null;a.m.visible=false;}});rebuildOcc();refreshDoors();}
 const byId=id=>S.b.find(b=>b.id===id);
@@ -1380,20 +1383,30 @@ function consInit(o,b,up){const u=o.userData;if(u.cs)return u.cs;const d=B[b.t],
  /* v71: hug the real footprint (local bbox of the main solids, per axis) instead of assuming a 0..s0 square */
  const off=s0*.05,fe=fbx.isEmpty(),x0=(fe?0:Math.max(-s0*.3,fbx.min.x))-off,x1=(fe?s0:Math.min(s0*1.3,fbx.max.x))+off,z0=(fe?0:Math.max(-s0*.3,fbx.min.z))-off,z1=(fe?s0:Math.min(s0*1.3,fbx.max.z))+off,lo=Math.min(x0,z0),hi=Math.max(x1,z1),sp=Math.max(s0*.12,(x1-x0+z1-z0)/32),lv=Math.max(2,Math.min(6,Math.round(Hl/(s0*.22)))),poles=[];
  {const nx=Math.max(1,Math.round((x1-x0)/sp)),nz=Math.max(1,Math.round((z1-z0)/sp));for(let i=0;i<nx;i++){const t=x0+(x1-x0)*i/nx;poles.push([t,z0],[x1-(t-x0),z1]);}for(let i=0;i<nz;i++){const t=z0+(z1-z0)*i/nz;poles.push([x1,t],[x0,z1-(t-z0)]);}}
- slab.position.set((x0+x1)/2,th/2,(z0+z1)/2);slab.scale.set(x1-x0,th,z1-z0);const sc=new THREE.InstancedMesh(CONS.box,CONS.scafM,poles.length+lv*4+4);sc.userData.cx=1;sc.castShadow=true;sc.count=0;G.add(sc);
+ slab.position.set((x0+x1)/2,th/2,(z0+z1)/2);slab.scale.set(x1-x0,th,z1-z0);const sc=new THREE.InstancedMesh(CONS.box,CONS.scafM,Math.max(poles.length+lv*4+4,200));sc.userData.cx=1;sc.castShadow=true;sc.count=0;G.add(sc);
  // crate pile at the corner nearest the colony's supply (ship / storage / pad)
  const c=bc(b),src=S.b.filter(q=>q!==b&&(q.t==='ship'||q.t==='pad'||q.t==='lpad'||q.t==='wtank'||q.t==='battery')&&!(q.cons>0)).sort((p,q)=>Math.hypot(bc(p).x-c.x,bc(p).z-c.z)-Math.hypot(bc(q).x-c.x,bc(q).z-c.z))[0];
  const sx=src?Math.sign(bc(src).x-c.x)||1:1,sz=src?Math.sign(bc(src).z-c.z)||1:1,hf=d.s/2+.75;const pw=new THREE.Vector3(c.x+sx*hf,0,c.z+sz*hf);
  const pl=o.worldToLocal(W.localToWorld(pw.clone()));const pile=new THREE.InstancedMesh(CONS.box,CONS.crateM,8);pile.userData.cx=1;pile.castShadow=true;G.add(pile);
  const cs={U,cl,frames,fm,solids,dets,crops,G,slab,sc,poles,lv,lo,hi,x0,x1,z0,z1,pile,pl,y0,H,Hl,s0,up:!!up,lastH:-1,
-  pileS:(sx>0?(sz>0?2:1):(sz>0?3:0)),pileW:pw,lastN:-1};u.cs=cs;consPile(cs,8);return cs;}
+  pileS:(sx>0?(sz>0?2:1):(sz>0?3:0)),pileW:pw,lastN:-1,p:0};{const wx=x1-x0,wz=z1-z0,nm=(d.n||'');cs.kind=(/Dome|Biome/.test(nm)||['farm','gdome','bigdome','arco'].includes(b.t))?'dome':(Hl<s0*.3||['solar','pad','lpad','road','path'].includes(b.t))?'flat':(Hl>Math.max(wx,wz)*.9)?'tall':'hull';cs.sd=(sx>0?1:-1);}u.cs=cs;consPile(cs,8);return cs;}
 const C_fm=new THREE.Matrix4(),C_fb=new THREE.Box3(),C_m4=new THREE.Matrix4(),C_q=new THREE.Quaternion(),C_s3=new THREE.Vector3(),C_p3=new THREE.Vector3();
 function consPile(cs,n){if(n===cs.lastN)return;cs.lastN=n;const k=cs.s0*.11;for(let i=0;i<8;i++){const L=i<4?0:i<7?1:2,j=i<4?i:i<7?i-4:0;C_p3.set(cs.pl.x+((j%2)-.5)*k*1.05*(L?0.9:1),k*(L+.5),cs.pl.z+((j>>1)-.5)*k*1.05);C_q.setFromAxisAngle(C_s3.set(0,1,0),i*.37);C_m4.compose(C_p3,C_q,C_s3.set(k,k*.9,k));cs.pile.setMatrixAt(i,C_m4);}cs.pile.count=n;cs.pile.instanceMatrix.needsUpdate=true;}
-function consScaf(cs,h){h=Math.round(h*40)/40;if(h===cs.lastH)return;cs.lastH=h;if(h<=.01){cs.sc.count=0;return;}const t=cs.s0*.018;let n=0;
- for(const[x,z]of cs.poles){C_m4.compose(C_p3.set(x,h/2,z),C_q.identity(),C_s3.set(t,h,t));cs.sc.setMatrixAt(n++,C_m4);}
- const wx=cs.x1-cs.x0,wz=cs.z1-cs.z0,mx=(cs.x1+cs.x0)/2,mz=(cs.z1+cs.z0)/2;for(let l=1;l<=cs.lv;l++){const y=cs.Hl*1.05*l/cs.lv;if(y>h+.001)break;for(let sd=0;sd<4;sd++){const ax=sd%2===0;C_m4.compose(C_p3.set(ax?mx:(sd===1?cs.x1:cs.x0),y,ax?(sd===0?cs.z0:cs.z1):mz),C_q.identity(),C_s3.set(ax?wx:t*1.4,t*1.4,ax?t*1.4:wz));cs.sc.setMatrixAt(n++,C_m4);}}
+/* v74: purposeful, shape-specific construction (no perimeter cage) — one instanced draw */
+function consScaf(cs,h){const p=cs.p||0,key=Math.round(h*40)/40+'|'+Math.round(p*60);if(key===cs.lastH)return;cs.lastH=key;if(h<=.01){cs.sc.count=0;cs.sc.instanceMatrix.needsUpdate=true;return;}const t=cs.s0*.018;let n=0;const MX=cs.sc.instanceMatrix.count;
+ const put=(x,y,z,sx,sy,sz,ry=0,rz=0)=>{if(n>=MX)return;C_q.setFromEuler(C_eu.set(0,ry,rz));C_m4.compose(C_p3.set(x,y,z),C_q,C_s3.set(sx,sy,sz));cs.sc.setMatrixAt(n++,C_m4);};
+ const wx=cs.x1-cs.x0,wz=cs.z1-cs.z0,mx=(cs.x1+cs.x0)/2,mz=(cs.z1+cs.z0)/2,H=cs.Hl;
+ const ladder=(x,z,hh,ax)=>{const w=cs.s0*.07;for(const o of[-w,w])put(ax?x+o:x,hh/2,ax?z:z+o,t,hh,t);for(let y=w;y<hh;y+=w*1.4)put(x,y,z,ax?w*2:t*.8,t*.8,ax?t*.8:w*2);};
+ if(cs.kind==='dome'){/* base ring, then curved ribs rise one by one into the frame; the glass fills in behind (shader band) */const R=Math.min(wx,wz)/2*.98,NR=12,SEG=7,ring=C_sm(0,.12,p);
+  for(let i=0;i<24*ring;i++){const a=i/24*Math.PI*2;put(mx+Math.cos(a)*R,t,mz+Math.sin(a)*R,t*1.6,t*1.6,R*.27,-a);}
+  for(let k=0;k<NR;k++){const kp=C_sm(.1+k*.045,.18+k*.045,p);if(kp<=0)continue;const a=k/NR*Math.PI*2;const ns=Math.ceil(SEG*kp);for(let j=0;j<ns;j++){const th0=j/SEG*Math.PI/2,th1=(j+1)/SEG*Math.PI/2,tm=(th0+th1)/2,rr=R*Math.cos(tm),yy=Math.min(H,R)*Math.sin(tm);put(mx+Math.cos(a)*rr,yy,mz+Math.sin(a)*rr,t,R*(Math.PI/2)/SEG*1.05,t,-a,tm);}}}
+ else if(cs.kind==='flat'){/* racks are laid, then panels drop on (shader band) */const k=C_sm(0,.35,p),nr=Math.max(2,Math.round(wz/(cs.s0*.25)));for(let i=0;i<nr;i++){const z=cs.z0+wz*(i+.5)/nr;put(mx,t*1.5,z,wx*k,t*1.2,t*1.2);for(const x of[cs.x0+wx*.15,cs.x1-wx*.15])if(k>.5)put(x,t*3,z,t*1.2,t*5,t*1.2);}}
+ else if(cs.kind==='tall'){/* slim one-side ladder + a little crane arm lifting the top piece */const x=cs.sd>0?cs.x1+t*2:cs.x0-t*2;ladder(x,mz,h,0);if(p>.55&&p<.95){const top=Math.min(h,H)+cs.s0*.08;put(x,top,mz,t*1.2,cs.s0*.16,t*1.2);put((x+mx)/2,top+cs.s0*.08,mz,Math.abs(x-mx),t*1.2,t*1.2);put(mx,top+cs.s0*.04-(1-C_sm(.55,.9,p))*cs.s0*.02,mz,t*.5,cs.s0*.08,t*.5);}}
+ else{/* hulls & habitats: support cradles first, then a small work platform + ladder on the worker side */const along=wx>=wz,L=along?wx:wz,Wd=along?wz:wx,c0=C_sm(0,.15,p);for(const f of[.18,.82]){const q=(along?cs.x0:cs.z0)+L*f;const cw=Wd*.75,ch=cs.s0*.06*c0;if(c0>0){if(along){put(q,ch/2,mz,t*2.5,ch,cw);}else put(mx,ch/2,q,cw,ch,t*2.5);}}
+  if(p>.15&&p<.94){const hh=Math.min(h,H*.95),side=cs.sd;const px=along?mx+L*.18:(side>0?cs.x1+t*3:cs.x0-t*3),pz=along?(side>0?cs.z1+t*3:cs.z0-t*3):mz+L*.18;ladder(px,pz,hh,along?1:0);put(px+(along?cs.s0*.1:0),hh,pz+(along?0:cs.s0*.1),along?cs.s0*.3:cs.s0*.12,t*1.2,along?cs.s0*.12:cs.s0*.3);}}
  cs.sc.count=n;cs.sc.instanceMatrix.needsUpdate=true;}
-function consUpdate(o,b,p,dt){const cs=consInit(o,b,b.upT>0&&!(b.cons>0));const U=cs.U,H=cs.H,y0=cs.y0;o.getWorldPosition(C_cv);U.cC.value.set(C_cv.x,C_cv.z);
+const C_eu=new THREE.Euler();
+function consUpdate(o,b,p,dt){const cs=consInit(o,b,b.upT>0&&!(b.cons>0));cs.p=p;const U=cs.U,H=cs.H,y0=cs.y0;o.getWorldPosition(C_cv);U.cC.value.set(C_cv.x,C_cv.z);
  o.localToWorld(C_cv2.set(cs.s0/2,0,cs.s0/2));U.cC.value.set(C_cv2.x,C_cv2.z);
  if(cs.up){consScaf(cs,cs.Hl*1.05*(1-C_sm(.94,.995,p))*Math.min(1,p*12));cs.slab.visible=false;consPile(cs,Math.max(1,Math.ceil(8*(1-p))));return cs;}
  const fs=C_sm(0,.1,p);cs.slab.visible=fs>0;cs.slab.scale.y=Math.max(.001,(.03*cs.s0+.015)*fs);cs.slab.position.y=cs.slab.scale.y/2;
@@ -1730,7 +1743,7 @@ function autoPath(b,hyp){if(!B[b.t]||B[b.t].cat!=='b'||b.t==='ship'||b.t==='opm'
   const tiles=[...e.run,...out.reverse()],cost=hit[0]+e.run.length*.2;if(tiles.some(([x,z])=>inCore(x,z)))continue;
   if(!best||cost<best.cost)best={cost,tiles:T0?[...tiles,...T0.e.run]:tiles,cs:e.cs,o2:T0};}
  return best;}
-function applyAP(b){const p=autoPath(b);if(!p)return 0;let n=0;b.ap=b.ap||[];b.apU=b.apU||[];p.tiles.forEach(([x,z])=>{const k=TK(x,z);if(!b.apU.includes(k))b.apU.push(k);if(!S.tiles[k]&&!occ[x][z]){S.tiles[k]=1;b.ap.push(k);n++;}});
+function applyAP(b){if(S.tut&&b.t==='farm'&&S.tut.step<=3)return 0;/* v74: the tutorial teaches the farm path by hand */const p=autoPath(b);if(!p)return 0;let n=0;b.ap=b.ap||[];b.apU=b.apU||[];p.tiles.forEach(([x,z])=>{const k=TK(x,z);if(!b.apU.includes(k))b.apU.push(k);if(!S.tiles[k]&&!occ[x][z]){S.tiles[k]=1;b.ap.push(k);n++;}});
  changed();refreshDoors();if(n)toast(`🚶 Footpath laid to the ${B[b.t].n} door (${n} tiles, free)`);return n;}
 /* v38: remove a building's auto-laid tiles (never hand-painted ones, never ones another building's connector uses) */
 function apRemove(b){const own=b.ap||[];let n=0;own.forEach(k=>{if(S.b.some(q=>q!==b&&(q.apU||[]).includes(k)))return;if(S.tiles[k]){delete S.tiles[k];n++;}});
@@ -1877,10 +1890,10 @@ $('rotb').onclick=()=>rotateAct();
 const SK='marsOutpost37',SV=37,SLOTS=['marsOutpost37.old','marsOutpost37.bak0','marsOutpost37.bak1','marsOutpost37.bak2']; // v37: fresh slot — true-scale growth system needs a clean colony
 try{if(!localStorage.getItem('marsV22wipe')){['marsOutpost','marsOutpost.old','marsOutpost.bak0','marsOutpost.bak1','marsOutpost.bak2'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('marsV22wipe','1');}}catch(e){}
 let saveBlocked=false,lastSaved=0,lastBak=0,saveErrT=0;
-const SAVE_KEYS=['livery','lvTapped','cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen',
+const SAVE_KEYS=['livery','lvTapped','padMade','tutAuto','cr','mat','ore','rare','bat','food','wat','fuel','hap','t','diff','name','tiles','warned','cols','mkt','mktPrev','order','flights','tut','lastSol','launches','crewPending','botsLanded','ship2','ship2T','lastLandT','lvl','lvBase','made','supplyN','flightsDone','tradeEarned','arrivals','nextArr','waveLanded','waveQueued','eraDone','lvOpen',
  'bots','rovers','rovId','sites','fog','tech','rp','parts','partsMade','scouts','surveys','techN','births','oreDug','roverWater','storms','storm','nextStorm','nightPow','outRuns','lastMeteor','town','tutBonus','safeT','tf','atm','opm2','lv10','lv36','store'];
 function saveData(){const d={v:SV,N,saved:Date.now()};SAVE_KEYS.forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});
- d.b=S.b.map(({id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin,cs,ap,apU,paint})=>({paint,cs,ap,apU,id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin}));d.pop=S.cols.length;return d;}
+ d.b=S.b.map(({id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin,cs,ap,apU,paint,base})=>({base,paint,cs,ap,apU,id,t,x,z,r,lvl,name,timer,hold,stock,wave,cons,consN,crewN,upT,upN,frostT,spec,hb,auto,call,cool,rich,siteId,rareK,vmin}));d.pop=S.cols.length;return d;}
 function rotateBak(js){try{for(let i=2;i>0;i--){const v=localStorage.getItem('marsOutpost.bak'+(i-1));if(v)localStorage.setItem('marsOutpost.bak'+i,v);}localStorage.setItem('marsOutpost.bak0',js);}catch(e){console.warn('backup rotate failed',e);}}
 function save(){if(!S||S.demo||saveBlocked||intro)return false;try{const js=JSON.stringify(saveData());const prev=localStorage.getItem(SK);
   if(prev&&Date.now()-lastBak>180000){rotateBak(prev);lastBak=Date.now();}localStorage.setItem(SK,js);lastSaved=Date.now();saveUI();if(window.marsActivePing&&S.t>60)setTimeout(marsActivePing,0);return true;}
@@ -1932,10 +1945,10 @@ function loadFail(e){console.error('load failed',e);saveBlocked=true;showTitle()
 
 $('mktb').onclick=()=>openM();
 $('ssave').onclick=()=>{save();toast('✅ Saved');};$('newg').onclick=()=>{save();showTitle();};
-$('doneb').onclick=e=>{e.stopPropagation();if(moving){moving.x=moving.b.x;moving.z=moving.b.z;moving.ok=true;moving.snap=0;endMove();beep(500,.05,'square',.04);return;}const wasDoze=sel==='dozer';sel=null;document.body.classList.remove('placing');if(typeof tapStart!=='undefined'){tapStart=null;}updPrev();menu();if(wasDoze)dozeSync();beep(500,.05,'square',.04);};$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(!menuOpen&&S&&S.tut&&TUT[S.tut.step]?.k)tab='b';if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
+$('doneb').onclick=e=>{e.stopPropagation();if(moving){moving.x=moving.b.x;moving.z=moving.b.z;moving.ok=true;moving.snap=0;endMove();beep(500,.05,'square',.04);return;}const wasDoze=sel==='dozer';sel=null;document.body.classList.remove('placing');if(typeof tapStart!=='undefined'){tapStart=null;}updPrev();menu();if(wasDoze)dozeSync();beep(500,.05,'square',.04);};$('buildb').onclick=()=>{if(document.body.classList.contains('placing')){document.body.classList.remove('placing');sel=null;updPrev();menu();return;}if(!menuOpen&&!(S&&S.tut))tab=null;if(!menuOpen&&S&&S.tut)tab=null;if(sel==='dozer')sel=null;setMenu(!menuOpen);dozeSync();};$('dozeb').onclick=()=>{sel=sel==='dozer'?null:'dozer';beep(sel?300:500,.06,'square',.04);menu();updPrev();dozeSync();if(sel)toast('🚜 Bulldoze mode — tap a building or drag over paths. Tap 🚜 again to stop.');};$('undob').onclick=()=>undoStroke();$('mclose').onclick=()=>setMenu(false);
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);camUp();});
 // ---------- ships
-function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;const base=by(b)+.36,cx=bc(b).x,cz=bc(b).z;
+function shipTick(b,dt,st){const o=objs.get(b.id);if(!o||b.cons>0)return;if(b.base&&!b.ship&&shipOnPad(b))return;const base=by(b)+.36,cx=bc(b).x,cz=bc(b).z;
  if(b.t==='lpad'&&!b.ship){if(!b.call||S.t<b.call.due)return;if(!b.call.go){b.call.go=1;b.timer=0;}}if(!b.ship){b.timer-=dt;if(b.timer<=0&&!S.demo&&S.t-(S.lastLandT??-999)<TUNE.LAND_GAP){b.timer=TUNE.LAND_GAP-(S.t-S.lastLandT)+5+Math.random()*10;}if(b.timer<=0){S.lastLandT=S.t;const m=rocket();m.rotation.order="YXZ";m.rotation.y=Math.PI/4+.85+rot+(Math.random()-.5)*.2;const F=new THREE.Group();F.scale.setScalar(4);F.position.set(cx,0,cz);F.add(m);W.add(F);b.ship={m,F,ph:'land',t:0};if(!S.demo)rumble(6,.2);}return;}
  const sh=b.ship,m=sh.m,fl=m.getObjectByName('flame'),fl2=m.getObjectByName('flame2');sh.t+=dt;if(sh.ph==='land'&&sh.t>PADL.T+30)sh.t=PADL.T;if(sh.ph==='up'&&sh.t>12)sh.t=4.6;m.position.x=0;m.position.z=0;
  if(sh.ph==='land'){const r=landPose(m,sh.t,PADL);m.position.y+=base/4;if(r.ph===2&&r.y<5){sh.dT=(sh.dT||0)-dt;if(sh.dT<=0){sh.dT=.35;dust(cx,cz,base,r.y<1.5?10:5);}}
@@ -1963,7 +1976,7 @@ function shipShadow(holder,m,on,gy){let s=holder.userData.shd;
  const w=R*blur;s.scale.set(Math.max(w*2,(len+w)/.75),1,w*2);s.material.opacity=.6*Math.max(0,Math.min(1,1-am/900))/Math.sqrt(blur);}
 function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData.land;if(!L)return;any=true;L.t+=dt;if(L.t>(L.P||PADL).T+30)L.t=(L.P||PADL).T;const rk=o.getObjectByName('rk');if(L.t<0){rk.visible=false;return;}
  rk.visible=true;if(!L.r){L.r=1;if(!S.demo)rumble(6,.15);}const P=L.P||PADL;const r=landPose(rk,L.t,P);shipShadow(o,rk,true,0);const b=byId(id);if(b&&r.ph===2&&r.y<6){L.dT=(L.dT||0)-dt;if(L.dT<=0){L.dT=.3;dust(bc(b).x,bc(b).z,0,r.y<1.5?12:6);if(!L.r2&&r.y<2){L.r2=1;if(!S.demo)rumble(4,.12);}}}
- if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);shipShadow(o,rk,false);delete o.userData.land;if(b){b.frostT=S.t;scorch(b,undefined,1);dustRing(bc(b).x,bc(b).z,S.demo?14:30);}if(L.arr&&b)landedArrival(b,L.arr);if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:bc(b).x,cz:bc(b).z,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
+ if(L.t>=P.T){pose(rk,0,0);setFire(rk,false);shipShadow(o,rk,false);delete o.userData.land;if(b){b.frostT=S.t;scorch(b,undefined,1);dustRing(bc(b).x,bc(b).z,S.demo?14:30);}if(b&&P===INTROL&&!L.second&&!L.arr&&!S.demo&&!S.padMade)firstPad(b);if(L.arr&&b)landedArrival(b,L.arr);if(L.second&&b){S.ship2='done';assign();refreshDoors();startUnload({sid:b.id,cx:bc(b).x,cz:bc(b).z,gy:0,items:[{k:'cargo',mat:150}],onDone:()=>toast('📦 Serenity unloaded +150 🧱 — and its power systems join the grid (+15 ⚡)')});}}});
  if(!S.demo)arrivalsTick();if(!any&&!S.demo&&!S.unloadStarted&&(S.crewPending||(S.botsLanded||0)<2)){S.unloadStarted=1;const ships=S.b.filter(b=>b.t==='ship');let crew=S.crewPending,bq=2-(S.botsLanded||0);
   ships.forEach((b,i)=>{const items=[];const n=Math.ceil(crew/(ships.length-i));crew-=n;for(let k=n;k>0;k-=3)items.push({k:'crew',n:Math.min(3,k)});if(bq>0){items.push({k:'bot'});bq--;}
    if(i===ships.length-1)while(bq-->0)items.push({k:'bot'});if(items.length)startUnload({sid:b.id,cx:bc(b).x,cz:bc(b).z,gy:0,items,onDone:()=>{if(!S.crewPending&&!unloads.some(u=>u.sid!==b.id&&!u.done)&&!S.tut)toast(`👩‍🚀 Your crew is on the surface. Welcome to Mars!`);}});});
@@ -1973,8 +1986,13 @@ function tickLandings(dt){let any=false;objs.forEach((o,id)=>{const L=o.userData
 function freeShipSpot(){const s0=S.b.find(b=>b.t==='ship');const cx=s0?s0.x:176+SH,cz=s0?s0.z:176+SH;
  for(let pass=0;pass<2;pass++)for(let r=16;r<(pass?140:64);r+=2)for(let k=0;k<24;k++){const a=k/24*6.283+.4,x=Math.round(cx+Math.cos(a)*r),z=Math.round(cz+Math.sin(a)*r);let ok=free('ship',x,z);
   if(ok&&!pass)for(let i=-4;i<=11&&ok;i++)for(let j=-4;j<=11;j++){const o=occ[x+i]?.[z+j];if(o){ok=false;break;}}if(ok)return[x,z];}return null;}
+function shipOnPad(p){return S.b.some(q=>q.t==='ship'&&q.x===p.x&&q.z===p.z&&q!==p);}
+function padSpot(){const p=S.b.find(b=>b.t==='pad'&&b.base&&!b.ship&&!(b.cons>0));return p&&!shipOnPad(p)?[p.x,p.z]:null;}
+/* v74: the opening touchdown blasts the regolith clear — it becomes the colony's first, free Landing Pad (fades in as the dust settles) */
+function firstPad(sh){S.padMade=1;if(S.b.some(b=>b.t==='pad'))return;const p=addB('pad',sh.x,sh.z,1,{base:1,name:'First Pad'});p.timer=TUNE.FIRST_SHIP_AFTER;const o=objs.get(p.id);if(o){const ms=[];o.traverse(m=>{if(m.isMesh&&m.material){m.material=m.material.clone();m.material.transparent=true;m.material.userData.o1=m.material.opacity;m.material.opacity=0;ms.push(m.material);}});padFades.push({ms,t:-1.2});}}
+let padFades=[];function padFadeTick(dt){padFades=padFades.filter(f=>{f.t+=dt;const k=Math.max(0,Math.min(1,f.t/3));f.ms.forEach(m=>{m.opacity=k*(m.userData.o1??1);if(k>=1){m.transparent=false;}});return k<1;});}
 function ship2Tick(){if(S.demo||S.ship2!=='pending'||S.crewPending||(S.botsLanded||0)<2||unloads.length)return;
- const due=S.t>=S.ship2T||(S.tut&&S.tut.step>=3&&S.t>=S.ship2T*.5);if(!due||S.t-(S.lastLandT??-999)<TUNE.LAND_GAP)return;const p=freeShipSpot();if(!p)return;
+ const due=S.t>=S.ship2T||(S.tut&&S.tut.step>=3&&S.t>=S.ship2T*.5);if(!due||S.t-(S.lastLandT??-999)<TUNE.LAND_GAP)return;const p=padSpot()||freeShipSpot();if(!p)return;
  S.ship2='landing';S.lastLandT=S.t;const b=addB('ship',p[0],p[1],1);b.name='Serenity';const o=objs.get(b.id);o.userData.land={t:0,P:INTROL,second:1};o.getObjectByName('rk').visible=false;
  toast('🚀 Second Starship "Serenity" is on final approach — watch the sky!',1);}
 // ---------- tutorial (the early game, told as a story)
@@ -2364,63 +2382,83 @@ function celebrate(lv,era){S.lvlFx=1;const L=LEVELS[lv];let o=document.getElemen
   x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));x.restore();});requestAnimationFrame(step);};step();}
 
 const TUT=[
- {t:'Welcome to Mars',story:"Touchdown. As the dust settles, the crew gets a first look at the red horizon they'll call home.",info:'Top bar: 💰 credits, 🧱 materials, 👩\u200d🚀 crew/beds, ⚡ power, 🍞 food, 💧 water.',done:()=>(!S.crewPending&&S.tut.t>3)||S.tut.t>9},
- {t:'Build a home',story:'The crew is tired of their cramped quarters aboard the ship. They need a real home on Mars.',k:'hab',info:'Sleeps 6, self-powered by roof solar · $120 + 40 🧱'},
- {t:'Lay a footpath',story:'Fine red dust clings to every boot and creeps into every seal. A packed path will keep it out of the new home.',path:1,info:'Paths are free; crew and rovers walk faster on them.',done:()=>(S.tut.pn||0)>=6},
- {t:'Feed the crew',story:'The ration packs from Earth are running low. Fresh food has to come from Martian soil now.',k:'farm',info:'+1.2 🍞 · uses 1 ⚡ and a little 💧'},
+ {t:'Welcome to Mars',story:"Touchdown. As the dust settles, the crew gets a first look at the red horizon they'll call home.",info:'Top bar: 💰 credits, 🧱 materials, 👩\u200d🚀 crew/beds, ⚡ power, 🍞 food, 💧 water.',welcome:1,done:()=>!!S.tut.nx},
+ {t:'Build a home',story:'The crew is tired of their cramped quarters aboard the ship. They need a real home on Mars. The builders will clear a footpath to it from the pad.',k:'hab',info:'Sleeps 6, self-powered by roof solar · $120 + 40 🧱'},
+ {t:'Feed the crew',story:'Everyone has a bed now, but the ration packs from Earth are running low. Fresh food has to come from Martian soil.',k:'farm',info:'+1.2 🍞 · uses 1 ⚡ and a little 💧'},
+ {t:'Connect the farm',story:'The harvest is no use if nobody can reach it. Lay your own path from the farm to the footpath the builders cleared.',path:1,info:'Paths are free; crew and rovers walk faster on them. Draw from the glowing ring to the path.',done:()=>{const k=farmLinked();if(k)setTimeout(()=>{apAll();refreshDoors()},60);return k}},
  {t:'Tap the ice',story:'The scanners show something glittering under the dust: buried ice. Water means drinking, crops and life.',k:'ice',info:'+2 💧 for crops and crew'},
  {t:'Make power',story:'The Sun sets fast on Mars, and the night is long and cold. The colony needs its own power.',k:'solar',info:'Daylight only; keep ⚡ output above use.'},
  {t:'Store power',story:"The old-timers' warning: dust storms can blot out the Sun for days. Store the daylight while it lasts.",k:'battery',info:'Charges by day, runs the colony at night.',leave:()=>{S.mat+=150;S.cr+=300;toast('📦 The crew unpacked the last starter cargo: +150 🧱 +$300');}},
- {t:'Upgrade the Habitat',story:'The colony is alive, and more ships are coming. Make room for new faces, then build a future here.',up:'hab',info:'Upgrades add beds. Then tap the level panel (top right) for your next tasks.',done:()=>S.b.some(b=>b.t==='hab'&&(b.lvl>=2||b.upT>0))},
+ {t:'Upgrade the Habitat',story:'The colony is alive, and more ships are coming. Make room for new faces, then build a future here.',up:'hab',info:'Upgrades add beds. Then tap the level panel (top right) for your next tasks.',done:()=>S.b.some(b=>b.t==='hab'&&b.lvl>=2&&!(b.upT>0))},
 ];
 for(const s of TUT)s.why=s.info;
-for(const s of TUT)if(!s.done&&s.k)s.done=()=>S.b.some(b=>b.t===s.k);/* v70: placing advances — builders work while the next step runs */
+for(const s of TUT)if(!s.done&&s.k)s.done=()=>S.b.some(b=>b.t===s.k&&!(b.cons>0));/* v74: each step waits until construction is finished *//* v70: placing advances — builders work while the next step runs */
+function tutPad(){return S.b.find(b=>b.t==='pad'&&b.base)||S.b.find(b=>b.t==='pad')||S.b.find(b=>b.t==='ship');}
+function padEdge(p){const s=B[p.t].s,o=[];for(let i=-1;i<=s;i++)for(let j=-1;j<=s;j++){if(i>=0&&i<s&&j>=0&&j<s)continue;if((i<0||i>=s)&&(j<0||j>=s))continue;o.push([p.x+i,p.z+j]);}return o;}
+function pathNet(){const p=tutPad(),h=S.b.find(b=>b.t==='hab'),seen=new Set(),q=[];const sd=[...[p,h].filter(Boolean).flatMap(padEdge)];if(p){/* the pad's blast keep-out ring counts as part of the network */const c=bc(p);for(let i=-9;i<=9;i++)for(let j=-9;j<=9;j++){const x=Math.floor(c.x)+i,z=Math.floor(c.z)+j;if(S.tiles[TK(x,z)]&&[[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const r=rsv[x+a]?.[z+b],o=occ[x+a]?.[z+b];return (r&&(r===p||r.t==='ship'))||(o&&(o===p||o.t==='ship'));}))sd.push([x,z]);}}sd.forEach(([x,z])=>{const k=TK(x,z);if(S.tiles[k]&&!seen.has(k)){seen.add(k);q.push([x,z]);}});while(q.length){const[x,z]=q.pop();for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const k=TK(x+dx,z+dz);if(S.tiles[k]&&!seen.has(k)){seen.add(k);q.push([x+dx,z+dz]);}}}return seen;}
+function farmLinked(){const f=S.b.find(b=>b.t==='farm');if(!f)return false;const n=pathNet();if(connected(f))return perim(f).concat(padEdge(f)).some(([x,z])=>n.has(TK(x,z)));const c=[...perim(f)];if(RVt(f.t))for(const e of apExits(f,f.lot)){c.push(e.ex,...e.run);}return c.some(([x,z])=>[[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>n.has(TK(x+a,z+b))));}
+function farmStart(){const f=S.b.find(b=>b.t==='farm');if(!f)return null;const n=[...pathNet()].map(k=>k.split(',').map(Number));const c=padEdge(f).filter(([x,z])=>!occ[x]?.[z]);if(!c.length)return null;if(!n.length)return c[0];let best=c[0],bd=1e9;for(const a of c)for(const b of n){const d=Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);if(d<bd){bd=d;best=a;}}return best;}
+/* v74: placing the tutorial Habitat auto-lays a free footpath from the landing pad to its door (normal path tiles, animated in) */
+let autoQ=[],autoT=0;function tutPadPath(h){const p=tutPad();if(!p||!h)return;S.tutAuto=1;refreshDoors();const d=h.door;if(!d)return;const st=padStart(p);if(!st)return;
+ const ok=(x,z)=>(!occ[x]?.[z]||(x===d.x&&z===d.z))&&!pathWhy(x,z,'path');const r=astar({x:st[0],z:st[1]},{x:d.x,z:d.z},(x,z)=>ok(x,z)||(x===st[0]&&z===st[1]));if(r)autoQ=r.map(c=>[c.x,c.z]);}
+function autoTick(dt){if(!autoQ.length)return;autoT-=dt;if(autoT>0)return;autoT=.09;const[x,z]=autoQ.shift();const k=TK(x,z);if(!S.tiles[k]&&!pathWhy(x,z,'path')){S.tiles[k]=1;changed();if(Math.random()<.5)beep(300+Math.random()*80,.02,'triangle',.02);}if(!autoQ.length){setTimeout(()=>{if(typeof apAll==='function')apAll();refreshDoors();},0);toast('🚶 The builders cleared a footpath from the pad to the Habitat');}}
+function pathTouchesPad(){const p=tutPad();if(!p)return (S.tut.pn||0)>=6;return padEdge(p).some(([x,z])=>S.tiles[TK(x,z)]);}
+function padStart(p){/* edge cell facing open ground, toward the map centre */const c=padEdge(p).filter(([x,z])=>!occ[x]?.[z]&&!S.tiles[TK(x,z)]);const sp=S.b.find(b=>b.t==='ship');c.sort((a,b)=>(b[0]+b[1])-(a[0]+a[1]));return c.find(([x,z])=>!sp||Math.hypot(x-sp.x,z-sp.z)>0)||c[0];}
+const tutRing=(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.36,.5,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x3fd0c8,transparent:true,opacity:.9,depthWrite:false,toneMapped:false,fog:false}));m.renderOrder=5;m.visible=false;W.add(m);return m;})();
+function tutRingTick(){if(!tutRing.visible)return;const k=(performance.now()/1050)%1;tutRing.scale.setScalar(tutRing.userData.r*(1+.35*Math.sin(k*Math.PI*2)));tutRing.material.opacity=.55+.4*Math.cos(k*Math.PI*2);}
 function tutWants(k){if(!S||!S.tut)return false;const st=TUT[S.tut.step];return !!st&&st.k===k;}
 const tutArrow=(()=>{const g=new THREE.Group();const c=mesh(new THREE.ConeGeometry(.22,.45,12),new THREE.MeshStandardMaterial({color:0x3fd0c8,emissive:0x3fd0c8,emissiveIntensity:.9}),0,0,0,false);c.rotation.x=Math.PI;g.add(c);g.scale.setScalar(4);g.visible=false;W.add(g);return g;})();
 let tutRT=0;
-function tutTick(dt){const T=S.tut;if(!T.v){T.v=70;T.step=[0,1,3,4,5,6,7][T.step]??T.step;}T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
+function tutTick(dt){const T=S.tut;if(!T.v){T.v=70;T.step=[0,1,3,4,5,6,7][T.step]??T.step;}if(T.v<74){T.v=74;if(T.step>=3)T.step=Math.min(T.step+1,8);else if(T.step===2)T.step=3;}T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
  if(st.k&&sel===st.k&&S.b.some(b=>b.t===st.k)){$('doneb').click();}if(st.done()){if(st.leave)st.leave();if(st.path&&sel==='path'){sel=null;menu();updPrev();}T.step++;T.t=0;beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}renderTut(true);return;}
  const n=performance.now();if(n-tutRT>150){tutRT=n;renderTut();}}
 function tutClear(){document.querySelectorAll('.tglow').forEach(e=>e.classList.remove('tglow'));document.body.classList.remove('tutdim');}
-function endTut(){S.tut=null;$('tut').style.display='none';tutArrow.visible=false;tutClear();document.body.classList.remove('tuton');S.b.filter(b=>b.t==='pad').forEach(b=>b.timer=Math.min(b.timer,TUNE.FIRST_SHIP_AFTER));menu();
+function endTut(){S.tut=null;$('tut').style.display='none';tutArrow.visible=false;tutRing.visible=false;tutClear();document.body.classList.remove('tuton');S.b.filter(b=>b.t==='pad').forEach(b=>b.timer=Math.min(b.timer,TUNE.FIRST_SHIP_AFTER));menu();
  if(!S.tutBonus){S.tutBonus=1;S.mat+=120;S.cr+=200;}toast(`🎉 Tutorial complete! Bonus +120 🧱 +$200. Follow the ⭐ level goals to grow your colony.`);toast('🏠 Build more Habitats — arriving crew only stay if there is room.');}
+const TCR=()=>ICO('crane'),II=k=>`<i class="ii">${bIc(k)}</i>`,BS=k=>`Tap <b>BUILD</b>, then select ${II(k)}<b>${B[k].n}</b>`;
 // what to press next for the current step: {say, sel (element to glow), arrow (building to point at)}
 function tutCue(st){const ph=innerWidth<700,pl=document.body.classList.contains('placing');
  const site=S.b.find(b=>b.cons>0&&B[b.t]&&B[b.t].cat==='b'),bsub=site?`👷 ${B[site.t].n} under construction${site._crew?'':' · waiting for crew'}`:null;
- if(st.path){if(sel==='path')return{ic:'🚶',say:'Drag across the ground to paint a path',sub:`${Math.min(6,S.tut.pn||0)} / 6 tiles${bsub?' · '+bsub:''}`};
-  const say='Tap <b>BUILD</b>, then select <b>Footpath</b>';if(!menuOpen||pl)return{ic:'🚶',say,sub:bsub,sel:'#buildb'};if(!tab)return{ic:'🚶',say,sub:bsub,sel:'#mtools .cat[data-cat="p"]'};if(tab!=='p')return{ic:'🚶',say,sel:'#mback'};return{ic:'🚶',say,sub:bsub,sel:'#mtools .b[data-k="path"]',scroll:1};}
- if(st.k){const d=B[st.k],site=S.b.find(b=>b.t===st.k&&b.cons>0);
-  if(sel===st.k)return{ic:'👆',say:hover&&hover.ok?`Tap <b>✓ PLACE</b> to build the <b>${d.n}</b>`:`Drag the outline to a green spot`,sub:bsub,sel:hover&&hover.ok?'#placeb':null};
-  const say=`Tap <b>BUILD</b>, then select <b>${d.n}</b>`;
-  if(!menuOpen||pl)return{ic:bIc(st.k),say,sub:bsub,sel:'#buildb'};
-  if(!tab)return{ic:bIc(st.k),say,sub:bsub,sel:'#mtools .cat[data-cat="b"]'};
-  if(tab!=='b')return{ic:bIc(st.k),say,sel:'#mback'};
-  return{ic:bIc(st.k),say,sub:bsub,sel:`#mtools .b[data-k="${st.k}"]`,scroll:1};}
+ if(st.path){const ps=farmStart();const ring=ps?{x:ps[0]+.5,z:ps[1]+.5,r:1.6}:null;
+  if(sel==='path')return{ic:'tap',say:'Drag from the glowing ring to the footpath',sub:bsub,ring};
+  const say=BS('path');if(!menuOpen||pl)return{ic:TCR(),say,sub:bsub,sel:'#buildb'};if(!tab)return{ic:TCR(),say,sub:bsub,sel:'#mtools .cat[data-cat="p"]'};if(tab!=='p')return{ic:TCR(),say,sel:'#mback'};return{ic:TCR(),say,sub:bsub,sel:'#mtools .b[data-k="path"]',scroll:1};}
+ if(st.k){const d=B[st.k],site=S.b.find(b=>b.t===st.k&&b.cons>0);if(site){const tot=site.consN||CONS_T;const pc=Math.max(0,Math.min(100,Math.round(100*(1-site.cons/Math.max(1,tot)))));return{ic:'builder',say:`Builders at work on the ${II(st.k)}<b>${d.n}</b>…`,sub:`<span class="tbar"><i style="width:${pc}%"></i></span>${site._crew?'':' Waiting for crew'}`,ring:{x:bc(site).x,z:bc(site).z,r:B[st.k].s*.95}};}
+  if(sel===st.k){const hv=hover&&B[st.k]?{x:hover.x+B[st.k].s/2,z:hover.z+B[st.k].s/2,r:B[st.k].s*.9}:null;return hover&&hover.ok?{ic:'tap',say:`Tap <b>✓ PLACE</b> to build the ${II(st.k)}<b>${d.n}</b>`,sub:bsub,sel:'#placeb',ring:hv}:{ic:'tap',say:`Drag the outline to a green spot`,sub:bsub,ring:hv};}
+  const say=BS(st.k);
+  if(!menuOpen||pl)return{ic:TCR(),say,sub:bsub,sel:'#buildb'};
+  if(!tab)return{ic:TCR(),say,sub:bsub,sel:'#mtools .cat[data-cat="b"]'};
+  if(tab!=='b')return{ic:TCR(),say,sel:'#mback'};
+  return{ic:TCR(),say,sub:bsub,sel:`#mtools .b[data-k="${st.k}"]`,scroll:1};}
  if(st.up){const nm=B[st.up].n,f=S.b.filter(b=>b.t===st.up).sort((a,c)=>(a.cons>0)-(c.cons>0))[0];if(!f)return{say:`Build a ${nm} first`};
-  /* v71: no separate 'wait' line — same instruction throughout, with a sub-note while it's still being built */if(f.cons>0)return{ic:'👆',say:`Tap your <b>${nm}</b>, then <b>Upgrade</b>`,sub:'Upgrade unlocks as soon as construction finishes.',arrow:f};
-  if(panel&&panel.b===f)return{ic:'⬆️',say:'Tap <b>Upgrade</b>',sel:'#pup'};
-  if(menuOpen&&!pl)return{ic:'👆',say:'Close the build menu',sel:'#mclose'};
-  return{ic:'👆',say:`Tap your <b>${nm}</b>, then <b>Upgrade</b>`,arrow:f};}
-return{ic:'🚀',say:'Watch the crew come down',sub:'Pinch to zoom, drag to look around.'};}
+  /* v71: no separate 'wait' line — same instruction throughout, with a sub-note while it's still being built */const fr={x:bc(f).x,z:bc(f).z,r:B[st.up].s*.95},nmI=`${II(st.up)}<b>${nm}</b>`;if(f.cons>0)return{ic:'tap',say:`Tap your ${nmI}, then <b>Upgrade</b>`,sub:'Upgrade unlocks as soon as construction finishes.',arrow:f,ring:fr};
+  {const u=S.b.find(b=>b.t===st.up&&b.upT>0);if(u){const pc=Math.round(100*Math.max(0,Math.min(1,1-u.upT/(u.upN||1))));return{ic:'builder',say:`Builders at work upgrading the ${nmI}…`,sub:`<span class="tbar"><i style="width:${pc}%"></i></span>`,ring:{x:bc(u).x,z:bc(u).z,r:B[st.up].s*.95}};}}
+  if(panel&&panel.b===f)return{ic:'up',say:'Tap <b>Upgrade</b>',sel:'#pup'};
+  if(menuOpen&&!pl)return{ic:'tap',say:'Close the build menu',sel:'#mclose'};
+  return{ic:'tap',say:`Tap your ${nmI}, then <b>Upgrade</b>`,arrow:f,ring:fr};}
+const down=crewDown();if(down&&!S.tut.rd)S.tut.rd=S.tut.t;if(down&&S.tut.t-S.tut.rd>=2.5)return{ic:'tap',say:'The crew is on the ground. Tap <b>Next</b> when you are ready',sel:'#tutnext',next:1};
+ return{ic:'🚀',say:'Watch the crew come down',sub:'Pinch to zoom, drag to look around.'};}
+/* v74: the Welcome card waits for every crew member to ride the lift down and step onto the ground */
+function crewDown(){if(intro)return false;let land=false;objs.forEach(o=>{if(o.userData.land)land=true;});if(land)return false;if(typeof unloads!=='undefined'&&unloads.some(u=>!u.done))return false;return S.cols.length>0&&!unloads.length;}
 let tutKey='',tutView=null,tutViewT=0;
-function renderTut(force){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.display='none';tutArrow.visible=false;tutClear();document.body.classList.remove('tuton');return;}const st=TUT[T.step];if(!st)return;
+function renderTut(force){const T=S&&S.tut,el=$('tut');if(!T||S.demo){el.style.display='none';tutArrow.visible=false;tutRing.visible=false;tutClear();document.body.classList.remove('tuton');return;}const st=TUT[T.step];if(!st)return;
  document.body.classList.add('tuton');el.style.display='block';const c=tutCue(st);if(tutView!=null&&performance.now()-tutViewT>12000)tutView=null;const key=T.step+'|'+c.say+'|'+(c.sub||'')+'|'+tutView;
  if(force||key!==tutKey){tutKey=key;const dots=TUT.map((_,i)=>`<i class="${i<T.step?'d':i===T.step?'c':''}"></i>`).join('');
   const tv=tutView!=null&&tutView!==T.step&&TUT[tutView]?tutView:null,vs=tv!=null?TUT[tv]:st,vi=tv!=null?tv:T.step;
   const dots2=TUT.map((_,i)=>`<i data-i="${i}" class="${i<T.step?'d':i===T.step?'c':''}${i===vi?' v':''}"></i>`).join('');
   const nav=`<button class="tnav" id="tprev" ${vi<=0?'disabled':''}>‹</button><button class="tnav" id="tnext" ${vi>=T.step?'disabled':''}>›</button>`;
-  if(tv!=null){const rv=vs.k?`Tap <b>BUILD</b>, then select <b>${B[vs.k].n}</b>`:vs.path?`Tap <b>BUILD</b>, then select <b>Footpath</b>`:vs.up?`Tap your <b>${B[vs.up].n}</b>, then <b>Upgrade</b>`:'Watch the crew ride the lift down';
+  if(tv!=null){const rv=vs.k?TCR()+BS(vs.k):vs.path?TCR()+BS('path')+' from the landing pad':vs.up?`Tap your ${II(vs.up)}<b>${B[vs.up].n}</b>, then <b>Upgrade</b>`:'Watch the crew ride the lift down';
    el.innerHTML=`<div class="tt"><span>REVIEW ${tv+1}/${TUT.length} · <span class="th">${vs.t}${tv<T.step?' ✓':''}</span></span><span class="dots">${dots2}</span></div>${vs.story?`<div class="story">${vs.story}</div>`:''}<div class="say"><span>${rv}</span></div><div class="why">${vs.why}</div><div class="tnr">${nav}<button id="tcur">Back to current ›</button></div>`;}
-  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1}/${TUT.length} · <span class="th">${st.t}</span></span><span class="dots">${dots2}</span></div>${st.story?`<div class="story">${st.story}</div>`:''}<div class="say">${c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button></div>`;
+  else el.innerHTML=`<div class="tt"><span>STEP ${T.step+1}/${TUT.length} · <span class="th">${st.t}</span></span><span class="dots">${dots2}</span></div>${st.story?`<div class="story">${st.story}</div>`:''}<div class="say">${['tap','up','builder'].includes(c.ic)?ICO(c.ic):c.ic?icoS(c.ic):''}<span>${c.say}</span></div>${c.sub?`<div class="sub">${c.sub}</div>`:''}<div class="why">${st.why}</div><div class="tnr">${T.step>0?nav:''}<button id="tutskip">Skip tutorial</button>${c.next?'<button id="tutnext">Next ›</button>':''}</div>`;
   const go=i=>{tutView=Math.max(0,Math.min(T.step,i));tutViewT=performance.now();if(tutView===T.step)tutView=null;renderTut(true);};
   const pv=$('tprev'),nx=$('tnext'),cu=$('tcur');if(pv)pv.onclick=e=>{e.stopPropagation();go(vi-1);};if(nx)nx.onclick=e=>{e.stopPropagation();go(vi+1);};if(cu)cu.onclick=e=>{e.stopPropagation();go(T.step);};
   el.querySelectorAll('.dots i').forEach(d=>d.onclick=e=>{e.stopPropagation();const i=+d.dataset.i;if(i<=T.step)go(i);});
   if(!el._sw){el._sw=1;let sx=null;el.addEventListener('pointerdown',e=>{sx=[e.clientX,e.clientY];},true);el.addEventListener('pointerup',e=>{if(!sx)return;const dx=e.clientX-sx[0],dy=e.clientY-sx[1];sx=null;const T2=S.tut;if(!T2||Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.5)return;const cv=tutView!=null?tutView:T2.step;tutView=Math.max(0,Math.min(T2.step,cv+(dx<0?1:-1)));tutViewT=performance.now();if(tutView===T2.step)tutView=null;renderTut(true);},true);}
-  if($('tutskip'))$('tutskip').onclick=()=>{if(T.step<=6){S.mat+=150;S.cr+=300;}endTut();};}
+  if($('tutnext'))$('tutnext').onclick=e=>{e.stopPropagation();S.tut.nx=1;};if($('tutskip'))$('tutskip').onclick=()=>{if(T.step<=6){S.mat+=150;S.cr+=300;}endTut();};}
  const tg=c.sel?document.querySelector(c.sel):null;document.querySelectorAll('.tglow').forEach(e=>{if(e!==tg)e.classList.remove('tglow');});
  if(tg&&!tg.classList.contains('tglow')){tg.classList.add('tglow');if(c.scroll)tg.scrollIntoView({block:'nearest',behavior:'smooth'});}
  document.body.classList.toggle('tutdim',!!tg);
  {const hb=$('hud').getBoundingClientRect().bottom;el.style.top=(hb+6)+'px';}
+ {const rg=c.ring;tutRing.visible=!!rg;if(rg&&c.focus!==false&&T.rf!==T.step+'|'+c.say){T.rf=T.step+'|'+c.say;if(sel==='path'||/Tap your/.test(c.say)){follow=null;tgt.x=rg.x;tgt.z=rg.z+2;if(typeof camUp==='function')camUp();}}if(rg){tutRing.position.set(rg.x,(typeof hgt==='function'?0:0)+.06,rg.z);tutRing.userData.r=rg.r;}}
  const ab=c.arrow;tutArrow.visible=!!ab;if(ab){const p=bc(ab);tutArrow.position.set(p.x,6.4,p.z);tutArrow.userData.base=6.4;}}
 // ---------- sim
 let warnT=0,slow=0,lastSt=null;
@@ -2550,7 +2588,7 @@ camUp();showTitle();requestAnimationFrame(loop);
 Object.assign(window,{__S:()=>S,__cam:cam,__THREE:THREE,__agents:agents,__trucks:()=>trucks,__start:start,__sel:k=>{sel=k;menu();},__hgt:hgt,__zoom:(z,x,c)=>{zoom=z;tgt.set(x,0,c);camUp();}});
 
 ;(()=>{const l=document.getElementById('loading');if(!l)return;const bar=document.getElementById('lbar'),msg=document.getElementById('lmsg');const steps=['GENERATING TERRAIN...','FUELLING STARSHIPS...','WAKING CREW...','READY!'];let i=0;const iv=setInterval(()=>{i++;bar.style.width=(i/steps.length*100)+'%';msg.textContent=steps[Math.min(i,steps.length)-1];if(i>=steps.length){clearInterval(iv);setTimeout(()=>{l.style.opacity=0;setTimeout(()=>l.remove(),600);},250);}},220);})();
-window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.__tutTick=tutTick;
+window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.__tutRing=tutRing;window.__dbgT=()=>{const f=S.b.find(b=>b.t==="farm");const n=pathNet();return{conn:f&&connected(f),net:n.size,tiles:Object.keys(S.tiles).length,touch:f&&perim(f).concat(padEdge(f)).filter(([x,z])=>S.tiles[TK(x,z)]).length,why:(()=>{const p=tutPad(),c=bc(p);const o=[];for(let i=-7;i<=7;i++){o.push(pathWhy(Math.floor(c.x)+i,Math.floor(c.z),"path")?1:0)}return o.join("")})()}};window.__unl=()=>unloads.map(u=>u.ph+":"+(u.items||[]).map(i=>i.k).join("+"));window.__pathNet=()=>pathNet();window.__tutTick=tutTick;
 Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__capL=capL;window.__delB=delB;window.__info=()=>({calls:R.info.render.calls,tris:R.info.render.triangles,geo:R.info.memory.geometries});window.__RVt=RVt;window.__openB=b=>openB(b);window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
 window.__build=(k,x,z,r=0)=>{placeRot=r;const n0=S.b.length;sel=k;hover={x,z,bx:x,bz:z,p:new THREE.Vector3(x+.5,0,z+.5)};try{click();}finally{sel=null;hover=null;placeRot=0;updPrev();}return S.b.length>n0;};
 window.__paint=(x0,z0,x1,z1)=>{sel='path';line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>paint(x,z));sel=null;refreshDoors();};window.__upgrade=b=>upgrade(b);
