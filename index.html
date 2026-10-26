@@ -63,7 +63,7 @@
 #tut{display:none;position:fixed;left:8px;top:48px;width:min(330px,92vw);z-index:3;background:rgba(12,2,24,.9);border:2px solid #ff3fa4;box-shadow:0 0 18px rgba(255,63,164,.5);padding:10px 12px;font-size:13px;line-height:1.45}
 #tut .tt{font-family:'Press Start 2P',monospace;font-size:9px;color:#3ff3ff;margin-bottom:5px}#tut b{color:#ffe14a;font-size:15px}#tut p{margin:5px 0}#tut .tl{font-size:12px;margin:4px 0}
 #tut button{background:transparent;border:1px solid #888;color:#bbb;font-size:11px;padding:2px 7px;cursor:pointer;margin-top:4px}
-.b.hl{border-color:#ff3fa4!important;animation:pul 1s infinite;position:relative}.b.hl:after{content:'▼';position:absolute;top:-16px;left:50%;transform:translateX(-50%);color:#ff3fa4;font-size:14px}
+
 @keyframes pul{50%{box-shadow:0 0 14px #ff3fa4}}
 .ft{position:fixed;left:50%;top:30%;transform:translateX(-50%);font-size:26px;font-weight:800;color:#ffe14a;text-shadow:0 2px 0 #000,0 0 14px #ff9a3f;z-index:6;pointer-events:none;animation:ftu 2.2s forwards}
 @keyframes ftu{0%{opacity:0;margin-top:20px}15%{opacity:1;margin-top:0}80%{opacity:1}100%{opacity:0;margin-top:-40px}}
@@ -209,6 +209,7 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #slivp #livall{width:100%;background:#3d8a86;color:#fff3d6;border:2px solid #2a1208;border-radius:999px;padding:8px;font:800 13px system-ui}
 #settings .sc{max-height:calc(100dvh - 40px);overflow-y:auto}
 #panel.painting #pbody,#panel.painting .hint,#panel.painting .pbtn{display:none!important}#panel .chip,#slivp .chip{background:none!important;border:0!important}
+#callout{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 22%);text-align:center;pointer-events:none;z-index:7;font:900 30px 'Futura Condensed','Futura','Avenir Next Condensed','Arial Narrow',sans-serif;letter-spacing:.22em;color:#fff3d6;text-shadow:0 2px 0 #2a1208,0 0 18px rgba(42,18,8,.6);opacity:0}#callout.on{animation:callo 2.2s ease-out forwards}@keyframes callo{0%{opacity:0;transform:translateY(8px) scale(.96)}12%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 <style id="loader63">
