@@ -79,7 +79,7 @@ const NEWS={pad:8,hab:4,solar:2,battery:2,farm:4,ice:4,wtank:2,recyc:4,mine:6,pr
 for(const k in B){B[k].s=B[k].s||1;B[k].s0=B[k].s;if(NEWS[k])B[k].s=NEWS[k];B[k].m=B[k].m||0;if(B[k].cat==='b')B[k].up=1;}
 let S;
 const DIFF={relaxed:{cr:1900,mat:380,dem:.8,n:'Relaxed'},standard:{cr:1500,mat:320,dem:1,n:'Standard'},hard:{cr:1100,mat:280,dem:1.25,n:'Hard'}};
-function fresh(diff='standard',name='Olympus Base'){return{v:6,opm2:1,lv10:1,lv36:1,atm:0,lvl:1,lvBase:{},botsLanded:0,ship2:'done',ship2T:240,lastLandT:-999,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:80,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],store:[],tf:0,
+function fresh(diff='standard',name='Olympus Base'){return{v:6,opm2:1,lv10:1,lv36:1,atm:0,lvl:1,lvBase:{},botsLanded:0,ship2:'done',ship2T:240,lastLandT:-999,cr:DIFF[diff].cr,mat:DIFF[diff].mat,ore:0,rare:0,bat:0,food:120,wat:120,fuel:0,hap:80,t:0,diff,name,tiles:{},cols:[],bots:[],warned:{},b:[],store:[],tf:0,
  mkt:{mat:1,ore:1,rare:1},mktPrev:{mat:1,ore:1,rare:1},order:0,flights:[],tut:null,lastSol:0};}
 const FIRST=['Ava','Leo','Maya','Kai','Zara','Omar','Lena','Theo','Nia','Ravi','Iris','Jonas','Sofia','Mateo','Yuki','Amara','Felix','Priya','Hugo','Elena','Dev','Ingrid','Tariq','Lucia','Arjun','Freya','Malik','Chloe','Kenji','Noor','Elias','Hana','Diego','Mila','Sven','Aisha','Bruno','Tessa','Rohan','Juno'];
 const LAST=['Okafor','Nakamura','Silva','Novak','Haddad','Larsen','Chen','Reyes','Kowalski','Patel','Moreau','Ivanova','Mensah','Fischer','Tanaka','Duarte','Bjork','Rahman','Costa','Lindqvist','Abara','Kim','Volkov','Murphy','Santos','Oyelaran','Weiss','Quinn','Aldana','Petrov','Hart','Sato','Nkemelu','Ruiz','Varga','Steele','Ito','Mbeki','Laurent','Gale'];
@@ -1067,8 +1067,8 @@ function rebuildPaths(){pathsDirty=false;tdecoSync();if(pathMesh){W.remove(pathM
  const openG=(a,b)=>a>=0&&b>=0&&a<N&&b<N&&!S.tiles[TK(a,b)]&&!occ[a]?.[b]&&!rsv[a]?.[b]&&!blocked[a]?.[b];
  const FP=[],SG=[];const doors=new Map();S.b.forEach(b=>{if(b.door){const k=TK(b.door.x,b.door.z);if(!doors.has(k))doors.set(k,[]);doors.get(k).push(b);}});
  for(const k in S.tiles){const [x,z]=k.split(',').map(Number),t=S.tiles[k],cx=x+.5,cz=z+.5,w=.5;cu=[x,z,t];const v=.92+((x*7+z*13)%5)*.02;
-  const col=t===2?[.3*v,.22*v,.17*v]:[.64*v,.34*v,.17*v];/*v61: dusty tan-ochre path, warmer road*/
-  if(t===1){const hw=.34,isP=(a,b)=>walk(a,b);const strip=(x0,z0,x1,z1)=>{const L=Math.hypot(x1-x0,z1-z0)||1,px=-(z1-z0)/L*hw,pz=(x1-x0)/L*hw;const n=P.length/3;for(const[a,b]of[[x0+px,z0+pz],[x1+px,z1+pz],[x1-px,z1-pz],[x0-px,z0-pz]]){P.push(a,hgt(a,b)+.035,b);C.push(...col);uv(a,b);}I.push(n,n+1,n+2,n,n+2,n+3);};
+  const col=t===2?[.3*v,.22*v,.17*v]:[.86*v,.6*v,.38*v];/*v77 lighter, clearer footpath; v61: dusty tan-ochre path, warmer road*/
+  if(t===1){const hw=.4,isP=(a,b)=>walk(a,b);const strip=(x0,z0,x1,z1)=>{const L=Math.hypot(x1-x0,z1-z0)||1,px=-(z1-z0)/L*hw,pz=(x1-x0)/L*hw;const n=P.length/3;for(const[a,b]of[[x0+px,z0+pz],[x1+px,z1+pz],[x1-px,z1-pz],[x0-px,z0-pz]]){P.push(a,hgt(a,b)+.035,b);C.push(...col);uv(a,b);}I.push(n,n+1,n+2,n,n+2,n+3);};
    const o4=D4.map(([dx,dz])=>isP(x+dx,z+dz)||(doors.get(k)||[]).some(b=>{const s=B[b.t].s;return x+dx>=b.x&&x+dx<b.x+s&&z+dz>=b.z&&z+dz<b.z+s;}));
    {const n=P.length/3;P.push(cx,hgt(cx,cz)+.035,cz);C.push(...col);uv(cx,cz);for(let q=0;q<12;q++){const t=q*Math.PI/6,a=cx+Math.cos(t)*hw,b=cz+Math.sin(t)*hw;P.push(a,hgt(a,b)+.035,b);C.push(...col);uv(a,b);}for(let q=0;q<12;q++)I.push(n,n+1+(q+1)%12,n+1+q);}o4.forEach((on,i)=>{if(on){const[dx,dz]=D4[i];strip(cx,cz,cx+dx*.5,cz+dz*.5);}});
    for(const[dx,dz]of[[1,1],[1,-1],[-1,1],[-1,-1]])if(isP(x+dx,z+dz)&&!(isP(x+dx,z)&&isP(x,z+dz)))strip(cx,cz,cx+dx*.5,cz+dz*.5);
@@ -1087,7 +1087,7 @@ function rebuildPaths(){pathsDirty=false;tdecoSync();if(pathMesh){W.remove(pathM
    if(!ns[0]&&!walk(x+1,z))quad(x+.93,cz-.45,x+.96,cz+.45,.05,e);if(!ns[1]&&!walk(x-1,z))quad(x+.04,cz-.45,x+.07,cz+.45,.05,e);}}
  /* v61 berm: one continuous smooth ridge traced around the union outline of the footpath network (capsule strips),
     both sides, faded where the outline enters another strip / a road / a building; no per-tile segments */
- {const HW=.34,SH=new Map(),sk=(a,b)=>((a|0)*4096+(b|0));SG.forEach(g=>{const k=sk(g[0],g[1]);if(!SH.has(k))SH.set(k,[]);SH.get(k).push(g);});
+ {const HW=.4,SH=new Map(),sk=(a,b)=>((a|0)*4096+(b|0));SG.forEach(g=>{const k=sk(g[0],g[1]);if(!SH.has(k))SH.set(k,[]);SH.get(k).push(g);});
   const dseg=(px,pz,[ax,az,bx,bz])=>{const vx=bx-ax,vz=bz-az,l2=vx*vx+vz*vz||1e-9;let t=((px-ax)*vx+(pz-az)*vz)/l2;t=t<0?0:t>1?1:t;return Math.hypot(px-ax-vx*t,pz-az-vz*t);};
   const D=(px,pz)=>{let m=9;const X=Math.floor(px),Z=Math.floor(pz);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const L=SH.get(sk(X+i,Z+j));if(L)for(const g of L){const d=dseg(px,pz,g);if(d<m)m=d;}const tt=S.tiles[TK(X+i,Z+j)];if(tt===2){const dx=Math.max(X+i-px,0,px-X-i-1),dz=Math.max(Z+j-pz,0,pz-Z-j-1),d=Math.hypot(dx,dz)+HW;if(d<m)m=d;}}return m;};
   const ss=(e0,e1,v)=>{const t=Math.min(1,Math.max(0,(v-e0)/(e1-e0)));return t*t*(3-2*t);};
@@ -1323,7 +1323,7 @@ const TUNE_FCAP=600;function stats(dt=0){let pw=0,pu=0,house=0,food=0,wat=0,fuel
  const pe=pu?Math.min(1,pw/pu):1;
  S.b.forEach(b=>{const d=B[b.t],m=LV[b.lvl-1],e=eff(b)*pe;food+=d.food>0?d.food*m*e*(T('farm2')?1.25:1):(d.food||0)*m*(b.cons>0?0:1);wat+=d.wat>0?d.wat*m*e:(d.wat||0)*m*(b.cons>0?0:1);fuel+=(d.fuel||0)*m*e*(S.wat>1?1:0);
   waste+=(d.waste||0)*m*e;med+=(d.med||0)*m*e;ent+=(d.ent||0)*m*e;sec+=(d.sec||0)*m*e;});
- const pop=S.cols.length,dem=DIFF[S.diff||'standard'].dem*(S.tut?.5:1);food-=pop*.12*dem;wat-=pop*.1*dem;
+ const pop=S.cols.length,dem=DIFF[S.diff||'standard'].dem*(S.tut?.5:1);food-=pop*.12*dem;wat-=pop*.1*dem;/* v77: tutorial grace - no net water drain until an Ice Extractor is running */if(S.tut&&wat<0&&!S.b.some(b=>b.t==='ice'&&!(b.cons>0)))wat=0;
  const clean=pop<15?1:Math.min(1,waste/pop),health=pop<20?1:Math.min(1,med/pop),fun=pop?Math.min(1,ent/pop):0,safe=pop<60?1:Math.min(1,sec/pop);
  fcap=Math.max(fcap,0);return{fcap,pw:Math.round(pw*10)/10,pu:Math.round(pu*10)/10,raw,pe,house,food,wat,fuel,clean,health,fun,safe,pop,wcap,bcap,batUse};}
 function calcDeco(){let n=0;S.b.forEach(b=>{if(!isDeco(b.t))return;for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)if(walk(b.x+i,b.z+j)){n++;return;}});decoBonus=Math.min(10,n*25/(S.cols.length+10));}
@@ -1972,7 +1972,10 @@ function frostSync(){S.b.forEach(b=>{if(b.t!=='ship')return;const o=objs.get(b.i
 // ---------- soft blob shadow for a descending ship: follows the ship's orientation (long capsule in the belly-flop, round when upright), fades with altitude
 const _shdTex=(()=>{const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,128,64);x.filter='blur(7px)';x.fillStyle='#fff';x.beginPath();x.moveTo(32,16);x.lineTo(96,16);x.arc(96,32,16,-Math.PI/2,Math.PI/2);x.lineTo(32,48);x.arc(32,32,16,Math.PI/2,Math.PI*1.5);x.fill();const t=new THREE.CanvasTexture(c);return t;})();
 const _shdGeo=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2);const _v1=new THREE.Vector3(),_v2=new THREE.Vector3(),_sd=new THREE.Vector3();
-function shipShadow(holder,m,on,gy){let s=holder.userData.shd;
+function shipShadow(holder,m,on,gy){/* v77: real shadow-map cast from the Starship mesh; the sun's shadow camera tracks the descending ship (see dayNight) */
+ if(on){if(!m.userData.csOn){m.userData.csOn=1;m.traverse(o=>{if(o.isMesh)o.castShadow=true;});}LANDSHD=m;return;}if(LANDSHD===m)LANDSHD=null;return;}
+let LANDSHD=null;const _lsP=new THREE.Vector3();
+function shipShadowOld(holder,m,on,gy){let s=holder.userData.shd;
  if(!on){if(s){s.parent&&s.parent.remove(s);s.material.dispose();holder.userData.shd=null;m.traverse(o=>{if(o.isMesh&&o.userData.cs0!==undefined){o.castShadow=o.userData.cs0;delete o.userData.cs0;}});}return;}
  if(!s){s=new THREE.Mesh(_shdGeo,new THREE.MeshBasicMaterial({color:0x1a0d06,alphaMap:_shdTex,transparent:true,depthWrite:false,opacity:0}));s.renderOrder=2;W.add(s);holder.userData.shd=s;m.traverse(o=>{if(o.isMesh&&o.userData.cs0===undefined){o.userData.cs0=o.castShadow;o.castShadow=false;}});}
  m.updateWorldMatrix(true,false);_sd.copy(sun.position).sub(sun.target.position).normalize();const sc=new THREE.Vector3();m.getWorldScale(sc);
@@ -2393,7 +2396,7 @@ function celebrate(lv,era){S.lvlFx=1;const L=LEVELS[lv];let o=document.getElemen
 
 const TUT=[
  {t:'Welcome to Mars',story:"Touchdown. As the dust settles, the crew gets a first look at the red horizon they'll call home.",info:'Top bar: 💰 credits, 🧱 materials, 👩\u200d🚀 crew/beds, ⚡ power, 🍞 food, 💧 water.',welcome:1,done:()=>!!S.tut.nx},
- {t:'Clear a route',story:'Before anything can be built, the crew needs a cleared route from the ship. Mark out a footpath across the regolith.',path:1,info:'',done:()=>tutPathDone(4)},
+ {t:'Clear a route',story:'Before anything can be built, the crew needs a cleared route from the ship. Mark out a footpath across the regolith.',path:1,info:'',done:()=>tutPathDone(5)},
  {t:'Build a home',story:'The crew is tired of their cramped quarters aboard the ship. Build them a real home at the end of the new path.',k:'hab',info:''},
  {t:'Extend the route',story:'Fresh food has to come from Martian soil. First, run the path on past the Habitat to where the farm will go.',path:2,info:'',done:()=>tutPathDone(3)},
  {t:'Feed the crew',story:'The ration packs from Earth are running low. Build a farm dome at the end of the path.',k:'farm',info:''},
@@ -2423,19 +2426,20 @@ function tutWants(k){if(!S||!S.tut)return false;const st=TUT[S.tut.step];return 
 const tutArrow=(()=>{const g=new THREE.Group();const c=mesh(new THREE.ConeGeometry(.22,.45,12),new THREE.MeshStandardMaterial({color:0x3fd0c8,emissive:0x3fd0c8,emissiveIntensity:.9}),0,0,0,false);c.rotation.x=Math.PI;g.add(c);g.scale.setScalar(4);g.visible=false;W.add(g);return g;})();
 let tutRT=0;
 function tutTick(dt){const T=S.tut;if(!T.v){T.v=70;T.step=[0,1,3,4,5,6,7][T.step]??T.step;}if(T.v<74){T.v=74;if(T.step>=3)T.step=Math.min(T.step+1,8);else if(T.step===2)T.step=3;}if(T.v<76){T.v=76;T.step=[0,2,4,5,5,6,7,8][T.step]??T.step;}T.t+=dt||.016;const st=TUT[T.step];if(!st){endTut();return;}
- if(st.k&&sel===st.k&&S.b.some(b=>b.t===st.k)){$('doneb').click();}if(st.done()){if(st.leave)st.leave();if(st.path&&sel==='path'){sel=null;menu();updPrev();}T.step++;T.t=0;beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}renderTut(true);return;}
+ if(st.k&&sel===st.k&&S.b.some(b=>b.t===st.k)){$('doneb').click();}if(st.done()){if(st.leave)st.leave();if(st.path&&sel==='path'){sel=null;menu();updPrev();}T.step++;T.t=0;/*v77: close menus so next target is BUILD*/try{if(painting&&typeof strokeCommit==='function')strokeCommit();}catch(e){}tab=null;if(menuOpen||sel)setMenu(false);beep(880,.08,'triangle',.06);setTimeout(()=>beep(1320,.1,'triangle',.06),90);const nx=TUT[T.step];if(!nx){endTut();return;}renderTut(true);return;}
  const n=performance.now();if(n-tutRT>150){tutRT=n;renderTut();}}
 function tutClear(){document.querySelectorAll('.tglow').forEach(e=>e.classList.remove('tglow'));document.body.classList.remove('tutdim');}
 function endTut(){S.tut=null;$('tut').style.display='none';tutArrow.visible=false;tutRing.visible=false;tutClear();document.body.classList.remove('tuton');S.b.filter(b=>b.t==='pad').forEach(b=>b.timer=Math.min(b.timer,TUNE.FIRST_SHIP_AFTER));menu();
  if(!S.tutBonus){S.tutBonus=1;S.mat+=120;S.cr+=200;}toast(`🎉 Tutorial complete! Bonus +120 🧱 +$200. Follow the ⭐ level goals to grow your colony.`);toast('🏠 Build more Habitats — arriving crew only stay if there is room.');}
 const TCR=()=>'',II=k=>`<i class="ii">${bIc(k)}</i>`,BS=k=>`Tap <b>BUILD</b>, then select <b>${B[k].n}</b>${II(k)}`;
 // what to press next for the current step: {say, sel (element to glow), arrow (building to point at)}
-function tutCue(st){const ph=innerWidth<700,pl=document.body.classList.contains('placing');
+function tutCue(st){const c=tutCue0(st);if(c&&c.sel&&!c.ring){const e=document.querySelector(c.sel);if(!e||!e.offsetParent){c.sel=menuOpen&&tab&&$('mback')&&$('mback').offsetParent?'#mback':menuOpen?'#mclose':'#buildb';}}return c;}
+function tutCue0(st){const ph=innerWidth<700,pl=document.body.classList.contains('placing');
  const site=S.b.find(b=>b.cons>0&&B[b.t]&&B[b.t].cat==='b'),bsub=site?`👷 ${B[site.t].n} under construction${site._crew?'':' · waiting for crew'}`:null;
  if(st.path){const ps=tutPathStart(st.path);const ring=ps?{x:ps[0]+.5,z:ps[1]+.5,r:1.6}:null;
-  if(sel==='path')return{ic:'tap',say:(st.path===1?'Drag a footpath out from the glowing ring':'Drag the path on from the glowing ring'),sub:bsub,ring};
+  if(sel==='path'){const need=st.path===1?5:3,T=S.tut,got=Math.max(0,pathNet().size-(T.pnS===T.step&&T.pn0!=null?T.pn0:pathNet().size));return{ic:'tap',say:(st.path===1?'Drag a long footpath out from the glowing ring':'Drag the path on from the glowing ring'),sub:`${Math.min(got,need)} / ${need} tiles`,ring};}
   const say=BS('path');if(!menuOpen||pl)return{ic:TCR(),say,sub:bsub,sel:'#buildb'};if(!tab)return{ic:TCR(),say,sub:bsub,sel:'#mtools .cat[data-cat="p"]'};if(tab!=='p')return{ic:TCR(),say,sel:'#mback'};return{ic:TCR(),say,sub:bsub,sel:'#mtools .b[data-k="path"]',scroll:1};}
- if(st.k){const d=B[st.k],site=S.b.find(b=>b.t===st.k&&b.cons>0);if(site){const tot=site.consN||CONS_T;const pc=Math.max(0,Math.min(100,Math.round(100*(1-site.cons/Math.max(1,tot)))));return{ic:'builder',say:`Builders at work on the <b>${d.n}</b>${II(st.k)}…`,sub:`<span class="tbar"><i style="width:${pc}%"></i></span>${site._crew?'':' Waiting for crew'}`,ring:{x:bc(site).x,z:bc(site).z,r:B[st.k].s*.95}};}
+ if(st.k){const d=B[st.k],site=S.b.find(b=>b.t===st.k&&b.cons>0);if(site){const tot=site.consN||CONS_T;const pc=Math.max(0,Math.min(100,Math.round(100*(1-site.cons/Math.max(1,tot)))));return{ic:'builder',say:`Builders at work on the <b>${d.n}</b>${II(st.k)}…`,sub:`<span class="tbar"><i style="width:${pc}%"></i></span>${site._crew?'':' Waiting for crew'}${st.k==='farm'?'<div class="ttip">Tip, while you wait: tap your Habitat and use Paint to give it your colours.</div>':''}`,ring:{x:bc(site).x,z:bc(site).z,r:B[st.k].s*.95}};}
   if(sel===st.k){const hv=hover&&B[st.k]?{x:hover.x+B[st.k].s/2,z:hover.z+B[st.k].s/2,r:B[st.k].s*.9}:null;return hover&&hover.ok?{ic:'tap',say:`Tap <b>✓ PLACE</b> to build the <b>${d.n}</b>${II(st.k)}`,sub:bsub,sel:'#placeb',ring:hv}:{ic:'tap',say:`Drag the outline to a green spot`,sub:bsub,ring:hv};}
   const say=BS(st.k);
   if(!menuOpen||pl)return{ic:TCR(),say,sub:bsub,sel:'#buildb'};
@@ -2497,7 +2501,11 @@ function dayNight(){const t=S?S.t:0,p=dayPhase(t),k=dayK(t),D=TUNE.DAY_SPLIT;
  if(k>.55){scene.background=skyTex;}else{if(!scene.background||!scene.background.isColor)scene.background=new THREE.Color();scene.background.copy(sky);}scene.fog.color.copy(sky);HZN.tint(sky);sun.color.setHex(0xfff0dd).lerp(new THREE.Color(0x9aa4d8),(1-k)*.7);
  const ang=p<D?(p/D)*Math.PI:Math.PI+(p-D)/(1-D)*Math.PI;const e=Math.sin(ang);SUNANG=ang;DAYK=k;
  const dir=new THREE.Vector3(Math.cos(ang)*.8,Math.max(.45,e)+.2,.45).normalize();sun.position.copy(tgt).multiplyScalar(CS).addScaledVector(dir,45);sun.target.position.copy(tgt).multiplyScalar(CS);
- const n=1-k;const sc=sun.shadow.camera,w=Math.min(60,zoom*2.2);if(sc.right!==w){sc.left=-w;sc.right=w;sc.top=w;sc.bottom=-w;sc.far=120;sc.updateProjectionMatrix();}
+ const n=1-k;const sc=sun.shadow.camera;let w=Math.min(60,zoom*2.2),far=120;
+ if(LANDSHD&&LANDSHD.parent){LANDSHD.getWorldPosition(_lsP);const gy=0,kk=Math.max(0,_lsP.y-gy)/dir.y;const gx=_lsP.x-dir.x*kk,gz=_lsP.z-dir.z*kk;
+  /* light-space: ship and its ground shadow share one ray, so a tight frustum around the ship covers both */
+  const mx=(_lsP.x+gx)/2,my=(_lsP.y+gy)/2,mz=(_lsP.z+gz)/2;sun.target.position.set(mx,my,mz);sun.position.set(mx,my,mz).addScaledVector(dir,kk/2+40);w=Math.max(6,Math.min(60,zoom*1.2));far=kk+80;}
+ if(sc.right!==w||sc.far!==far){sc.left=-w;sc.right=w;sc.top=w;sc.bottom=-w;sc.far=far;sc.updateProjectionMatrix();}
  glowMat.opacity=n*.85;poolMat.opacity=n*.4;lampMat.emissiveIntensity=.3+2.5*n;winMat.emissiveIntensity=.05+2.2*Math.min(1,n*1.6);}
 
 // ---------- cinematic intro (once per new game)
@@ -2521,10 +2529,10 @@ function tickIntro(rdt){if(!intro)return;intro.t+=rdt;
  const ships=S.b.filter(b=>b.t==='ship');const lead=ships[0],last=ships[ships.length-1];if(!lead){endIntro();return;}
  const L1=objs.get(lead.id).userData.land,L2=objs.get(last.id).userData.land;const ph=innerWidth<innerHeight?1.6:1;
  if(L1||L2){const sh=L1?lead:last,rk=objs.get(sh.id).getObjectByName('rk');const p=new THREE.Vector3();rk.getWorldPosition(p);p.multiplyScalar(1/CS);
-  const alt=p.y*CS,lph=rk.userData.ph||0,zt=(alt>40?6.5:alt>12?7.5-(alt-12)/28:7.5)*ph*(lph===1||lph===2?1.22:1);{/* v76: top-down-ish during the belly flop, wider chase from relight, normal iso by touchdown */const et=lph===0?1.22:lph===3?EL0:EL0+.14;camEl+=(et-camEl)*Math.min(1,rdt*(lph===0?3:1.1));}zoom+=(zt-zoom)*Math.min(1,rdt*1.6);
+  const alt=p.y*CS,lph=rk.userData.ph||0,zt=(alt>40?6.5:alt>12?7.5-(alt-12)/28:7.5)*ph*(lph===1||lph===2?1.22:1);{/* v76: top-down-ish during the belly flop, wider chase from relight, normal iso by touchdown */const et=lph===0?1.22:lph===1?.2:lph===3?EL0:EL0+.14;camEl+=(et-camEl)*Math.min(1,rdt*(lph===0?3:lph===1?2.2:1.1));/* v77: side-on to the flip plane (ship pitches about world X, so view along X), no roll */let rt=0;if(lph!==3){_lsP.set(1,0,0).transformDirection(rk.matrixWorld);let ra=Math.atan2(_lsP.x,_lsP.z)-Math.PI/4;while(ra-rot>Math.PI/2)ra-=Math.PI;while(ra-rot<-Math.PI/2)ra+=Math.PI;rt=ra;}rot+=(rt-rot)*Math.min(1,rdt*(lph===3?1.2:2.5));rotT=rot;}zoom+=(zt-zoom)*Math.min(1,rdt*1.6);
   if(!intro.s){intro.s=1;zoom=zt;}const ty=(L1?alt:Math.max(2,alt*.6))/CS;tgt.lerp(new THREE.Vector3(p.x,ty,p.z),Math.min(1,rdt*(intro.t<.3?60:9)));camUp();}
  else{intro.out=(intro.out||0)+rdt;const k=Math.min(1,intro.out/2.2),e=k*k*(3-2*k);const c0=bc(lead),c=new THREE.Vector3(c0.x,0,c0.z),zt=7*ph;
-  tgt.lerp(c,e*.2+.02);zoom+=(zt-zoom)*(e*.25+.02);camUp();if(k>=1)endIntro();}}
+  tgt.lerp(c,e*.2+.02);zoom+=(zt-zoom)*(e*.25+.02);rot+=(0-rot)*(e*.25+.02);rotT=rot;camUp();if(k>=1)endIntro();}}
 // ---------- loop
 let last=performance.now(),acc=0,saveT=0;
 let loopErr=0;function loop(now){try{loopBody(now);}catch(e){if(loopErr++<3)console.error('frame error',e);}requestAnimationFrame(loop);}
