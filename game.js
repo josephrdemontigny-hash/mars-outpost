@@ -315,10 +315,43 @@ function modelNew(t,lvl=1){const g=new THREE.Group(),s=B[t].s0,h=s/2,L=lvl;
  else if(t==='flag'){g.add(mesh(mergeG([[cyl(.012,.012,.7,6),T4(0,0,0)],[new THREE.SphereGeometry(.02,8,6),T4(0,.36,0)],[cyl(.05,.06,.03,10),T4(0,-.335,0)],[cyl(.003,.003,.17,4),T4(.018,.165,0)]]),MAT.steel,.5,.35,.5));const c=mesh(new THREE.PlaneGeometry(.28,.17,6,1),M(0xd23a2a,.8,0,{side:THREE.DoubleSide}),.64,.6,.5,false);c.name='cloth';g.add(c);}
  else if(t==='sign'){g.add(mesh(mergeG([[cyl(.015,.015,.4,6),T4(0,0,0)],[cyl(.035,.04,.03,8),T4(0,-.185,0)],[cyl(.019,.015,.02,6),T4(0,.205,0)]]),MAT.trunk,.5,.2,.5));const s1=mesh(rbox(.26,.08,.02,.01),MAT.yellow,.58,.36,.5);g.add(s1);const s2=mesh(rbox(.22,.07,.02,.01),MAT.blue,.43,.27,.5);s2.rotation.y=.6;g.add(s2);}
  return g;}
-/* v79: Starship V3 'Mars Cargo' — same 9 m diameter, stretched to ~55.5 m */const SH_K=5.6/52.1,SH_H=55.5*SH_K,SH_R=4.5*SH_K,SH_SK=.15; // true-proportion Starship: 52.1 m x 9 m, scaled so astronauts (~.38) are ~1.8 m
-const SH_NOSE=39.2*SH_K; // nose cone starts 36 m up (tangent ogive, ~31% of height)
-function shipR(y){const r=SH_R,L=SH_H-SH_NOSE;if(y<=SH_NOSE)return r;const t=y-SH_NOSE,rho=(r*r+L*L)/(2*r);const v=Math.sqrt(Math.max(0,rho*rho-t*t))+r-rho;
- const tip=.05;if(L-t<tip*1.4){const k=(L-t)/(tip*1.4);return Math.max(.002,Math.min(v,tip*Math.sqrt(Math.max(0,k*(2-k)))));}return Math.max(v,.002);}
+/* v79.1: Starship V3 'Mars Cargo' built to the reference drawing: 9 m diameter, height = 11.5 R (~51.8 m); all features measured in reference px (R=113 px, tip at 303, base at 1603) */const SH_K=5.6/52.1,SH_R=4.5*SH_K,SH_SK=.15,SH_H=11.5*SH_R-SH_SK; // scaled so astronauts (~.38) are ~1.8 m
+const SH_NOSE=SH_H-262/113*SH_R; // full diameter reached 262 px below the tip
+const SH_PROF=[[0,0],[20,25],[40,36],[60,47],[80,55],[100,62],[125,70],[152,79],[200,94],[240,107],[262,113]]; // nose profile: (px below tip, radius px)
+const RYP=y=>(1603-y)/113*SH_R-SH_SK; // row 1603 = bottom of the aft skirt // reference px row -> ship-local height
+function shipR(y){const d=(SH_H-y)/SH_R*113;if(d>=262)return SH_R;if(d<=0)return .002;for(let k=1;k<SH_PROF.length;k++){const[a,ra]=SH_PROF[k-1],[b,rb]=SH_PROF[k];if(d<=b){const t=(d-a)/(b-a);return Math.max(.002,(ra+(rb-ra)*t)/113*SH_R);}}return SH_R;}
+let _shipDecal=null;function shipDecal(){if(_shipDecal)return _shipDecal;const W=512,Hc=2048,c=document.createElement('canvas');c.width=W;c.height=Hc;const x=c.getContext('2d');const sx=W/226,sy=Hc/1300;x.setTransform(sx,0,0,sy,W/2,-303*sy);
+ const BODY='#bcc0c2',LINE='#2a2a2b',FAINT='#a3a7a8',RW='#8d8f91',BLK='#3c3c3c';x.fillStyle=BODY;x.fillRect(-120,290,240,1330);
+ const L=(w,c)=>{x.lineWidth=w;x.strokeStyle=c;},rect=(a,b,w,h,f,lw=1.6)=>{if(f){x.fillStyle=f;x.fillRect(a,b,w,h);}L(lw,LINE);x.strokeRect(a,b,w,h);},circ=(cx,cy,r,f=RW,lw=1.6)=>{x.beginPath();x.arc(cx,cy,r,0,7);x.fillStyle=f;x.fill();L(lw,LINE);x.stroke();};
+ // ring seams every 45.5 px with staggered brick joints
+ L(1.1,FAINT);for(let k=0,y=1600-45.5;y>560;k++,y-=45.5){x.beginPath();x.moveTo(-113,y);x.lineTo(113,y);x.stroke();const xs=k%2?[-92,-12,58]:[-60,22,92];for(const xx of xs){x.beginPath();x.moveTo(xx,y);x.lineTo(xx,y+45.5);x.stroke();}}
+ // nose: black cap down to row 452, dark band edge, nose tile hint lines between cap and flaps
+ x.fillStyle=BLK;x.fillRect(-120,290,240,162);L(2.4,LINE);x.beginPath();x.moveTo(-90,452);x.lineTo(90,452);x.stroke();
+ L(1,FAINT);for(const xx of[-60,-36,-12,12,36,60]){x.beginPath();x.moveTo(xx*.85,456);x.lineTo(xx,519);x.stroke();}
+ // forward hinge fairings (black, on the body edge under the flaps)
+ x.fillStyle=BLK;for(const sd of[-1,1]){x.beginPath();x.moveTo(sd*114,470);x.lineTo(sd*96,500);x.lineTo(sd*82,560);x.lineTo(sd*82,640);x.lineTo(sd*114,692);x.closePath();x.fill();L(1.6,LINE);x.stroke();}
+ // cargo door
+ x.beginPath();x.moveTo(-70,521);x.lineTo(70,521);x.lineTo(78,600);x.lineTo(78,748);x.lineTo(-78,748);x.lineTo(-78,600);x.closePath();x.fillStyle='#c0c4c5';x.fill();L(4,LINE);x.stroke();L(1,FAINT);x.beginPath();x.moveTo(0,524);x.lineTo(0,745);x.stroke();
+ // row under the door: squares, ports, oval, dots
+ for(const sd of[-1,1]){rect(sd*76-8,760,16,20,'#4a4a4c');circ(sd*55,770,7.5,'#5a5a5c');circ(sd*55,770,3.5,'#2a2a2b',1);}
+ x.beginPath();x.ellipse(9,769,15,9,0,0,7);x.fillStyle='#5a5a5c';x.fill();L(1.6,LINE);x.stroke();circ(9,769,4,'#2a2a2b',1);x.fillStyle=LINE;x.fillRect(-21,764,4,4);x.fillRect(-14,764,4,4);
+ // grille rows (vent ticks), interrupted at the raceways
+ const grille=(y,h,x0,x1,st,thick)=>{x.fillStyle=LINE;for(let xx=x0;xx<=x1;xx+=st){if(Math.abs(Math.abs(xx)-35)<10)continue;x.fillRect(xx-.8,y-h/2,thick,h);}L(1.6,LINE);x.beginPath();x.moveTo(x0,y+h/2);x.lineTo(x1,y+h/2);x.stroke();};
+ grille(808,15,-103,102,3.7,2.1);grille(1043,14,-103,102,3.7,2.1);rect(-114,1036,14,14,'#4a4a4c');rect(100,1036,14,14,'#4a4a4c');grille(1465,18,-102,101,4.6,1.8);
+ for(const[a,b]of[[-100,-45],[43,97]])grille(1493,11,a,b,6.5,1.8);
+ // small panels at the rings
+ for(const sd of[-1,1]){rect(sd*65.5-11.5,853,23,14,'#b0b4b5');for(const k of[-6,0,6])circ(sd*65.5+k,860,2.6,'#3a3a3b',1);rect(sd*80-12,1058,24,15,'#b0b4b5');for(const k of[-5,5])circ(sd*80+k,1065.5,3.6,'#3a3a3b',1);}
+ for(const[a,b]of[[-11,1026],[4,1026],[-11,1053],[4,1053]])rect(a,b,7,6,'#3a3a3b',1);
+ // octagonal ports
+ const oct=(cx,cy,r)=>{x.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;x.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);}x.closePath();x.fillStyle='#8a8c8e';x.fill();L(2.2,LINE);x.stroke();circ(cx,cy,r*.55,'#6a6c6e',1.2);};oct(-76,990,14);oct(75,1397,14);
+ // twin raceways with cross brackets
+ for(const cx of[-36,34.5]){x.fillStyle='#b4b8b9';x.fillRect(cx-7,758,14,768);L(1.8,LINE);x.strokeRect(cx-7,758,14,768);L(1,RW);x.beginPath();x.moveTo(cx,760);x.lineTo(cx,1524);x.stroke();
+  for(const[y0,y1]of[[801,808],[835,841],[897,908],[1031,1057],[1098,1112],[1446,1480],[1518,1526]])rect(cx-9.5,y0,19,y1-y0,'#a6aaab');x.fillStyle=LINE;x.beginPath();x.moveTo(cx-7,758);x.lineTo(cx,750);x.lineTo(cx+7,758);x.fill();}
+ // engine-bay hardware at the base
+ for(const sd of[-1,1]){circ(sd*55,1515,7.5,'#5a5a5c');circ(sd*55,1515,3.5,'#2a2a2b',1);rect(sd*9-5,1497,10,40,'#5a5a5c',1.4);circ(sd*9,1503,3,'#2a2a2b',1);circ(sd*9,1528,3,'#2a2a2b',1);}
+ // silhouette outline (body edge reads as the drawing's black outline when seen face-on)
+ x.fillStyle=LINE;x.fillRect(-120,452,8,1160);x.fillRect(112,452,8,1160);x.fillRect(-120,1597,240,8);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return _shipDecal=t;}
 const hexMaps=(()=>{const W=512,n=8,r=W/n/Math.sqrt(3),w=Math.sqrt(3)*r,HH=Math.round(10*1.5*r);const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=HH;return c;};
  const c=mk(),x=c.getContext('2d'),cb=mk(),xb=cb.getContext('2d'),cr=mk(),xr=cr.getContext('2d');x.fillStyle='#7c8086';x.fillRect(0,0,W,HH);xb.fillStyle='#000';xb.fillRect(0,0,W,HH);xr.fillStyle='#fff';xr.fillRect(0,0,W,HH);
  const rows=10;let sd=7;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
@@ -343,9 +376,9 @@ const steelMaps=(()=>{const H=1024,Wd=128,rings=Math.round(52.1/1.83);
  const sg=x.createRadialGradient(150,80,2,150,80,80);sg.addColorStop(0,'rgba(255,250,236,1)');sg.addColorStop(1,'rgba(255,240,220,0)');x.fillStyle=sg;x.fillRect(0,0,512,256);
  for(let i=0;i<6;i++){x.fillStyle='rgba(255,248,236,.5)';x.fillRect(i*85+20,95,22,60);}
  const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.colorSpace=THREE.SRGBColorSpace;const pm=new THREE.PMREMGenerator(R);const e=pm.fromEquirectangular(t).texture;t.dispose();return e;})();
-const SHIPMAT={steel:new THREE.MeshStandardMaterial({color:0x9aa0a8,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.34,envMap:MSENV,envMapIntensity:1.3}),
+const SHIPMAT={decal:new THREE.MeshStandardMaterial({map:shipDecal(),metalness:.25,roughness:.55,envMap:MSENV,envMapIntensity:.55,polygonOffset:true,polygonOffsetFactor:-1}),xline:new THREE.MeshStandardMaterial({color:0x7c8082,roughness:.7}),leg:new THREE.MeshStandardMaterial({color:0x2a2a2b,roughness:.7,metalness:.1}),steel:new THREE.MeshStandardMaterial({color:0xc4c8ca,map:steelMaps.col,bumpMap:steelMaps.bump,bumpScale:.25,metalness:1,roughness:.34,envMap:MSENV,envMapIntensity:1.3}),
  tile:new THREE.MeshStandardMaterial({color:0x9a9a9a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.85,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
- flapS:new THREE.MeshStandardMaterial({color:0x9aa0a8,metalness:1,roughness:.34,side:THREE.DoubleSide,envMap:MSENV,envMapIntensity:1.3}),
+ flapS:new THREE.MeshStandardMaterial({color:0x9a9ea0,metalness:.2,roughness:.6,side:THREE.DoubleSide,envMap:MSENV,envMapIntensity:1.3}),
  flapT:new THREE.MeshStandardMaterial({color:0x4a4a4a,map:hexTex,bumpMap:hexMaps.bump,bumpScale:2.5,roughnessMap:hexMaps.rough,roughness:.82,metalness:.15,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.9,polygonOffset:true,polygonOffsetFactor:-2}),
  bayIn:new THREE.MeshStandardMaterial({color:0x2c2a28,metalness:.6,roughness:.6,side:THREE.DoubleSide,envMap:SENV,envMapIntensity:.4}),
  chine:new THREE.MeshStandardMaterial({color:0x2a2b2e,roughness:.7,metalness:.3,envMap:SENV,envMapIntensity:.5}),
@@ -366,14 +399,13 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
  const tp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.006:v.x,v.y));const tile=.62*SH_K*8,ta=1.05*SH_K/r,dl=2*ta;
  const tuv=geo=>{const uv=geo.attributes.uv,ps=geo.attributes.position;for(let i=0;i<uv.count;i++){const a=Math.atan2(ps.getX(i),-ps.getZ(i)),rr=Math.max(.02,Math.hypot(ps.getX(i),ps.getZ(i)));uv.setXY(i,a*rr/tile+50,ps.getY(i)/tile*hexMaps.asp+50);}return geo;};
  const parts=[[tuv(new THREE.LatheGeometry(tp,96,Math.PI/2-.09,Math.PI+.18)),new THREE.Matrix4()]];
- {const cy=H*.87,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
+ {const cy=H-152/113*SH_R,cp=[];for(let i=0;i<=10;i++){const y=cy+(H-cy)*i/10;cp.push(new THREE.Vector2(shipR(y)>.003?shipR(y)+.006:shipR(y),y));}parts.push([tuv(new THREE.LatheGeometry(cp,40)),new THREE.Matrix4()]);}
  parts.push([tuv(new THREE.LatheGeometry([new THREE.Vector2(r*1.01+.006,-SH_SK),new THREE.Vector2(r+.006,0)],96,Math.PI/2-.09,Math.PI+.18)),new THREE.Matrix4()]);const tg=mergeG(parts);g.add(mesh(tg,SHIPMAT.tile,0,y0,0,false));
- {const ph=Math.PI/2-.55,rw=new THREE.Group();const yT=SH_NOSE*1.02;rw.add(mesh(new THREE.BoxGeometry(.028,yT-.2,.02),SHIPMAT.flapS,0,.1+(yT-.2)/2,0,false));for(let y=.3;y<yT;y+=.35)rw.add(mesh(new THREE.BoxGeometry(.04,.02,.03),SHIPMAT.chine,0,y,0,false));
-  rw.position.set(Math.sin(ph)*(r+.012),y0,Math.cos(ph)*(r+.012));rw.rotation.y=ph;g.add(rw);
-  for(let i=0;i<9;i++){const a=Math.PI/2-.2-((i*1.7)%1.3),y=.4+i*.47;g.add(mesh(new THREE.BoxGeometry(.035,.025,.006),SHIPMAT.chine,Math.sin(a)*(r+.003),y0+y,Math.cos(a)*(r+.003),false).rotateY(a));}}
+ /* v79.1: leeward decal shell (drawn details mapped by projected x so a face-on view matches the drawing) */{const dp=prof.map(v=>new THREE.Vector2(v.x>.003?v.x+.004:v.x,v.y));const dg=new THREE.LatheGeometry(dp,64,-Math.PI/2,Math.PI);const uv=dg.attributes.uv,ps=dg.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,ps.getX(i)/(2*SH_R)+.5,(ps.getY(i)+SH_SK)/(H+SH_SK));
+  const dm=new THREE.Mesh(dg,SHIPMAT.decal);dm.position.y=y0;dm.name='decal';g.add(dm);}
  // chines: raised dark strips along both tile edges, up the barrel and the nose
- for(const sd of[-1,1]){const pts=[];for(let i=0;i<=40;i++){const y=i/40*(H-.18);pts.push(new THREE.Vector3(sd*(shipR(y)+.014),y0+y,-.004));}
-  const cv=new THREE.CatmullRomCurve3(pts);const tube=new THREE.TubeGeometry(cv,60,.016,6,false);g.add(mesh(tube,SHIPMAT.chine,0,0,0,false));}
+ for(const sd of[-1,1]){const pts=[];for(let i=0;i<=40;i++){const y=i/40*(H-.18);pts.push(new THREE.Vector3(sd*(shipR(y)+.003),y0+y,-.004));}
+  const cv=new THREE.CatmullRomCurve3(pts);const tube=new THREE.TubeGeometry(cv,60,.008,6,false);g.add(mesh(tube,SHIPMAT.chine,0,0,0,false));}
  // flaps (rounded trapezoids, thick, steel leeward face + tiled windward face), hinged on the chine, angled 15° windward
  const flap=(rootY0,rootY1,tipY0,tipY1,span,side,yBase,xHinge,th=.045,lean=0,lee=.42)=>{const P=[[0,rootY0],[span,tipY0],[span,tipY1],[0,rootY1]].map(([a,b])=>new THREE.Vector2(a,b));
   const sh=new THREE.Shape();sh.moveTo(P[0].x,P[0].y);for(let k=1;k<=P.length;k++){const a=P[k-1],b=P[k%P.length],c=P[(k+1)%P.length];const m1=a.clone().lerp(b,.82),m2=b.clone().lerp(c,.18);sh.lineTo(m1.x,m1.y);sh.quadraticCurveTo(b.x,b.y,m2.x,m2.y);}
@@ -385,31 +417,21 @@ function rocket(){const outer=new THREE.Group(),g=new THREE.Group();outer.add(g)
   grp.add(mesh(new THREE.BoxGeometry(.02,hl*.95,.06),SHIPMAT.chine,.005,(rootY0+rootY1)/2,-.02,false));
   /* v41: hinge right on the chine at the tile/steel boundary (z≈0), flap canted slightly windward so its tiled face continues the heat shield */grp.position.set(side*(xHinge+.006),y0+yBase,-.004+xHinge*Math.sin(lee));grp.scale.x=side;grp.rotation.order='YXZ';grp.rotation.z=side*lean;grp.rotation.y=side*.17;grp.userData.fb=side*.17;(g.userData.flaps||(g.userData.flaps=[])).push(grp);g.add(grp);return grp;};
  // forward flaps on the nose (38.6–45.8 m), swept back
- /* v40: small, strongly swept/tapered forward flaps high on the nose (real: ~7 m root, ~2.6 m tip chord, ~3 m span) */const fyb=41.4*SH_K,fyt=50.4*SH_K,fL=fyt-fyb,fLean=Math.atan2(shipR(fyb)-shipR(fyt),fL);for(const sd of[-1,1])flap(0,fL,fL*.04,fL*.42,3.7*SH_K,sd,fyb,shipR(fyb+fL*.3)+.004,.32*SH_K,fLean,0);
+ /* v79.1: forward flaps measured from the drawing: root rows 395-560 at ~85 px, tip column 184 px, tip rows 505-560 */const fyb=RYP(560),fL=RYP(395)-fyb,fxh=62/113*SH_R;for(const sd of[-1,1]){const f=flap(RYP(545)-fyb,fL,0,RYP(505)-fyb,(184-62)/113*SH_R,sd,fyb,fxh,.3*SH_K,0,0);f.rotation.y=f.userData.fb=sd*.04;}
  // aft flaps at the base (0.3–14.2 m), ~0.45× diameter
- const ayb=-SH_SK+.012,ayt=15.6*SH_K;/* v40: larger tapered aft flaps (~13.9 m root, ~7 m tip, ~4.3 m span, thicker) */for(const sd of[-1,1])flap(0,ayt-ayb,(ayt-ayb)*.03,(ayt-ayb)*.55,4.8*SH_K,sd,ayb,SH_R+.004,.5*SH_K,0,0);
- // header-tank hint: vents + ring band at the nose base, small dome cap ring near the tip
- g.add(mesh(new THREE.TorusGeometry(SH_R+.003,.006,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+SH_NOSE,0,false));
- const hy=H-1.3;for(const sd of[-1,1])g.add(mesh(new THREE.CylinderGeometry(.012,.012,.03,8).rotateX(Math.PI/2),SHIPMAT.chine,sd*shipR(hy)*.55,y0+hy,shipR(hy)*.82,false));
- g.add(mesh(new THREE.TorusGeometry(shipR(H-.55)+.002,.004,6,40).rotateX(Math.PI/2),SHIPMAT.chine,0,y0+H-.55,0,false));
+ /* v79.1: aft flaps from the drawing: root rows 1270-1600 on the hull, tip column 200 px, tip rows 1415-1600; X brace lines on the leeward face */const ayb=RYP(1603),aL=RYP(1270)-ayb,aS=(200-113)/113*SH_R;for(const sd of[-1,1]){const f=flap(0,aL,0,RYP(1415)-ayb,aS,sd,ayb,SH_R,.45*SH_K,0,0);f.rotation.y=f.userData.fb=sd*.04;const xh=RYP(1415)-ayb;for(const[p0,p1]of[[[.06,.05],[.94,xh*.95]],[[.06,xh*.95],[.94,.05]]]){const ax=p0[0]*aS,ay=p0[1],bx=p1[0]*aS,by=p1[1],L=Math.hypot(bx-ax,by-ay);const ln=mesh(new THREE.BoxGeometry(L,.008,.004),SHIPMAT.xline,(ax+bx)/2,(ay+by)/2,.45*SH_K/2+.014,false);ln.rotation.z=Math.atan2(by-ay,bx-ax);f.add(ln);}}
  // frost on the propellant tanks (LOX lower / CH4 upper, gap at the common dome); leeward steel half only, opacity per ship
  {const ft=(()=>{const c=document.createElement('canvas');c.width=256;c.height=256;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,256,256);x.fillStyle='#fff';x.beginPath();x.moveTo(0,256);let sd=3;for(let i=0;i<=32;i++){sd=(sd*16807)%2147483647;x.lineTo(i*8,14+(sd/2147483647)*5);}x.lineTo(256,256);x.closePath();x.fill();x.fillStyle='#000';x.fillRect(0,150,256,7);
    const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.repeat.set(2,1);return t;})();
   const y1=SH_NOSE*.93,y0f=.12,fp=[];for(let i=0;i<=8;i++){const y=y0f+(y1-y0f)*i/8;fp.push(new THREE.Vector2(shipR(y)+.009,y));}
   const fg=new THREE.LatheGeometry(fp,40,-Math.PI/2,Math.PI);const fm=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x5a6068,roughness:.75,metalness:0,alphaMap:ft,alphaTest:.5,polygonOffset:true,polygonOffsetFactor:-3,envMapIntensity:.4});
   const fr=new THREE.Mesh(fg,fm);fr.position.y=y0;fr.name='frost';fr.visible=false;g.add(fr);}
- /* v79 Mars Cargo details — one merged dark mesh: cargo-door outline, twin raceways, ring seams, black aft skirt + landing legs */
- {const D=[],I=new THREE.Matrix4(),q=new THREE.Quaternion(),Y=new THREE.Vector3(0,1,0),put=(geo,x,y,z,ry=0)=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(Y,ry),new THREE.Vector3(1,1,1));D.push([geo,m]);};
-  const arc=(rr,y,a0,a1,t)=>{const g_=new THREE.TorusGeometry(rr,t,4,24,a1-a0);g_.rotateX(Math.PI/2);g_.rotateY(a1-Math.PI/2);put(g_,0,y0+y,0);};
-  const dA=.86,dY0=27.6*SH_K,dY1=40.4*SH_K,rd=r+.007;arc(rd,dY0,-dA,dA,.007);arc(rd,dY1,-dA,dA,.007);
-  for(const a of[-dA,dA])put(new THREE.BoxGeometry(.014,dY1-dY0,.012),Math.sin(a)*rd,y0+(dY0+dY1)/2,Math.cos(a)*rd,a);
-  for(const a of[-.22,.22]){const yA=4.4*SH_K,yB=dY0-.08;put(new THREE.BoxGeometry(.022,yB-yA,.016),Math.sin(a)*(r+.01),y0+(yA+yB)/2,Math.cos(a)*(r+.01),a);for(let y=yA+.2;y<yB;y+=.42)put(new THREE.BoxGeometry(.05,.016,.02),Math.sin(a)*(r+.012),y0+y,Math.cos(a)*(r+.012),a);}
-  for(const yy of[9,18,27])arc(r+.004,yy*SH_K,-Math.PI/2+.12,Math.PI/2-.12,.0045);
-  const sk=4.2*SH_K;put(new THREE.CylinderGeometry(r+.009,r+.012,sk,48,1,true),0,y0+sk/2-.01,0);
-  for(let i=0;i<6;i++){const a=i*Math.PI/3+Math.PI/6;put(new THREE.BoxGeometry(.06,sk*.9+SH_SK,.05),Math.sin(a)*(r+.03),y0+sk*.45-SH_SK*.5,Math.cos(a)*(r+.03),a);}
-  const dm=mesh(mergeG(D),SHIPMAT.chine,0,0,0,false);dm.name='v3det';g.add(dm);}
+ /* v79.1: black landing-leg fairings along both hull edges at the aft flaps (rows 1270-1600, 111-127 px), pointed tops */
+ {const D=[],lh=RYP(1290)-RYP(1600),lw=14/113*SH_R,lx=SH_R+lw/2-.004;for(const sd of[-1,1]){D.push([new THREE.BoxGeometry(lw,lh,.16),new THREE.Matrix4().makeTranslation(sd*lx,y0+RYP(1600)+lh/2,0)]);D.push([new THREE.ConeGeometry(lw*.62,RYP(1262)-RYP(1290),4).rotateY(Math.PI/4).scale(1,1,1.6),new THREE.Matrix4().makeTranslation(sd*lx,y0+RYP(1290)+(RYP(1262)-RYP(1290))/2,0)]);}
+  for(const sd of[-1,1])D.push([new THREE.ConeGeometry(.035,.12,4).rotateZ(sd*2.6),new THREE.Matrix4().makeTranslation(sd*(SH_R+.015),y0+RYP(648),.06)]);
+  const dm=mesh(mergeG(D),SHIPMAT.leg,0,0,0,true);dm.name='legs';g.add(dm);}
  // aft skirt and engine bay
- {const sk=SHIPMAT.steel.clone();sk.side=THREE.DoubleSide;g.add(mesh(new THREE.CylinderGeometry(SH_R,SH_R*1.01,SH_SK,64,1,true),sk,0,y0-SH_SK/2,0));g.add(mesh(new THREE.CylinderGeometry(SH_R*.985,SH_R*.995,SH_SK,48,1,true),SHIPMAT.bayIn,0,y0-SH_SK/2,0,false));g.add(mesh(new THREE.CircleGeometry(SH_R*1.0,48).rotateX(Math.PI/2),SHIPMAT.bell,0,y0-.003,0,false));}
+ {const sk=new THREE.MeshStandardMaterial({color:0xb4b8ba,metalness:.25,roughness:.6,envMap:MSENV,envMapIntensity:.5,side:THREE.DoubleSide});g.add(mesh(new THREE.CylinderGeometry(SH_R,SH_R*1.01,SH_SK,64,1,true),sk,0,y0-SH_SK/2,0));g.add(mesh(new THREE.CylinderGeometry(SH_R*.985,SH_R*.995,SH_SK,48,1,true),SHIPMAT.bayIn,0,y0-SH_SK/2,0,false));g.add(mesh(new THREE.CircleGeometry(SH_R*1.0,48).rotateX(Math.PI/2),SHIPMAT.bell,0,y0-.003,0,false));}
  g.add(mesh(new THREE.TorusGeometry(SH_R*1.005,.008,6,64).rotateX(Math.PI/2),SHIPMAT.chine,0,y0-SH_SK,0,false));
  g.add(mesh(new THREE.CircleGeometry(SH_R*.99,48).rotateX(Math.PI/2),SHIPMAT.bell,0,y0+.01,0,false));
  const bell=(rt,re,h)=>{const b=new THREE.Group();const pts=[];for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector2(rt+(re-rt)*Math.pow(t,.6),-t*h));}
@@ -2666,7 +2688,7 @@ Object.assign(window,{__S:()=>S,__cam:cam,__THREE:THREE,__agents:agents,__trucks
 
 ;(()=>{const l=document.getElementById('loading');if(!l)return;const bar=document.getElementById('lbar'),msg=document.getElementById('lmsg');const steps=['GENERATING TERRAIN...','FUELLING STARSHIPS...','WAKING CREW...','READY!'];let i=0;const iv=setInterval(()=>{i++;bar.style.width=(i/steps.length*100)+'%';msg.textContent=steps[Math.min(i,steps.length)-1];if(i>=steps.length){clearInterval(iv);setTimeout(()=>{l.style.opacity=0;setTimeout(()=>l.remove(),600);},250);}},220);})();
 window.__flyers=typeof flyers!=='undefined'?flyers:null;window.__TUT=TUT;window.__tutRing=tutRing;window.__dbgT=()=>{const f=S.b.find(b=>b.t==="farm");const n=pathNet();return{conn:f&&connected(f),net:n.size,tiles:Object.keys(S.tiles).length,touch:f&&perim(f).concat(padEdge(f)).filter(([x,z])=>S.tiles[TK(x,z)]).length,why:(()=>{const p=tutPad(),c=bc(p);const o=[];for(let i=-7;i<=7;i++){o.push(pathWhy(Math.floor(c.x)+i,Math.floor(c.z),"path")?1:0)}return o.join("")})()}};window.__unl=()=>unloads.map(u=>u.ph+":"+(u.items||[]).map(i=>i.k).join("+"));window.__pathNet=()=>pathNet();window.__tutTick=tutTick;
-Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__capL=capL;window.__delB=delB;window.__info=()=>({calls:R.info.render.calls,tris:R.info.render.triangles,geo:R.info.memory.geometries});window.__RVt=RVt;window.__openB=b=>openB(b);window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
+Object.defineProperty(window,'__S',{get:()=>S,configurable:true});window.__cam=cam;window.__THREE=THREE;window.__SH={H:SH_H,R:SH_R,rocket:()=>rocket()};Object.defineProperty(window,"__trucks",{get:()=>trucks});Object.defineProperty(window,"__agents",{get:()=>agents});window.__start=start;window.__addB=addB;window.__capL=capL;window.__delB=delB;window.__info=()=>({calls:R.info.render.calls,tris:R.info.render.triangles,geo:R.info.memory.geometries});window.__RVt=RVt;window.__openB=b=>openB(b);window.__objs=objs;window.__launch=launchReturn;window.__save=save;window.__setZoom=z=>{zoom=z;camUp();};window.__tgt=tgt;window.__setSel=k=>{sel=k;};
 window.__build=(k,x,z,r=0)=>{placeRot=r;const n0=S.b.length;sel=k;hover={x,z,bx:x,bz:z,p:new THREE.Vector3(x+.5,0,z+.5)};try{click();}finally{sel=null;hover=null;placeRot=0;updPrev();}return S.b.length>n0;};
 window.__paint=(x0,z0,x1,z1)=>{sel='path';line({x:x0,z:z0},{x:x1,z:z1},(x,z)=>paint(x,z));sel=null;refreshDoors();};window.__upgrade=b=>upgrade(b);
 window.__rot=v=>{rot=rotT=v;camUp();};window.__el=v=>{camEl=v;camUp();};window.__cell=(x,y)=>cell(x,y).p;window.__truckModel=()=>truckModel();window.__syncRovers=()=>syncRovers();window.__astro=i=>astro(i);window.__getCam=()=>({rot:+rot.toFixed(3),el:+camEl.toFixed(3),zoom:+zoom.toFixed(2)});window.__DAY=DAY;window.__rocket=rocket;window.__pose=pose;window.__landPose=landPose;window.__scene=scene;
