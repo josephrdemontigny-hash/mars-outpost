@@ -1217,12 +1217,12 @@ function tickBots(dt){bots.forEach(t=>{const g=t.m.children[0],A=n=>g.getObjectB
 // ---------- Starship cargo/crew elevator: everything on the surface came down this lift
 let unloads=[];
 function startUnload(o){// o:{sid,cx,cz,gy,items:[{k:'crew',n}|{k:'bot'}|{k:'truck'}|{k:'cargo',mat}],onCrew,pad}
- let ang=Math.PI/4+.85;{const so=objs.get(o.sid);const rk=o.rk||(so&&(so.getObjectByName('rk')||so.parent?.getObjectByName('rk')));if(rk){rk.updateWorldMatrix(true,false);const q=new THREE.Quaternion();rk.getWorldQuaternion(q);const v=new THREE.Vector3(0,0,1).applyQuaternion(q);ang=Math.atan2(v.x,v.z);}}const dx=Math.sin(ang),dz=Math.cos(ang),R0=SH_R+.235,HY=3.55;const g=new THREE.Group();g.position.set(o.cx,o.gy,o.cz);g.scale.setScalar(4);g.rotation.y=Math.atan2(dx,dz);W.add(g);
- /* v52: payload door on the steel (leeward) side, high under the forward flaps; slides out+up to open */const ap=mesh(new THREE.BoxGeometry(.5,.42,.06),M(0x14161a,.4,.5),0,HY+.24,SH_R-.02,false);ap.visible=false;g.add(ap);const hatch=new THREE.Group();hatch.position.set(0,HY+.24,SH_R+.004);g.add(hatch);hatch.add(mesh(rbox(.52,.44,.025,.012),SHIPMAT.steel,0,0,0,false));hatch.add(mesh(new THREE.BoxGeometry(.54,.012,.02),MAT.dark,0,.226,-.004,false));hatch.add(mesh(new THREE.BoxGeometry(.54,.012,.02),MAT.dark,0,-.226,-.004,false));hatch.userData.ap=ap;const lit=mesh(new THREE.BoxGeometry(.44,.36,.01),M(0xffe7b0,.5,0,{emissive:0xffd890,emissiveIntensity:1.1}),0,HY+.24,SH_R-.045,false);lit.visible=false;g.add(lit);
- g.add(mesh(rbox(.8,.03,.04,.01),MAT.steel,0,HY+.98,SH_R+.03,false));const plat=new THREE.Group();g.add(plat);plat.position.set(0,HY,R0);
- plat.add(mesh(rbox(.6,.03,.4,.012),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.64,.04,.03),MAT.dark,0,.01,-.19,false));(0&&mesh(rbox(.8,.03,.46,.012),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.6,.07,.01),MAT.yellow,0,.04,.2,false));
- const cab=[];for(const sx of[-.34,.34]){const c=mesh(cyl(.006,.006,1,4),MAT.dark,sx,0,SH_R+.035,false);g.add(c);cab.push(c);g.add(mesh(new THREE.BoxGeometry(.02,HY+1,.02),MAT.steel,sx*1.08,(HY+1)/2,SH_R+.015,false));for(let yy=.3;yy<HY+.95;yy+=1.2)g.add(mesh(new THREE.BoxGeometry(.04,.02,.02),MAT.dark,sx*1.08,yy,SH_R+.01,false));}
- unloads.push({...o,g,plat,hatch,lit,cab,HY,R0,dx,dz,ph:'open',t:0,pay:null,i:0});}
+ let ang=Math.PI/4+.85;{const so=objs.get(o.sid);const rk=o.rk||(so&&(so.getObjectByName('rk')||so.parent?.getObjectByName('rk')));if(rk){rk.updateWorldMatrix(true,false);const q=new THREE.Quaternion();rk.getWorldQuaternion(q);const v=new THREE.Vector3(0,0,1).applyQuaternion(q);ang=Math.atan2(v.x,v.z);}}const dx=Math.sin(ang),dz=Math.cos(ang),R0=SH_R+.235,HY=RYP(568)+.012;const g=new THREE.Group();g.position.set(o.cx,o.gy,o.cz);g.scale.setScalar(4);g.rotation.y=Math.atan2(dx,dz);W.add(g);
+ /* v79.2b: crew elevator deploys FROM the cargo bay door: plug door pops out and slides aside, a compact platform runs out of the bay on a small davit and lowers on 4 cables; no external tower */const DT=RYP(303),DB=RYP(568),DH=DT-DB,DY=(DT+DB)/2;const ap=mesh(new THREE.BoxGeometry(.56,DH-.04,.06),M(0x14161a,.4,.5),0,DY,SH_R-.02,false);ap.visible=false;g.add(ap);const hatch=new THREE.Group();hatch.position.set(0,DY,SH_R+.004);g.add(hatch);hatch.add(mesh(rbox(.6,DH,.025,.012),SHIPMAT.steel,0,0,0,false));hatch.userData.ap=ap;const lit=mesh(new THREE.BoxGeometry(.5,DH-.1,.01),M(0xffe7b0,.5,0,{emissive:0xffd890,emissiveIntensity:1.1}),0,DY,SH_R-.045,false);lit.visible=false;g.add(lit);
+ const Z0=SH_R-.24;const dav=new THREE.Group();dav.position.set(0,DT-.05,Z0);g.add(dav);dav.add(mesh(new THREE.BoxGeometry(.42,.025,.025),MAT.steel,0,0,0,false));dav.add(mesh(new THREE.BoxGeometry(.02,.02,.3),MAT.dark,-.2,0,-.15,false));dav.add(mesh(new THREE.BoxGeometry(.02,.02,.3),MAT.dark,.2,0,-.15,false));
+ const plat=new THREE.Group();g.add(plat);plat.position.set(0,HY,Z0);plat.add(mesh(rbox(.42,.025,.3,.01),M(0x8a8e94,.5,.6),0,0,0));plat.add(mesh(new THREE.BoxGeometry(.42,.05,.008),MAT.yellow,0,.035,.15,false));
+ const cab=[];for(const sx of[-.19,.19])for(const sz of[-.13,.13]){const c=mesh(cyl(.004,.004,1,4),MAT.dark,sx,0,0,false);c.userData.sz=sz;g.add(c);cab.push(c);}
+ unloads.push({...o,g,plat,dav,Z0,DY,hatch,lit,cab,HY,R0,dx,dz,ph:'open',t:0,pay:null,i:0});}
 function unloadPayload(u,it){const p=new THREE.Group();u.plat.add(p);if(it.k==='crew'){for(let i=0;i<it.n;i++){const a=astro(cid+i);a.scale.setScalar(HUMAN/4);a.position.set((i-(it.n-1)/2)*.15,.02,0);a.rotation.y=0;p.add(a);}}
  else if(it.k==='bot'){const b=optimus();b.scale.setScalar(HUMAN/4);b.position.y=.02;p.add(b);}else if(it.k==='truck'){const t=truckModel();t.rotation.y=Math.PI/2;t.position.y=.02;p.add(t);}
  else{for(let i=0;i<3;i++)p.add(mesh(rbox(.26,.2,.26,.02),M(0x9a6a3a,.8),(i-1)*.3,.12,0));}return p;}
@@ -1234,14 +1234,16 @@ function landItem(u,it){const ox=u.cx+u.dx*u.R0*4,oz=u.cz+u.dz*u.R0*4,gx=u.cx+u.
 const palletN=()=>100+Math.floor(Math.random()*101);
 function finishUnload(u){for(;u.i<u.items.length;u.i++)landItem(u,u.items[u.i]);u.done=1;}
 function tickUnloads(dt){unloads=unloads.filter(u=>{if(u.done||!S.b.some(b=>b.id===u.sid)){if(!u.done)finishUnload(u);W.remove(u.g);return false;}u.t+=dt;const p=u.plat;
- const setCab=()=>u.cab.forEach(c=>{const L=Math.max(.01,u.HY+.98-p.position.y);c.scale.y=L;c.position.y=p.position.y+L/2;});
- if(u.ph==='open'){const k=Math.min(1,u.t/.7);const e=k*k*(3-2*k);u.hatch.position.z=SH_R+.004+Math.min(1,e*3)*.05;u.hatch.position.y=u.HY+.24+Math.max(0,e*1.5-.5)*.47;u.hatch.userData.ap.visible=u.lit.visible=k>.05;if(k>=1){u.ph='load';u.t=0;}}
- else if(u.ph==='load'){if(u.i>=u.items.length){u.ph='close';u.t=0;}else{u.pay=unloadPayload(u,u.items[u.i]);u.pay.position.z=-.34;u.ph='out';u.t=0;}}
- else if(u.ph==='out'){u.pay.position.z=Math.min(0,-.34+u.t*.6);if(u.pay.position.z>=0){u.ph='down';u.t=0;}}
- else if(u.ph==='down'){p.position.y=Math.max(0,p.position.y-dt*1.3);if(p.position.y<=0){u.ph='off';u.t=0;}}
+ const setCab=()=>u.cab.forEach(c=>{const top=u.dav.position.y,L=Math.max(.01,top-p.position.y);c.scale.y=L;c.position.set(c.position.x,p.position.y+L/2,p.position.z+c.userData.sz);c.visible=u.ph!=='open'&&u.ph!=='close';});
+ const door=e=>{u.hatch.position.z=SH_R+.004-Math.min(1,e*2.2)*.08;u.hatch.visible=e<.45;u.hatch.userData.ap.visible=u.lit.visible=e>.03;};const sm=k=>k*k*(3-2*k);const ext=k=>{const z=u.Z0+(u.R0-u.Z0)*sm(k);p.position.z=z;u.dav.position.z=z;};
+ if(u.ph==='open'){const k=Math.max(0,Math.min(1,u.t/.8));door(sm(k));if(k>=1){u.ph='load';u.t=0;}}
+ else if(u.ph==='load'){if(u.i>=u.items.length){u.ph='close';u.t=0;}else{u.pay=unloadPayload(u,u.items[u.i]);u.pay.position.z=0;u.ph='out';u.t=0;}}
+ else if(u.ph==='out'){const k=Math.min(1,u.t/.8);ext(k);if(k>=1){u.ph='down';u.t=0;}}
+ else if(u.ph==='down'){p.position.y=Math.max(0,p.position.y-dt*1.2);if(p.position.y<=0){u.ph='off';u.t=0;}}
  else if(u.ph==='off'){if(u.t>.35){p.remove(u.pay);u.pay=null;landItem(u,u.items[u.i]);u.i++;u.ph='up';u.t=0;}}
- else if(u.ph==='up'){p.position.y=Math.min(u.HY,p.position.y+dt*1.6);if(p.position.y>=u.HY){u.ph='load';u.t=0;}}
- else if(u.ph==='close'){const k=Math.min(1,u.t/.7);const e=1-k*k*(3-2*k);u.hatch.position.z=SH_R+.004+Math.min(1,e*3)*.05;u.hatch.position.y=u.HY+.24+Math.max(0,e*1.5-.5)*.47;u.hatch.userData.ap.visible=u.lit.visible=k<.95;if(k>=1){if(u.onDone)u.onDone();W.remove(u.g);return false;}}
+ else if(u.ph==='up'){p.position.y=Math.min(u.HY,p.position.y+dt*1.5);if(p.position.y>=u.HY){u.ph='in';u.t=0;}}
+ else if(u.ph==='in'){const k=Math.min(1,u.t/.6);ext(1-k);if(k>=1){u.ph='load';u.t=0;}}
+ else if(u.ph==='close'){const k=Math.min(1,u.t/.8);door(1-sm(k));if(k>=1){if(u.onDone)u.onDone();W.remove(u.g);return false;}}
  setCab();return true;});}
 // ---------- astronaut agents
 let agents=new Map();const MAXA=90;
