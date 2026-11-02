@@ -233,7 +233,9 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #v8scard .v8ft{display:flex;align-items:center;gap:8px;margin-top:10px}#v8scard .v8ft .v8pbtn{margin:0;flex:1;padding:12px 10px}
 .v8snav{flex:none;width:44px;height:44px;border-radius:10px;border:2px solid #2a1208;background:#e6cc98;color:#2a1208;font:inherit;font-size:20px;font-weight:900}
 #v8scard:not(.v8on) .v8hd,#v8scard:not(.v8on) #v8scd,#v8scard:not(.v8on) .v8srow{visibility:hidden}#v8scard .v8ph{display:none}#v8scard:not(.v8on) .v8ph{display:block;position:absolute;font-size:13px;color:#7a4a2a;padding:18px 4px}#v8scard{position:relative}
-</style>
+
+.chips.sty{grid-template-columns:repeat(3,1fr)}.chips.sty span{white-space:normal;text-align:center;line-height:1.1;font-size:9px}.chip i.sti{background:#2a1208;color:#f3e0b5;display:flex;align-items:center;justify-content:center}.chip i.sti::after{display:none}.chip i.sti svg{width:24px;height:24px}
+#v8srec{display:none;margin-top:3px;font-size:9px;font-weight:900;letter-spacing:.14em;color:#f3e0b5;background:#2c6e6a;border:1.5px solid #2a1208;border-radius:5px;padding:2px 6px}.v8srow.none span{color:#7a4a2a}</style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 <style id="loader63">
 /* v63: poster-theme loader (inline, renders before any asset) + rust page background under safe areas */
@@ -428,8 +430,8 @@ body.tutdim #mhead button:not(.tglow){opacity:.45;filter:saturate(.5)}
 <div id="v8brief"><button id="v8briefskip">SKIP</button><div class="v8bk">INCOMING TRANSMISSION · SOL 0</div><h1>MISSION BRIEFING</h1><div class="v8rule"></div>
 <p class="v8bl">Your crew is the first to call Mars home.</p><p class="v8bl">Build a colony. Grow it into a self-sustaining city.</p><p class="v8bl">Only then can Mars begin to terraform.</p><p class="v8bl v8last">FIRST, CHOOSE WHERE TO LAND.</p>
 <button class="v8pbtn" id="v8briefgo">CONTINUE</button></div>
-<div id="v8sitepick"><h1>SELECT LANDING SITE</h1><div class="v8sub">TEN SURVEYED SITES · EACH WITH ITS OWN EDGE</div><div class="v8rule"></div><canvas id="v8globe"></canvas><div id="v8ghint">DRAG TO ROTATE · TAP A MARKER</div>
-<div id="v8scard"><div class="v8ph">Choose a marker on the globe, or step through sites with the arrows.</div><div class="v8hd"><div id="v8scic"></div><div><div id="v8scn"></div><div id="v8scl"></div></div></div><div id="v8scd"></div>
+<div id="v8sitepick"><h1>SELECT LANDING SITE</h1><div class="v8sub">ELEVEN SURVEYED SITES · EACH WITH ITS OWN EDGE</div><div class="v8rule"></div><canvas id="v8globe"></canvas><div id="v8ghint">DRAG TO ROTATE · TAP A MARKER</div>
+<div id="v8scard"><div class="v8ph">Choose a marker on the globe, or step through sites with the arrows.</div><div class="v8hd"><div id="v8scic"></div><div><div id="v8scn"></div><span id="v8srec">RECOMMENDED FOR BEGINNERS</span><div id="v8scl"></div></div></div><div id="v8scd"></div>
 <div class="v8srow v8bo"><b>BONUS</b><span id="v8scb"></span></div><div class="v8srow v8tr"><b>TRADE-OFF</b><span id="v8sct"></span></div>
 <div class="v8ft"><button class="v8snav" id="v8sprev" aria-label="Previous site">‹</button><button class="v8pbtn" id="v8sland" disabled>LAND HERE</button><button class="v8snav" id="v8snext" aria-label="Next site">›</button></div></div></div>
 
