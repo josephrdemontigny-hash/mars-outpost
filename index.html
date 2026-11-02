@@ -211,7 +211,29 @@ body.storm::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:
 #settings .sc{max-height:calc(100dvh - 40px);overflow-y:auto}
 #panel.painting #pbody,#panel.painting .hint,#panel.painting .pbtn{display:none!important}#panel .chip,#slivp .chip{background:none!important;border:0!important}
 #callout{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 22%);text-align:center;pointer-events:none;z-index:7;font:900 30px 'Futura Condensed','Futura','Avenir Next Condensed','Arial Narrow',sans-serif;letter-spacing:.22em;color:#fff3d6;text-shadow:0 2px 0 #2a1208,0 0 18px rgba(42,18,8,.6);opacity:0}#callout.on{animation:callo 2.2s ease-out forwards}@keyframes callo{0%{opacity:0;transform:translateY(8px) scale(.96)}12%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
-.ttip{margin-top:4px;font-size:12px;font-style:italic;opacity:.8}</style>
+.ttip{margin-top:4px;font-size:12px;font-style:italic;opacity:.8}
+#v8brief,#v8sitepick{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;background:radial-gradient(ellipse at 50% 30%,#4a1d0e 0%,#1f0c05 70%,#140703 100%);color:#f3e0b5;font-family:inherit;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 16px);box-sizing:border-box;overflow:hidden}
+#v8brief{justify-content:center;text-align:center}
+#v8brief .v8bk{font-size:11px;letter-spacing:.32em;color:#6fb8b2;margin-bottom:10px}
+#v8brief h1,#v8sitepick h1{margin:0;font-size:30px;letter-spacing:.14em;font-weight:900;color:#f3e0b5;text-shadow:0 2px 0 #2a1208}
+#v8brief .v8rule,#v8sitepick .v8rule{width:180px;height:3px;margin:14px auto 22px;background:linear-gradient(90deg,transparent,#c8562a 20%,#c8562a 80%,transparent)}
+#v8brief .v8bl{max-width:320px;margin:0 auto 16px;font-size:18px;line-height:1.4;opacity:0;transform:translateY(8px);transition:opacity .9s ease,transform .9s ease}
+#v8brief .v8bl.v8in{opacity:1;transform:none}#v8brief .v8bl.v8last{color:#6fb8b2;font-weight:800;letter-spacing:.06em;margin-top:10px}
+.v8pbtn{margin-top:22px;padding:14px 40px;font:inherit;font-size:16px;font-weight:900;letter-spacing:.18em;color:#2a1208;background:#f3e0b5;border:3px solid #2a1208;border-radius:10px;box-shadow:0 4px 0 #2a1208,0 0 0 2px #c8562a;cursor:pointer}
+.v8pbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #2a1208,0 0 0 2px #c8562a}.v8pbtn:disabled{opacity:.45}
+#v8briefskip{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 12px);background:none;border:1px solid rgba(243,224,181,.35);color:rgba(243,224,181,.75);font:inherit;font-size:12px;letter-spacing:.15em;padding:6px 12px;border-radius:8px}
+#v8sitepick h1{font-size:22px}#v8sitepick .v8sub{font-size:12px;letter-spacing:.12em;color:#6fb8b2;margin-top:6px}#v8sitepick .v8rule{margin:10px auto 6px}
+#v8globe{touch-action:none;display:block;margin:4px auto 0;border-radius:50%;box-shadow:0 0 40px rgba(200,86,42,.35)}
+#v8ghint{font-size:11px;color:rgba(243,224,181,.6);letter-spacing:.1em;margin:6px 0 8px}
+#v8scard{width:100%;max-width:360px;background:#f3e0b5;color:#2a1208;border:3px solid #2a1208;border-radius:14px;box-shadow:0 0 0 2px #c8562a,0 8px 24px rgba(0,0,0,.5);padding:12px 14px;box-sizing:border-box;margin-top:auto}
+#v8scard .v8hd{display:flex;align-items:center;gap:10px}#v8scic{width:40px;height:40px;flex:none;border-radius:10px;background:#2a1208;color:#f3e0b5;display:flex;align-items:center;justify-content:center}#v8scic svg{width:26px;height:26px}
+#v8scn{font-weight:900;font-size:17px;letter-spacing:.03em;line-height:1.15}#v8scl{font-size:11px;color:#7a4a2a;letter-spacing:.06em}
+#v8scd{font-size:13px;line-height:1.35;margin:8px 0}.v8srow{display:flex;gap:8px;font-size:13px;margin:3px 0}.v8srow b{flex:none;width:72px;font-size:10px;letter-spacing:.14em;padding-top:2px}
+.v8srow.v8bo b,.v8srow.v8bo span{color:#2c6e6a}.v8srow.v8tr b,.v8srow.v8tr span{color:#a0401c}.v8srow span{font-weight:800}
+#v8scard .v8ft{display:flex;align-items:center;gap:8px;margin-top:10px}#v8scard .v8ft .v8pbtn{margin:0;flex:1;padding:12px 10px}
+.v8snav{flex:none;width:44px;height:44px;border-radius:10px;border:2px solid #2a1208;background:#e6cc98;color:#2a1208;font:inherit;font-size:20px;font-weight:900}
+#v8scard:not(.v8on) .v8hd,#v8scard:not(.v8on) #v8scd,#v8scard:not(.v8on) .v8srow{visibility:hidden}#v8scard .v8ph{display:none}#v8scard:not(.v8on) .v8ph{display:block;position:absolute;font-size:13px;color:#7a4a2a;padding:18px 4px}#v8scard{position:relative}
+</style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 <style id="loader63">
 /* v63: poster-theme loader (inline, renders before any asset) + rust page background under safe areas */
@@ -403,6 +425,14 @@ body.tutdim #mhead button:not(.tglow){opacity:.45;filter:saturate(.5)}
 </style>
 </head><body>
 <script src="icons.js"></script>
+<div id="v8brief"><button id="v8briefskip">SKIP</button><div class="v8bk">INCOMING TRANSMISSION · SOL 0</div><h1>MISSION BRIEFING</h1><div class="v8rule"></div>
+<p class="v8bl">Your crew is the first to call Mars home.</p><p class="v8bl">Build a colony. Grow it into a self-sustaining city.</p><p class="v8bl">Only then can Mars begin to terraform.</p><p class="v8bl v8last">FIRST, CHOOSE WHERE TO LAND.</p>
+<button class="v8pbtn" id="v8briefgo">CONTINUE</button></div>
+<div id="v8sitepick"><h1>SELECT LANDING SITE</h1><div class="v8sub">TEN SURVEYED SITES · EACH WITH ITS OWN EDGE</div><div class="v8rule"></div><canvas id="v8globe"></canvas><div id="v8ghint">DRAG TO ROTATE · TAP A MARKER</div>
+<div id="v8scard"><div class="v8ph">Choose a marker on the globe, or step through sites with the arrows.</div><div class="v8hd"><div id="v8scic"></div><div><div id="v8scn"></div><div id="v8scl"></div></div></div><div id="v8scd"></div>
+<div class="v8srow v8bo"><b>BONUS</b><span id="v8scb"></span></div><div class="v8srow v8tr"><b>TRADE-OFF</b><span id="v8sct"></span></div>
+<div class="v8ft"><button class="v8snav" id="v8sprev" aria-label="Previous site">‹</button><button class="v8pbtn" id="v8sland" disabled>LAND HERE</button><button class="v8snav" id="v8snext" aria-label="Next site">›</button></div></div></div>
+
 <div id="ui" style="display:none"><div id="hud"></div>
 <div id="phint" style="display:none"></div><div id="donebar"><span id="donel"></span><button id="doneb">✕ Done</button><button id="prot" class="pbb" style="display:none">⟳ Rotate</button><button id="placeb" class="pbb pl" style="display:none">✓ PLACE</button></div><div id="dock"><div id="ctl"><button id="mktb" class="tb" title="Call home: Earth market &amp; supply calls"><svg class="ic" aria-hidden="true"><use href="#i-earthcall"/></svg><span>Call Home</span></button><button id="dozeb" class="tb" title="Bulldoze (toggle)"><svg class="ic" aria-hidden="true"><use href="#i-dozer"/></svg><span>Bulldoze</span></button><button id="rotb" class="tb ctx" title="Rotate building (R)"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg><span>Rotate</span></button><button id="undob" class="tb ctx" title="Undo last stroke" style="display:none"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>Undo</span></button><button id="buildb" class="pri tb" title="Build"><svg class="ic" aria-hidden="true"><use href="#i-crane"/></svg><span>Build</span></button></div>
 <div id="menu" class="closed"><div id="mhead"><button id="mback" class="back" type="button" aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button><div id="mttl">Build</div><button id="mclose" type="button" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div><div id="mtools"></div></div></div>
